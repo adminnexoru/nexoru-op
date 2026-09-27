@@ -1,5 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Locally, read the same variables the app uses. In CI they come from the workflow environment.
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // No .env.local (CI): nothing to load.
+}
+
 export default defineConfig({
   testDir: "./tests/e2e",
   // Tests share the local Supabase database, so they run one at a time.
