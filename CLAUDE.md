@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # CLAUDE.md — nexoru-op
 
 Guía para Claude Code en este repositorio. Léela antes de hacer cualquier cambio.
@@ -47,3 +49,13 @@ No te saltes pasos. Si un artefacto previo no existe o está desactualizado, vue
 
 - Aplicación prevista: **Next.js** (los detalles se fijan en `plan.md` de cada feature).
 - **Nunca** se suben archivos `.env*` ni secretos al repositorio. El `.gitignore` los bloquea; si hace falta documentar variables, usa `.env.example` sin valores reales.
+
+## Repositorio público: qué nunca entra al repo
+
+El repositorio `adminnexoru/nexoru-op` es **público** (decisión del Dueño por costo; se revisará antes de que el sistema maneje datos de clientes, ver `specs/001-user-access/research.md` R11). Todo lo que se sube lo puede leer cualquiera.
+
+- **Nunca** datos reales de clientes, en ningún archivo: código, specs, fixtures, logs, issues ni descripciones de PR.
+- **Nunca** correos personales ni de terceros. Los únicos correos reales permitidos son las cuentas de Nexoru que ya figuran en la constitución (`admin@nexoru.ai`) y el remitente `no-reply@nexoru.ai`.
+- **Nunca** capturas de pantalla ni grabaciones del sistema, porque pueden mostrar usuarios, la bitácora o configuración.
+- En pruebas y seeds se usan **solo datos ficticios**: correos en dominios reservados (`@example.com`, `@example.test`), nombres inventados e IP de documentación (`192.0.2.0/24`, `198.51.100.0/24`).
+- GitHub tiene activados Secret scanning y Push protection, que rechazan un push con una llave reconocible. Es una segunda barrera; la primera es no escribir nunca un secreto en un archivo del repo.
