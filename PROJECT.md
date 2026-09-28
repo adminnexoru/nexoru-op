@@ -18,7 +18,7 @@ stack:
 servicios:
   - have-i-been-pwned
 costo_mensual_usd: 0
-siguiente_hito: "Integrar la Fase 1 en main (PR de 001-user-access) y especificar la Fase 2: lector y conformidad"
+siguiente_hito: "Fase 2: especificar, planificar y construir el lector seguro del portafolio y la conformidad con el estándar (002-portfolio-conformance)"
 mapa_funcional: docs/mapa-funcional.md
 version_estandar: "1.0"
 ---
@@ -53,12 +53,12 @@ version_estandar: "1.0"
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. Las fases 2 a 4 no tienen spec todavía, por eso llevan estado manual.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 tiene spec (`002-portfolio-conformance`) pero todavía no `tasks.md`, y las fases 3 y 4 no tienen spec; por eso las tres llevan estado manual.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
-| 1 | Acceso seguro del Dueño, bitácora y puesta en marcha local | 001-user-access | 2026-10-04 | |
-| 2 | Lector seguro del portafolio y conformidad con el estándar | — | 2026-10-18 | pendiente |
+| 1 | Acceso seguro del Dueño, bitácora y puesta en marcha local | 001-user-access | — | |
+| 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | 2026-10-18 | en-curso |
 | 3 | Historial de git por proyecto | — | 2026-10-25 | pendiente |
 | 4 | Datos de GitHub en solo lectura (CI, visibilidad, PRs) | — | 2026-11-08 | pendiente |
 
@@ -90,7 +90,6 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 
 ## Riesgos, bloqueos y dependencias
 
-- **Riesgo de calidad:** el ruleset de `main` todavía no exige el check de CI (verificado con `gh` el 2026-09-28); hasta que se active (T082 de `specs/001-user-access/`), un merge con pruebas en rojo no quedaría bloqueado.
 - **Riesgo de calidad:** los procedimientos manuales de recuperación (2FA perdido sin códigos y contraseña olvidada) están documentados pero no se han validado con la cuenta real (backlog B-008).
 - **Dependencia:** Docker y Node.js 24 en la máquina del Dueño. Supabase se arranca siempre con `npm run db:start` / `npm run op:start`, que crean su red de Docker solo en `127.0.0.1` (la opción `ip` de `daemon.json` no la cubre).
 - **Riesgo de calidad:** las dos pilas de Supabase local (uso y pruebas) consumen unos 2–3 GB de memoria cada una; la de pruebas se puede detener cuando no se usa.
@@ -99,14 +98,13 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 
 ## Pendientes conocidos
 
-- T082 a T084 de `specs/001-user-access/tasks.md`: exigir el check de CI en el ruleset de `main`, PR de `001-user-access` hacia `main` y merge.
 - Backlog en `specs/backlog.md`: B-001 a B-009. En particular, B-008 (validar los procedimientos manuales de recuperación) y B-009 (`op:backup` / `op:restore`, opcional).
 
 ## Evidencia de validación
 
 | Qué | Evidencia |
 |---|---|
-| US1 sin correo: 2FA obligatorio, bloqueo por correo + IP, IP no falsificable, inactividad, 12 h, códigos de recuperación y cabeceras | En local (no hay producción): Playwright 17/17 (incluye 3 de activación por enlace en la terminal), pgTAP 72/72 y Vitest 77/77, el 2026-09-28 en la rama `001-user-access`. La CI de la rama pasó con el diseño anterior (ejecución 36466874823) y se volverá a ejecutar en el PR |
+| US1 sin correo: 2FA obligatorio, bloqueo por correo + IP, IP no falsificable, inactividad, 12 h, códigos de recuperación y cabeceras | En local (no hay producción): Playwright 17/17 (incluye 3 de activación por enlace en la terminal), pgTAP 72/72 y Vitest 77/77, el 2026-09-28 en la rama `001-user-access`. La CI pasó en el PR #1 y, tras el merge, en `main` (ejecución 36499343842, commit `b0fa233`, 2026-09-28) |
 | Activación del Dueño en el entorno de uso (SC-003) | 20 segundos desde `op:bootstrap-owner` hasta entrar; la cuenta persiste tras `op:stop` / `op:start` (2026-09-28, entorno de uso) |
 | Las pruebas no tocan el entorno de uso (SC-012) | Huella de `op:fingerprint` idéntica (`965bcf22f806afa5`) antes y después de Vitest, pgTAP y Playwright, con el entorno de uso en marcha (2026-09-28) |
 | Todo escucha solo en `127.0.0.1` (FR-033) | `ss -ltn`: app (3000, 3200) y las dos instancias de Supabase (5432x, 5532x) solo en `127.0.0.1`; desde la IP de red y desde otro dispositivo no responden (2026-09-28) |
@@ -115,7 +113,8 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 
 ## Siguiente hito
 
-Integrar la Fase 1 en main (PR de 001-user-access) y especificar la Fase 2: lector y conformidad.
+Fase 2: especificar, planificar y construir el lector seguro del portafolio y la conformidad con el estándar (002-portfolio-conformance).
 
-1. **Cierre de la Fase 1:** activar el check de CI obligatorio en el ruleset de `main` (T082), revisar y autorizar el push, PR con CI en verde y merge (T083–T084). Fecha objetivo de la fase: 2026-10-04.
-2. **Fase 2 (fecha objetivo 2026-10-18):** nueva spec con `/speckit-specify` para el lector seguro de `PROJECTS_ROOT` y la evaluación de conformidad con el estándar.
+1. **Spec:** `specs/002-portfolio-conformance/spec.md`, con `/speckit-clarify` para las preguntas abiertas y aprobación del Dueño.
+2. **Plan, tareas y análisis:** `/speckit-plan`, `/speckit-tasks` y `/speckit-analyze` sin hallazgos críticos, y aprobación del `tasks.md`.
+3. **Construcción y cierre:** implementación con pruebas, PR con CI en verde y merge. Fecha objetivo de la fase: 2026-10-18.

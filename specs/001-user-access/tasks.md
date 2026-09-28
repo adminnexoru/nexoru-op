@@ -199,8 +199,8 @@ escucha fuera de `127.0.0.1`.
 - [X] T080 Ejecutar la validación completa de `specs/001-user-access/quickstart.md` (Parte 2, escenarios 1–11) y anotar los resultados
 - [X] T081 Al cerrar la fase: actualizar `PROJECT.md` (roadmap, evidencia de validación, pendientes y siguiente hito) y `docs/mapa-funcional.md` según el Estándar de Proyecto Nexoru, y la fila de Nexoru Op en `/home/fili/proyectos/CLAUDE.md`; quitar el "Sync Impact Report" de la constitución
 - [X] T082 [MANUAL] GitHub: activar en el ruleset `main` *Require status checks to pass* con `lint, types, unit, db and e2e tests` y guardar (quickstart §7); Claude lo verifica con `gh`
-- [ ] T083 Con la autorización de push del Dueño: push de `001-user-access` y PR hacia `main` con `gh pr create`, descripción en español (redefinición, resumen, pruebas y tareas [MANUAL]); esperar CI en verde
-- [ ] T084 [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"
+- [X] T083 Con la autorización de push del Dueño: push de `001-user-access` y PR hacia `main` con `gh pr create`, descripción en español (redefinición, resumen, pruebas y tareas [MANUAL]); esperar CI en verde
+- [X] T084 [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"
 
 ---
 
