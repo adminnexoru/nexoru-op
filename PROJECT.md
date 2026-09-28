@@ -18,7 +18,7 @@ stack:
 servicios:
   - have-i-been-pwned
 costo_mensual_usd: 0
-siguiente_hito: "Cerrar la Fase 1: retirar el correo y puesta en marcha local (001-user-access)"
+siguiente_hito: "Integrar la Fase 1 en main (PR de 001-user-access) y especificar la Fase 2: lector y conformidad"
 mapa_funcional: docs/mapa-funcional.md
 version_estandar: "1.0"
 ---
@@ -91,29 +91,31 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 ## Riesgos, bloqueos y dependencias
 
 - **Riesgo de calidad:** el ruleset de `main` todavía no exige el check de CI (verificado con `gh` el 2026-09-28); hasta que se active (T082 de `specs/001-user-access/`), un merge con pruebas en rojo no quedaría bloqueado.
-- **Dependencia:** Docker (configurado solo en local) y Node.js 24 en la máquina del Dueño.
+- **Riesgo de calidad:** los procedimientos manuales de recuperación (2FA perdido sin códigos y contraseña olvidada) están documentados pero no se han validado con la cuenta real (backlog B-008).
+- **Dependencia:** Docker y Node.js 24 en la máquina del Dueño. Supabase se arranca siempre con `npm run db:start` / `npm run op:start`, que crean su red de Docker solo en `127.0.0.1` (la opción `ip` de `daemon.json` no la cubre).
 - **Riesgo de calidad:** las dos pilas de Supabase local (uso y pruebas) consumen unos 2–3 GB de memoria cada una; la de pruebas se puede detener cuando no se usa.
 - **Dependencia:** la conformidad se evalúa con el Estándar de Proyecto Nexoru v1.0 (`nexoru-governance`); cada versión nueva del estándar puede requerir actualizar el dashboard (principio XIV).
 - **Riesgo de calidad:** el repo es público; la constitución anterior, con el número comercial de WhatsApp y la lista de productos, sigue visible en el historial de git.
 
 ## Pendientes conocidos
 
-- Fase 3b de `specs/001-user-access/tasks.md` (T060–T065): retirar el correo, adaptar la activación del Dueño y dejar todos los servidores solo en `127.0.0.1`.
-- Fase 4 (T066–T077): Docker solo en local, puesta en marcha local, entornos separados y validación del aislamiento.
-- Fase 5 (T078–T084): revisión de seguridad, validación completa, ruleset con CI y PR hacia `main`.
-- Backlog en `specs/backlog.md`: B-001 a B-007.
+- T082 a T084 de `specs/001-user-access/tasks.md`: exigir el check de CI en el ruleset de `main`, PR de `001-user-access` hacia `main` y merge.
+- Backlog en `specs/backlog.md`: B-001 a B-009. En particular, B-008 (validar los procedimientos manuales de recuperación) y B-009 (`op:backup` / `op:restore`, opcional).
 
 ## Evidencia de validación
 
 | Qué | Evidencia |
 |---|---|
-| US1: inicio de sesión con 2FA, bloqueo por correo + IP, IP no falsificable, inactividad, 12 h, códigos de recuperación y cabeceras | En local y en CI (no en producción), con el diseño anterior a la redefinición (aún con correo): Playwright 14/14, pgTAP 74/74 y Vitest 83/83. CI: ejecución 36466874823 del 2026-09-28 en la rama `001-user-access` |
-| CSP con nonce sin violaciones | Las 14 E2E registran cualquier violación de CSP en la consola del navegador y fallan si aparece alguna; ninguna apareció |
+| US1 sin correo: 2FA obligatorio, bloqueo por correo + IP, IP no falsificable, inactividad, 12 h, códigos de recuperación y cabeceras | En local (no hay producción): Playwright 17/17 (incluye 3 de activación por enlace en la terminal), pgTAP 72/72 y Vitest 77/77, el 2026-09-28 en la rama `001-user-access`. La CI de la rama pasó con el diseño anterior (ejecución 36466874823) y se volverá a ejecutar en el PR |
+| Activación del Dueño en el entorno de uso (SC-003) | 20 segundos desde `op:bootstrap-owner` hasta entrar; la cuenta persiste tras `op:stop` / `op:start` (2026-09-28, entorno de uso) |
+| Las pruebas no tocan el entorno de uso (SC-012) | Huella de `op:fingerprint` idéntica (`965bcf22f806afa5`) antes y después de Vitest, pgTAP y Playwright, con el entorno de uso en marcha (2026-09-28) |
+| Todo escucha solo en `127.0.0.1` (FR-033) | `ss -ltn`: app (3000, 3200) y las dos instancias de Supabase (5432x, 5532x) solo en `127.0.0.1`; desde la IP de red y desde otro dispositivo no responden (2026-09-28) |
+| Bitácora inmutable y consultable desde Studio (FR-028, FR-038) | La consulta del quickstart devuelve los eventos del entorno de uso; un `update` falla con `audit_events is append-only` (2026-09-28) |
+| CSP con nonce | La app de uso responde con `script-src 'self' 'nonce-…' 'strict-dynamic'`, sin `'unsafe-eval'`; las E2E fallan ante cualquier violación de CSP y no hubo ninguna |
 
 ## Siguiente hito
 
-Cerrar la Fase 1: retirar el correo y puesta en marcha local (`001-user-access`), con fecha objetivo 2026-10-04.
+Integrar la Fase 1 en main (PR de 001-user-access) y especificar la Fase 2: lector y conformidad.
 
-1. **Fase 3b:** US1 sin correo y con la activación por enlace en la terminal.
-2. **Fase 4:** Docker solo en local; `op:start` / `op:stop` con entornos separados; el Dueño activa su cuenta en el entorno de uso.
-3. **Fase 5:** PR de `001-user-access` hacia `main`, con el check de CI obligatorio activo.
+1. **Cierre de la Fase 1:** activar el check de CI obligatorio en el ruleset de `main` (T082), revisar y autorizar el push, PR con CI en verde y merge (T083–T084). Fecha objetivo de la fase: 2026-10-04.
+2. **Fase 2 (fecha objetivo 2026-10-18):** nueva spec con `/speckit-specify` para el lector seguro de `PROJECTS_ROOT` y la evaluación de conformidad con el estándar.

@@ -28,7 +28,7 @@ Es un **sistema de información local, de solo lectura y para un solo usuario**:
 | Lector de git | Obtiene fechas y autores con comandos de git de solo lectura, sin shell y con argumentos fijos | Solo lectura |
 | Cliente de GitHub | Consulta CI, visibilidad y PRs de cada repo | Solo lectura; token opcional |
 | Índice del portafolio | Caché en la base de datos de lo leído, para mostrarlo rápido | Regenerable: se puede borrar y reconstruir sin pérdida |
-| Scripts de terminal | `bootstrap:owner` (enlace de activación), `op:start` / `op:stop` (entorno de uso) | Los ejecuta el Dueño en la terminal integrada de VS Code |
+| Scripts de terminal | `op:start` / `op:stop` (entorno de uso), `op:bootstrap-owner` (enlace de activación), `op:fingerprint` (huella de solo lectura del entorno de uso) y `db:start` (instancia de pruebas); todos arrancan Supabase en una red de Docker solo en `127.0.0.1` | Los ejecuta el Dueño en la terminal integrada de VS Code; los de un entorno se niegan a tocar el otro |
 
 ## 3. Flujo
 

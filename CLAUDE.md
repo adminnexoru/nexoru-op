@@ -54,6 +54,31 @@ No te saltes pasos. Si un artefacto previo no existe o está desactualizado, vue
 - **Nunca** envía correos ni notificaciones ni escribe en los proyectos, en git o en GitHub.
 - **Nunca** se suben archivos `.env*` ni secretos al repositorio. El `.gitignore` los bloquea; si hace falta documentar variables, usa `.env.example` sin valores reales.
 
+## Comandos y entornos
+
+Hay **dos entornos locales separados** (research R13 de `specs/001-user-access/`); ningún script de
+un entorno puede tocar el otro (`scripts/env-guard.ts`):
+
+| Entorno | Supabase | App | Variables | Comandos |
+|---------|----------|-----|-----------|----------|
+| Pruebas y desarrollo | `supabase/` (API `127.0.0.1:54321`) | `http://127.0.0.1:3000` | `.env.local` | `npm run db:start`, `npm run dev`, `npm test`, `npm run db:test`, `npm run test:e2e`, `npm run bootstrap:owner` |
+| Uso del Dueño | `ops/supabase/` (API `127.0.0.1:55321`) | `http://127.0.0.1:3200` | `.env.op.local` | `npm run op:start`, `npm run op:stop`, `npm run op:bootstrap-owner`, `npm run op:fingerprint` |
+
+- Todo escucha solo en `127.0.0.1`. Arranca Supabase siempre con `npm run db:start` / `npm run op:start`:
+  crean la red de Docker de Supabase con `host_binding_ipv4=127.0.0.1` (la opción `ip` de
+  `daemon.json` no cubre esa red).
+- **Nunca** ejecutes pruebas, `supabase db reset` ni limpiezas contra el entorno de uso: guarda la
+  cuenta real del Dueño y su bitácora.
+- Antes de `npm run db:test`, resetea la base de pruebas (`npx supabase db reset`): las E2E dejan
+  datos que chocan con los fixtures de pgTAP.
+- Estructura: `src/app` (páginas), `src/lib` (auth, Supabase, IP, contraseñas), `src/proxy.ts`
+  (CSP con nonce y sesión), `supabase/migrations` (esquema, RLS y funciones, compartido por los dos
+  entornos), `supabase/tests` (pgTAP), `tests/unit` (Vitest), `tests/e2e` (Playwright), `scripts/`
+  (bootstrap y `op:*`).
+- Regla de la base de datos: toda tabla con RLS y toda mutación sensible mediante función
+  `security definer` que escribe su evento en la bitácora en la misma transacción.
+- Todo cambio llega a `main` por PR con CI en verde; el push lo autoriza el Dueño tras revisar.
+
 ## Repositorio público: qué nunca entra al repo
 
 El repositorio `adminnexoru/nexoru-op` es **público** (decisión del Dueño por costo; se revisará antes de que el sistema maneje datos de clientes, ver `specs/001-user-access/research.md` R11). Todo lo que se sube lo puede leer cualquiera.
