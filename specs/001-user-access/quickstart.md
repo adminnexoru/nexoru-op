@@ -1,181 +1,85 @@
-# Quickstart: Acceso seguro y administración de usuarios
+# Quickstart: Acceso seguro del Dueño y puesta en marcha local
 
-**Feature**: `001-user-access` | **Fecha**: 2026-09-26
+**Feature**: `001-user-access` | **Fecha**: 2026-09-26 · **Redefinido**: 2026-09-28
 
 Dos partes:
 
-1. **Pasos manuales**: lo que el Dueño configura en los paneles (DNS, Supabase, Resend, Vercel,
-   GitHub). Claude no puede hacerlo porque requiere cuentas, pagos o secretos.
-2. **Validación**: cómo levantar el proyecto en local y comprobar que la feature funciona.
+1. **Puesta en marcha local**: lo que hace el Dueño para usar Nexoru Op a diario en su máquina
+   (entorno de **uso**).
+2. **Validación**: cómo se prueba la feature (entorno de **pruebas**, separado del de uso).
 
-> **Regla**: ningún valor secreto se escribe en el repo, ni siquiera en este documento. Los
-> secretos solo se pegan en los paneles de Vercel/Supabase o en tu `.env.local` (ignorado por
-> git). `.env.example` lista los **nombres** de las variables, nunca los valores.
+> **Reglas**
+> - Todos los comandos se ejecutan en la **terminal integrada de VS Code**.
+> - Ningún valor secreto se pega en el chat ni en un archivo versionado: solo en `.env.local`
+>   (pruebas) o `.env.op.local` (uso), ambos ignorados por git.
+> - Los scripts `op:*` solo tocan el entorno de uso; los de pruebas nunca lo tocan (research R13).
+
+| Entorno | Supabase | App | Variables |
+|---------|----------|-----|-----------|
+| Uso | `ops/supabase/`, API en `127.0.0.1:55321`, Studio en `127.0.0.1:55323` | `http://127.0.0.1:3200` | `.env.op.local` |
+| Pruebas y desarrollo | `supabase/`, API en `127.0.0.1:54321`, Studio en `127.0.0.1:54323` | `http://127.0.0.1:3000` | `.env.local` |
 
 ---
 
-## Parte 1 — Pasos manuales (Dueño)
+## Parte 1 — Puesta en marcha local (Dueño)
 
-Usa siempre la cuenta `admin@nexoru.ai`. Cada sección indica **cuándo** hacerla según la fase de
-[tasks.md](tasks.md):
+### 1. Requisitos (una vez)
 
-| Cuándo | Secciones | Costo |
-|--------|-----------|-------|
-| Fase 1 (Setup), en paralelo con el desarrollo | §2 Resend, filas de Resend en §3 DNS, §7 GitHub | 0 USD |
-| Fase 4 (despliegue del MVP) | §1 Supabase Pro, §5 base de datos, §4 Vercel Pro, fila `op` en §3 DNS, §6 cuenta del Dueño | 45 USD/mes desde aquí |
-| Cada historia posterior | §5 (migraciones nuevas) antes del merge de su PR | — |
+- **Node.js 24** con nvm (`nvm use 24`) y **Docker** en marcha (`docker run --rm hello-world`).
+- `npm ci` en la raíz del repo.
 
-Hasta la Fase 4, el desarrollo usa **solo Supabase local** (Parte 2); no hace falta contratar
-nada.
+### 1b. Docker solo en local (una vez)
 
-### 1. Supabase (Pro, 25 USD/mes)
+Docker publica por defecto los puertos en todas las interfaces de red, y dejaría la base de datos
+(usuario `postgres`/`postgres`) y Supabase Studio (sin contraseña) accesibles desde la red local.
+Para que todo lo que publica Docker escuche solo en `127.0.0.1` (FR-033):
 
-1. Crea o elige la **organización Nexoru** y cámbiala al plan **Pro** (Billing). Deja el
-   **Spend Cap activado** (viene así por defecto) para que el costo no pase de 25 USD/mes.
-2. Crea el proyecto **`nexoru-op`**:
-   - Región **East US (North Virginia)**, la más cercana a Vercel `iad1` y con buena latencia
-     desde México.
-   - Contraseña de base de datos generada; guárdala en tu gestor de contraseñas, **no** en el
-     repo.
-3. **Project Settings → API Keys**: copia a tu gestor la **Project URL**, la **publishable key**
-   y la **secret key**.
-4. **Authentication → Sign In / Providers**:
-   - **Allow new users to sign up: OFF** (FR-009).
-   - ⚠️ **Deja activado el proveedor Email** ("Enable Email provider"): si se desactiva, también se
-     bloquea el inicio de sesión con contraseña. El registro público lo corta solo la opción anterior.
-   - Email provider activo. "Confirm email": ON.
-   - Desactiva todos los proveedores sociales.
-5. **Authentication → Passwords** (o "Password security"):
-   - Longitud mínima **12**.
-   - **Leaked password protection: ON**.
-6. **Authentication → Multi-Factor**: **TOTP (App Authenticator)** activo, verificación
-   habilitada. Phone MFA desactivado (es de pago y no se usa).
-7. **Authentication → Sessions**:
-   - **Time-box user sessions: 12 h**.
-   - Inactivity timeout: vacío (la inactividad la controla la app, ver research R6).
-8. **Project Settings → JWT** (o Authentication → Sessions): **Access token expiry: 300 s**.
-9. **Authentication → Emails → SMTP Settings** (después del paso 2 de Resend):
-   - Enable custom SMTP: ON.
-   - Host `smtp.resend.com`, puerto `465`, usuario `resend`, contraseña = API key SMTP de
-     Resend.
-   - Sender email `no-reply@nexoru.ai`, sender name `Nexoru Op`.
-10. **Authentication → Emails**: **Email OTP expiration: 3600 s** (1 h, FR-024).
-11. **Authentication → Emails → Templates → Reset password**: el texto en español se versiona en
-    `supabase/templates/recovery.html`. Copia su contenido aquí.
-12. **Authentication → URL Configuration**:
-    - Site URL `https://op.nexoru.ai`.
-    - Redirect URLs: `https://op.nexoru.ai/**`.
-13. **Authentication → Rate Limits**: baja "sign-in/sign-up" a **10 por 5 min por IP** y
-    "token verifications" a **10 por 5 min por IP** (mitigación de research R5).
-14. **Authentication → Hooks → Custom Access Token**: activa y elige la función
-    `public.custom_access_token_hook`. Hazlo **después** de aplicar las migraciones (paso 5 de
-    esta parte).
+1. Detén Supabase si está en marcha: `npx supabase stop` (y `npx supabase stop --workdir ops`).
+2. Crea o edita `/etc/docker/daemon.json` con `{"ip": "127.0.0.1"}` (si el archivo ya existe,
+   añade esa clave sin borrar las demás).
+3. Reinicia Docker: `sudo systemctl restart docker`.
+4. Arranca Supabase y comprueba con `ss -ltn` que los puertos 54321–54323 (y 55321–55323 del
+   entorno de uso) aparecen como `127.0.0.1:<puerto>` y nunca como `0.0.0.0:<puerto>` ni `*:<puerto>`.
 
-### 2. Resend (gratis)
+### 2. Variables del entorno de uso (una vez)
 
-1. Crea la cuenta con `admin@nexoru.ai`.
-2. **Domains → Add domain → `nexoru.ai`**, región `us-east-1`. Resend mostrará 3–4 registros DNS
-   (ver paso 3).
-3. Cuando el dominio aparezca como **Verified**: **API Keys → Create** con permiso **Sending
-   access** limitado al dominio `nexoru.ai`. Esa clave es la contraseña SMTP del paso 1.9 y de
-   `SMTP_PASSWORD`.
+1. Arranca la instancia de uso: `npx supabase start --workdir ops`.
+2. Muestra sus datos: `npx supabase status --workdir ops`.
+3. Crea `.env.op.local` a partir de `.env.example` y rellena:
+   - `NEXT_PUBLIC_SUPABASE_URL`: la **API URL** (`http://127.0.0.1:55321`).
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: la **Publishable key**.
+   - `SUPABASE_SECRET_KEY`: la **Secret key**.
+   - `APP_URL`: `http://127.0.0.1:3200`.
+4. No hace falta ningún dato de correo: Nexoru Op no envía correos.
 
-### 3. DNS de nexoru.ai
-
-En el proveedor donde esté el DNS de `nexoru.ai`. Los valores exactos los dan Vercel y Resend en
-sus paneles; aquí va el tipo y el nombre.
-
-| Tipo | Nombre | Valor | Para |
-|------|--------|-------|------|
-| CNAME | `op` | El que indique Vercel (p. ej. `cname.vercel-dns.com`) | La app en op.nexoru.ai |
-| TXT | `resend._domainkey` | Clave DKIM que muestra Resend | Firma de correos |
-| MX | `send` | `feedback-smtp.us-east-1.amazonses.com`, prioridad 10 (según Resend) | Rebotes |
-| TXT | `send` | `v=spf1 include:amazonses.com ~all` (según Resend) | SPF del subdominio de envío |
-| TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:admin@nexoru.ai` (**solo si no existe ya**) | DMARC |
-
-- **No toques** los registros MX de la raíz `nexoru.ai`: son los que reciben el correo de
-  `admin@nexoru.ai`.
-- Si el DNS está en Cloudflare, el CNAME `op` va con el proxy **desactivado** (nube gris), porque
-  Vercel emite su propio certificado.
-
-### 4. Vercel (Pro, 20 USD/mes)
-
-1. Crea o elige el equipo **Nexoru** y cámbialo a **Pro**.
-2. **Add New → Project →** importa `adminnexoru/nexoru-op` desde GitHub. Framework: Next.js (lo
-   detecta solo).
-3. **Settings → Environment Variables**, solo en el entorno **Production**:
-
-   | Variable | Valor | Secreta |
-   |----------|-------|---------|
-   | `NEXT_PUBLIC_SUPABASE_URL` | Project URL de Supabase | No |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key | No (es pública por diseño) |
-   | `SUPABASE_SECRET_KEY` | Secret key | **Sí** (marcar como Sensitive) |
-   | `APP_URL` | `https://op.nexoru.ai` | No |
-   | `SMTP_HOST` | `smtp.resend.com` | No |
-   | `SMTP_PORT` | `465` | No |
-   | `SMTP_USER` | `resend` | No |
-   | `SMTP_PASSWORD` | API key de Resend | **Sí** (Sensitive) |
-   | `EMAIL_FROM` | `Nexoru Op <no-reply@nexoru.ai>` | No |
-
-4. **Settings → Git**: desactiva los **Preview deployments** (o deja Preview sin variables). Solo
-   hay una base de datos, la de producción, y una preview no debe tocarla.
-5. **Settings → Functions**: región **`iad1`** (Washington, junto a Supabase us-east-1).
-6. **Settings → Domains → Add `op.nexoru.ai`** y crea el CNAME del paso 3.
-
-### 5. Base de datos de producción (una vez, y en cada migración nueva)
-
-Aplica las migraciones **solo cuando el PR correspondiente tenga CI en verde** y justo antes de
-su merge.
-
-En la **terminal integrada de VS Code**, donde tú tecleas los comandos (piden tu inicio de
-sesión en Supabase y la contraseña de la base de datos, que Claude no debe ver):
+### 3. Arrancar y detener
 
 ```bash
-npx supabase login                         # abre el navegador
-npx supabase link --project-ref <ref>      # <ref> sale de la URL del proyecto
-npx supabase db push                       # aplica supabase/migrations/*
+npm run op:start    # instancia de uso + app en http://127.0.0.1:3200
+npm run op:stop     # detiene ambas, sin borrar datos
 ```
 
-Después, activa el hook del paso 1.14. En cada historia posterior que traiga migraciones, repite
-solo `npx supabase db push` **antes** de hacer merge de su PR, para que el código nuevo encuentre
-la base ya actualizada.
+`op:start` se niega a correr si falta `.env.op.local` o si apunta a la instancia de pruebas, y
+falla con un mensaje claro si el puerto 3200 está ocupado. La app escucha solo en `127.0.0.1`:
+no es accesible desde otras máquinas de la red.
 
-### 6. Activar la cuenta del Dueño
-
-En la **terminal integrada de VS Code**, donde tú tecleas los comandos. Exporta las variables
-solo en esa sesión de terminal: nunca en un archivo del repo ni pegadas en el chat con Claude.
+### 4. Activar la cuenta del Dueño (una vez)
 
 ```bash
-#   NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, SMTP_*, EMAIL_FROM, APP_URL
-npm run bootstrap:owner
+npm run op:bootstrap-owner
 ```
 
-Llegará a `admin@nexoru.ai` un correo de activación. Ábrelo, define la contraseña, escanea el QR
-con tu app autenticadora y **guarda los 10 códigos de recuperación fuera del teléfono** (gestor
-de contraseñas o papel en un lugar seguro).
+La terminal muestra un **enlace de activación de un solo uso** que caduca en 1 hora
+(`http://127.0.0.1:3200/invite/...`). Ábrelo en el navegador, define tu contraseña (12 o más
+caracteres; se comprueba que no esté filtrada), escanea el QR con tu app autenticadora y
+**guarda los 10 códigos de recuperación fuera del teléfono** (gestor de contraseñas o papel).
 
-### 7. GitHub
+- Si el enlace caducó, vuelve a ejecutar el comando: revoca el anterior y emite uno nuevo.
+- Si la cuenta ya está activa, el comando no hace nada y lo indica.
 
-- **Actions** no necesita ningún secreto: CI usa Supabase local.
-- **Protección de `main`** (gratis porque el repo es público, research R11): **Settings → Rules →
-  Rulesets → New branch ruleset**, llamado `main`, con estado **Active** y objetivo la rama por
-  defecto. Activa: *Restrict deletions*, *Block force pushes* y *Require a pull request before
-  merging* (0 aprobaciones: trabajas solo). Deja *Require status checks to pass* para después:
-  el check de CI solo aparece cuando corre por primera vez, en el PR de US1. Se activa en la
-  tarea T065, antes de ese primer merge.
-- **Secret scanning y Push protection** (gratis en repos públicos): **Settings → Advanced
-  Security** (en algunas cuentas, "Code security"). Activa **Secret scanning** y **Push
-  protection**. Con Push protection, GitHub **rechaza un push** que contenga una llave
-  reconocible (por ejemplo, de Supabase o Resend) antes de que llegue al repo.
-- **Un PR por historia**: cada historia de usuario se entrega en su propio PR de
-  `001-user-access` hacia `main`. Haz merge con **"Create a merge commit"** (no "Squash"), para
-  que la rama siga alineada con `main` y la historia siguiente parta limpia.
+### 5. Procedimiento manual: perdiste el autenticador y los códigos
 
-### 8. Procedimiento manual si el Dueño pierde el autenticador y los códigos
-
-Es el caso límite de la spec, que no se automatiza.
-
-1. Entra al panel de Supabase con `admin@nexoru.ai` (el panel tiene su propio 2FA; actívalo).
+1. Con el entorno de uso en marcha, abre Supabase Studio local: `http://127.0.0.1:55323`.
 2. **Authentication → Users → admin@nexoru.ai → Remove MFA factors**.
 3. En **SQL Editor**, registra la acción en la bitácora (principio I):
    ```sql
@@ -187,21 +91,16 @@ Es el caso límite de la spec, que no se automatiza.
      p_metadata  => '{"via": "panel"}'
    );
    ```
-4. Inicia sesión en op.nexoru.ai: sin factores registrados, pedirá registrar un autenticador
-   nuevo y dará códigos nuevos. Los anteriores quedan invalidados al regenerarse.
-5. La bitácora mostrará `mfa_reset_forced` (vía panel) y después `mfa_enrolled`.
+4. Inicia sesión en `http://127.0.0.1:3200`: sin factores registrados, pedirá registrar un
+   autenticador nuevo y dará códigos nuevos.
 
-### 9. Recuperar la contraseña del Dueño antes de que US4 esté en producción
+### 6. Procedimiento manual: olvidaste la contraseña
 
-Hasta que la Historia 4 (recuperación por correo) esté desplegada, op.nexoru.ai no tiene
-pantalla para definir una contraseña nueva. Si olvidas la tuya, se hace **desde el panel de
-Supabase**:
+La recuperación por correo no existe (principio XII; queda en el backlog, B-005).
 
-1. Entra al panel de Supabase con `admin@nexoru.ai` (con su propio 2FA).
-2. Genera en tu gestor de contraseñas una contraseña aleatoria de **20 o más caracteres**. Este
-   camino no pasa por la validación de la app ni por la protección de contraseñas filtradas.
-3. **SQL Editor**, en una consulta nueva. Cambio de contraseña, cierre de sesiones y registro
-   en la bitácora van en **una sola transacción**:
+1. Genera en tu gestor de contraseñas una contraseña aleatoria de **20 o más caracteres**. Este
+   camino no pasa por la comprobación de contraseñas filtradas de la app.
+2. En Supabase Studio local (`http://127.0.0.1:55323`) → **SQL Editor**, en una consulta nueva:
    ```sql
    begin;
    update auth.users
@@ -218,102 +117,108 @@ Supabase**:
    );
    commit;
    ```
-4. **Borra de inmediato la consulta** del historial y de los snippets del SQL Editor: es el
-   único lugar donde la contraseña queda en claro. Si no puedes borrarla, repite el
-   procedimiento con otra contraseña y borra ambas consultas.
-5. Inicia sesión en op.nexoru.ai con la contraseña nueva y tu código TOTP, que sigue siendo
-   obligatorio.
-6. La bitácora mostrará `password_changed` con `via: panel`.
+3. **Borra de inmediato la consulta** del historial y de los snippets del SQL Editor: es el único
+   lugar donde la contraseña queda en claro.
+4. Inicia sesión con la contraseña nueva y tu código TOTP, que sigue siendo obligatorio.
 
-Cuando US4 esté en producción, usa "¿Olvidaste tu contraseña?" en `/login`.
+### 7. Consultar la bitácora
+
+La pantalla de la bitácora está en el backlog (B-007). Con el entorno de uso en marcha, abre
+Supabase Studio (`http://127.0.0.1:55323`) → **SQL Editor** y usa consultas de solo lectura
+(FR-038):
+
+```sql
+-- Últimos 50 eventos, del más reciente al más antiguo.
+select occurred_at, action, result, attempted_email, host(ip) as ip, metadata
+from public.audit_events
+order by occurred_at desc, id desc
+limit 50;
+
+-- Filtrar por tipo de evento y rango de fechas.
+select occurred_at, action, result, attempted_email, host(ip) as ip, metadata
+from public.audit_events
+where action in ('sign_in_failed', 'account_locked')
+  and occurred_at between '2026-10-01' and '2026-10-31'
+order by occurred_at desc, id desc;
+```
+
+La base impide modificar o borrar eventos, aunque se intente desde Studio.
+
+### 8. GitHub
+
+- **Protección de `main`**: el ruleset `main` exige PR, bloquea el borrado y el force push, y
+  debe exigir que pase el check de CI. En **Settings → Rules → Rulesets → main**, activa
+  *Require status checks to pass*, añade `lint, types, unit, db and e2e tests` y pulsa **Save
+  changes** al final de la página.
+- **Secret scanning y Push protection**: activados.
+- **Actions** no necesita ningún secreto: CI usa Supabase local.
+
+### 9. Respaldo (opcional, baja prioridad)
+
+`npm run op:backup` y `npm run op:restore` (si se implementan) vuelcan y restauran la base de uso.
+La base solo guarda la cuenta y la bitácora; los datos del portafolio se leen siempre de los
+proyectos.
 
 ---
 
-## Parte 2 — Validación en local
+## Parte 2 — Validación (entorno de pruebas)
 
 ### Requisitos
 
-- Node.js 24 LTS, npm.
-- Docker (para Supabase local).
-- Supabase CLI.
-- Una app autenticadora (o `otplib`, que usan los tests).
+Node.js 24, npm, Docker (configurado solo en local, Parte 1 §1b) y Supabase CLI (dependencia de
+desarrollo).
 
 ### Arranque
 
 ```bash
-npm install
-supabase start                  # Postgres, Auth y Mailpit locales
-supabase db reset               # aplica migraciones + seed
-cp .env.example .env.local      # rellena con los valores de `supabase status`
-npm run dev                     # http://localhost:3000
-npm run bootstrap:owner         # invita a admin@nexoru.ai (local)
+npm ci
+npx supabase start              # instancia de PRUEBAS (54321)
+npx supabase db reset           # aplica migraciones + seed
+cp .env.example .env.local      # rellena con los valores de `npx supabase status`
+npm run dev                     # http://127.0.0.1:3000 (solo local)
+npm run bootstrap:owner         # muestra el enlace de activación (pruebas)
 ```
-
-Los correos locales se ven en **Mailpit**: http://127.0.0.1:54324
 
 ### Pruebas automáticas
 
 | Comando | Qué valida |
 |---------|------------|
 | `npm run lint && npm run typecheck` | Estilo y tipos |
-| `npm test` | Vitest: matriz de permisos, validación de contraseñas, códigos, inactividad |
-| `supabase test db` | pgTAP: RLS en todas las tablas, matriz de permisos en SQL, bitácora inmutable, visibilidad FR-029a |
-| `npm run test:e2e` | Playwright: flujos críticos de abajo |
+| `npm test` | Vitest: permisos, contraseñas, IP, códigos, inactividad y aislamiento de entornos |
+| `npm run db:test` | pgTAP: RLS en todas las tablas, bitácora inmutable, bloqueo, hook, códigos, activación |
+| `npm run test:e2e` | Playwright: flujos de abajo |
 
-Las cuatro corren en GitHub Actions en cada PR. **Ningún merge a `main` sin verde** (principio VI).
+Las cuatro corren en GitHub Actions en cada push y cada pull request a `main`. **Ningún merge a
+`main` sin verde** (principio VI).
 
-### Escenarios de validación (Playwright + revisión manual)
+### Escenarios de validación
 
-Cada uno corresponde a una historia de la [spec](spec.md). Resultado esperado entre corchetes.
-
-1. **Activación del Dueño y 2FA (Historia 1)**:
-   - Abrir el correo de activación en Mailpit, definir la contraseña y registrar el TOTP.
-     [Se muestran 10 códigos y se entra a `/`.]
-   - Cerrar sesión y volver a entrar con la contraseña correcta y un código TOTP erróneo.
-     [No entra; aparece `sign_in_failed` en la bitácora.]
-   - Tras 5 fallos desde la misma IP. [Mensaje genérico "Demasiados intentos…", idéntico al que
-     se obtiene con un correo inexistente; el 6.º intento desde esa IP, aunque sea correcto, se
-     rechaza durante 15 min.]
-   - Con ese bloqueo vigente, entrar con el mismo correo desde otra IP (cabecera simulada en el
-     test). [Entra con normalidad, SC-010.]
-   - Tras entrar, 31 min sin actividad (reloj simulado en el test). [Vuelve a `/login`.]
-2. **Código de recuperación**:
-   - Entrar con la contraseña y un código de recuperación. [Obliga a registrar un autenticador
-     nuevo; llega el aviso; el código usado ya no sirve.]
-3. **Invitaciones (Historia 2)**:
-   - El Dueño invita a un Lector y a un Administrador. [Llegan 2 correos; ambos activan su
-     cuenta.]
-   - El Administrador intenta invitar a un Administrador. [La opción no aparece; la llamada
-     directa devuelve `forbidden` y se registra `permission_denied`.]
-   - Abrir una invitación caducada (fecha simulada) o ya usada. [Se rechaza.]
-   - Buscar `/signup` o `/register`. [404.]
-4. **Baja, reactivación y reinicios (Historia 3)**:
-   - Con el Lector con sesión abierta, el Dueño lo da de baja. [En la siguiente acción, en menos
-     de 1 min, el Lector sale y no puede volver a entrar; llega el aviso.]
-   - Reactivarlo. [Entra con sus mismas credenciales y su mismo TOTP.]
-   - El Administrador intenta cualquier acción sobre el Dueño u otro Administrador. [Rechazado.]
-   - Forzar el reinicio del 2FA de un Lector. [Sesiones cerradas; en su siguiente acceso debe
-     registrar un TOTP nuevo.]
-5. **Recuperación de contraseña (Historia 4)**:
-   - Solicitarla con un correo válido y con uno inexistente. [Mismo mensaje; solo llega un
-     correo.]
-   - Usar el enlace. [Contraseña cambiada, sesiones cerradas, se sigue pidiendo TOTP.]
-6. **Bitácora (Historia 5)**:
-   - El Dueño filtra por usuario y fechas. [Ve todos los eventos anteriores.]
-   - El Administrador abre la bitácora. [No ve ningún evento del Dueño ni de otros
-     Administradores.]
-   - Intentar un `update` o `delete` sobre `audit_events` (pgTAP, incluso como `service_role`).
-     [Error.]
-7. **Sin secretos y con cabeceras de seguridad**:
-   - `git ls-files | grep -i env` [solo `.env.example`].
-   - `curl -sI https://op.nexoru.ai/login` [incluye `Strict-Transport-Security`,
-     `Content-Security-Policy` con `'nonce-…'`, `'strict-dynamic'` y `frame-ancestors 'none'`,
-     **sin** `'unsafe-eval'` ni `'unsafe-inline'` en `script-src`; `X-Content-Type-Options: nosniff`
-     y `Referrer-Policy`].
-   - **IP no falsificable (SC-011), solo en producción**: intenta iniciar sesión en
-     `https://op.nexoru.ai/login` con un correo ficticio (`prueba@example.test`) enviando
-     encabezados falsos, por ejemplo con la extensión "ModHeader" del navegador:
-     `X-Forwarded-For: 203.0.113.9` y `x-vercel-forwarded-for: 203.0.113.9`. [En la bitácora, el
-     `sign_in_failed` de ese intento muestra tu IP real, no `203.0.113.9`.]
-   - Buscar en `audit_events` y en los logs cualquier contraseña o código de prueba. [0
-     coincidencias.]
+1. **Activación y 2FA (US1)**: `bootstrap:owner` muestra el enlace → definir contraseña →
+   registrar TOTP. [Se muestran 10 códigos y se entra a `/`.] Cerrar sesión y volver a entrar con
+   contraseña y TOTP.
+2. **Código TOTP incorrecto**: [No entra; aparece `sign_in_failed` en la bitácora.]
+3. **Bloqueo**: 5 fallos desde la misma IP. [Mensaje genérico, idéntico con un correo
+   inexistente; el 6.º intento se rechaza aunque sea correcto durante 15 min. Desde otra IP
+   simulada, el Dueño entra (SC-010).]
+4. **IP falsificada (SC-011)**: un `X-Forwarded-For` falso distinto en cada intento no cambia la
+   pareja correo + IP ni la IP registrada.
+5. **Inactividad y 12 h**: 31 min sin actividad → `/login?reason=idle`; sesión de más de 12 h →
+   `/login?reason=max_age`.
+6. **Código de recuperación**: [Obliga a registrar un autenticador nuevo; los demás códigos dejan
+   de servir; no se envía ningún correo.]
+7. **Bitácora desde Studio (FR-038)**: con las consultas de la Parte 1 §7. [Se ven los eventos
+   anteriores, del más reciente al más antiguo; un `update` o `delete` sobre `audit_events`
+   falla.]
+8. **Aislamiento de entornos (SC-012)**: con el entorno de uso en marcha y la cuenta del Dueño
+   activa, ejecutar `npm test`, `npm run db:test` y `npm run test:e2e`. [La cuenta, los códigos
+   y la bitácora del entorno de uso no cambian.] Apuntar `.env.local` al puerto 55321 y ejecutar
+   `npm run test:e2e`. [Se niega a correr.]
+9. **Solo en local (FR-033)**: `ss -ltn` muestra los puertos de la app (3000 y 3200), de la base
+   de datos (54322, 55322) y de Studio (54323, 55323) solo en `127.0.0.1`. Desde otra máquina de
+   la red, `http://<ip-de-la-máquina>:3200` y `:55323` no responden.
+10. **Sin secretos y con cabeceras**: `git ls-files | grep -i env` [solo `.env.example`];
+    `curl -sI http://127.0.0.1:3200/login` [CSP con `'nonce-…'` y `'strict-dynamic'`, sin
+    `'unsafe-eval'`; `X-Content-Type-Options: nosniff`; `Referrer-Policy`].
+11. **Procedimientos manuales (FR-037)**: en el entorno de uso, seguir la Parte 1 §5 (autenticador
+    y códigos perdidos) y §6 (contraseña olvidada). [En ambos casos se recupera el acceso y la
+    bitácora registra `mfa_reset_forced` o `password_changed` con `via: panel`.]

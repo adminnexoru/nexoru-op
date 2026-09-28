@@ -34,4 +34,8 @@
 - FR-015 resuelto el 2026-09-26: solo el Dueño gestiona Administradores (opción A).
 - "TOTP" y "app autenticadora" son requisitos explícitos del negocio y de la constitución, no
   detalles de implementación.
+- 2026-09-28, redefinición (constitución v2.0.0): la spec nombra los comandos de terminal
+  (`bootstrap:owner`, `op:start`, `op:stop`) y la dirección `127.0.0.1`. Se consideran la
+  interfaz del producto para el Dueño (lo que teclea y dónde abre la app), no detalles de
+  implementación. Los ítems se revalidaron contra la spec redefinida.
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`

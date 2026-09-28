@@ -47,7 +47,11 @@ No te saltes pasos. Si un artefacto previo no existe o está desactualizado, vue
 
 ## Stack y seguridad
 
-- Aplicación prevista: **Next.js** (los detalles se fijan en `plan.md` de cada feature).
+- **Qué es Nexoru Op**: dashboard local, de solo lectura y para un solo usuario (el Dueño), que
+  muestra el estado del portafolio leyendo los proyectos de `PROJECTS_ROOT` según el Estándar de
+  Proyecto Nexoru (constitución v2.0.0). Next.js + Supabase local; los detalles están en
+  `plan.md` de cada feature.
+- **Nunca** envía correos ni notificaciones ni escribe en los proyectos, en git o en GitHub.
 - **Nunca** se suben archivos `.env*` ni secretos al repositorio. El `.gitignore` los bloquea; si hace falta documentar variables, usa `.env.example` sin valores reales.
 
 ## Repositorio público: qué nunca entra al repo
@@ -59,3 +63,20 @@ El repositorio `adminnexoru/nexoru-op` es **público** (decisión del Dueño por
 - **Nunca** capturas de pantalla ni grabaciones del sistema, porque pueden mostrar usuarios, la bitácora o configuración.
 - En pruebas y seeds se usan **solo datos ficticios**: correos en dominios reservados (`@example.com`, `@example.test`), nombres inventados e IP de documentación (`192.0.2.0/24`, `198.51.100.0/24`).
 - GitHub tiene activados Secret scanning y Push protection, que rechazan un push con una llave reconocible. Es una segunda barrera; la primera es no escribir nunca un secreto en un archivo del repo.
+
+## Documentación de proyecto (Estándar Nexoru)
+
+Al cerrar cada fase, actualiza `PROJECT.md` (roadmap, specs vinculadas, decisiones clave,
+costo mensual, riesgos, pendientes, evidencia de validación y siguiente hito) y
+`docs/mapa-funcional.md` (componentes, flujo, reglas, datos y fuentes, integraciones) para
+que reflejen lo construido. El mapa funcional no lleva estados de avance.
+
+- Si algo no coincide con `specs/`, `specs/` es la fuente de verdad. Excepción: si el
+  código y la documentación técnica coinciden entre sí y la spec quedó desactualizada, se
+  corrige la spec. Reporta siempre qué cambiaste y por qué.
+- No captures a mano lo que se deriva de git, GitHub o Spec Kit (fecha del primer commit,
+  estado de fases con `tasks.md`, estado de la CI).
+- Lo que no sepas y no puedas derivar va como `CONFIRMAR` para que lo responda el Dueño;
+  nunca lo inventes. Un proyecto con `CONFIRMAR` no es conforme.
+- Estándar: https://github.com/adminnexoru/nexoru-governance (versión en
+  `version_estandar` de `PROJECT.md`).

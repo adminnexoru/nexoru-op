@@ -2,37 +2,37 @@
 description: "Lista de tareas de la feature 001-user-access"
 ---
 
-# Tasks: Acceso seguro y administración de usuarios
+# Tasks: Acceso seguro del Dueño y puesta en marcha local
 
 **Input**: Documentos de diseño en `specs/001-user-access/`
 
 **Prerequisites**: [plan.md](plan.md), [spec.md](spec.md), [research.md](research.md),
 [data-model.md](data-model.md), [contracts/](contracts/), [quickstart.md](quickstart.md)
 
-**Tests**: obligatorios (principio VI y petición del Dueño). En cada historia **las pruebas se
-escriben primero y deben fallar** antes de implementar.
+**Tests**: obligatorios (principio VI). En cada fase **las pruebas se escriben primero y deben
+fallar** antes de implementar.
 
-**Organization**: una fase por historia de usuario, en orden de prioridad. Cada historia se puede
-probar por separado.
+**Redefinición (2026-09-28, constitución v2.0.0)**: las fases 1–3 se completaron con el diseño
+anterior (correo, despliegue en la nube, multiusuario). Se conservan tal cual como historial; las
+tareas hechas que la redefinición deja sin efecto (p. ej. T010 Resend, T020 y T030 plantillas
+de correo) se retiran en la **Fase 3b**. La antigua Fase 4 (despliegue en la nube) y las fases de
+US2, US3, US4 y US5 pasaron al backlog (`specs/backlog.md`, B-003 a B-007).
 
 ## Formato: `[ID] [P?] [Story?] [MANUAL?] Descripción`
 
 - **[P]**: se puede hacer en paralelo (archivos distintos, sin dependencias pendientes).
-- **[US1]…[US5]**: historia de usuario de la spec a la que pertenece.
-- **[MANUAL]**: la hace el Dueño fuera de VS Code (paneles de Supabase, Resend, Vercel, GitHub o
-  DNS, o comandos que piden sus credenciales). Claude no la ejecuta; se detiene y avisa.
+- **[US1]**, **[US6]**: historia de usuario de la spec a la que pertenece (US5 pasó al backlog, B-007).
+- **[MANUAL]**: la hace el Dueño (comandos con sus datos, Supabase Studio local o GitHub). Claude
+  no la ejecuta; da los pasos exactos y espera su confirmación.
 
 ## Convenciones
 
 - Proyecto único Next.js en la raíz con `src/`; SQL en `supabase/migrations/`, pgTAP en
   `supabase/tests/`, Vitest en `tests/unit/`, Playwright en `tests/e2e/`.
-- Las migraciones se nombran `supabase/migrations/<timestamp>_<nombre>.sql` y se crean con
-  `npx supabase migration new <nombre>`; aquí se cita solo `<nombre>`.
-- Toda función SQL `security definer` lleva `set search_path = ''` y nombres calificados
-  (`public.`, `auth.`); `revoke execute ... from public, anon` y `grant` explícito solo a quien
-  la usa.
-- Código, identificadores y commits en inglés; textos de interfaz y correos en español.
-- Un commit por tarea o grupo lógico (mensajes en inglés, estilo `feat:`, `test:`, `chore:`).
+- Toda función SQL `security definer` lleva `set search_path = ''` y nombres calificados;
+  `revoke execute ... from public, anon` y `grant` explícito solo a quien la usa.
+- Código, identificadores y commits en inglés; textos de interfaz en español.
+- Commits locales cuando el Dueño los pida; **el push lo autoriza el Dueño tras revisar**.
 
 ---
 
@@ -53,7 +53,7 @@ horas.
 - [X] T008 [P] Crear `.env.example` solo con los nombres (sin valores) de: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `APP_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM`, con comentarios en español que indiquen de dónde sale cada valor en local (`supabase status`, Mailpit en `127.0.0.1:54325` sin usuario) y en producción (quickstart §4)
 - [X] T009 [P] Crear `.github/workflows/ci.yml`: en cada push a cualquier rama (y manual con `workflow_dispatch`), Node 24, `npm ci`, `lint`, `typecheck`, `test`, `npx supabase start`, `npx supabase db reset`, `npm run db:test`, instalar navegadores de Playwright y `npm run test:e2e` con las variables tomadas de `supabase status -o env`; **sin secretos de GitHub**
 - [X] T010 [P] [MANUAL] Resend: crear la cuenta con admin@nexoru.ai, añadir el dominio `nexoru.ai` y crear en el DNS los registros DKIM (`resend._domainkey`), MX y TXT (`send`) y `_dmarc` solo si no existe, sin tocar el MX raíz (quickstart §2.1–2.2 y §3)
-- [X] T011 [P] [MANUAL] GitHub: crear el ruleset `main` en `adminnexoru/nexoru-op` (gratis porque el repo es público): bloquear borrado y force push, y exigir PR (quickstart §7, research R11 en `specs/001-user-access/`). El check de CI se añade en T065, cuando ya exista
+- [X] T011 [P] [MANUAL] GitHub: crear el ruleset `main` en `adminnexoru/nexoru-op` (gratis porque el repo es público): bloquear borrado y force push, y exigir PR (quickstart §7, research R11 en `specs/001-user-access/`). El check de CI se añade en T082 (antes T065), cuando ya exista
 - [X] T012 [P] [MANUAL] GitHub: en **Settings → Advanced Security** de `adminnexoru/nexoru-op`, activar **Secret scanning** y **Push protection**, que rechaza un push si detecta una llave (quickstart §7, research R11)
 
 **Checkpoint**: `npm run dev` levanta la página por defecto, `npx supabase start` funciona y CI corre (vacío) en verde.
@@ -139,229 +139,102 @@ horas.
 
 ---
 
-## Phase 4: Despliegue del MVP (op.nexoru.ai)
+## Phase 3b: Ajustes por la redefinición (US1 sin correo)
 
-**Purpose**: contratar los servicios de pago (Supabase Pro y Vercel Pro, 45 USD/mes desde aquí), entregar US1 en su propio PR y publicarla en producción. Requiere T010 completa. Casi todo es [MANUAL]; Claude prepara el PR y valida después.
+**Purpose**: retirar todo envío de correo y adaptar la activación del Dueño (research R3, R4),
+dejando US1 en verde. Las migraciones se editan en su lugar: nunca se aplicaron fuera de las
+instancias locales y de CI, que se recrean con `supabase db reset`.
 
-- [ ] T060 [MANUAL] Supabase: contratar el plan **Pro** para la organización Nexoru, con el **Spend Cap activado** (el costo empieza aquí), y crear el proyecto `nexoru-op` en East US; guardar la Project URL, la publishable key y la secret key en el gestor de contraseñas (quickstart §1.1–1.3, en `specs/001-user-access/quickstart.md`). Hasta esta fase, todo el desarrollo usa solo Supabase local
-- [ ] T061 [MANUAL] Supabase, panel de producción: ajustes de Auth del quickstart §1.4–1.8 y §1.10, §1.12 y §1.13 (registro desactivado, contraseña de 12+, protección de contraseñas filtradas, TOTP, time-box de 12 h, JWT de 300 s, OTP de 3600 s, URLs y límites por IP) en `specs/001-user-access/quickstart.md`
-- [ ] T062 [MANUAL] Supabase: SMTP propio con la API key de Resend (quickstart §1.9 y §2.3), una vez que Resend muestre el dominio como **Verified**
-- [ ] T063 Entrega de US1 en su propio PR: quitar el comentario "Sync Impact Report" de `.specify/memory/constitution.md`, hacer commit de la constitución (`docs: ratify constitution v1.0.0`) y del trabajo de las fases 1–3, y abrir con `gh pr create` el PR `001-user-access` → `main` titulado "US1: secure sign-in with mandatory 2FA", con descripción en español (resumen, costos, tareas [MANUAL] pendientes y resultado de `tests/e2e/us1-login-2fa.spec.ts`); **esperar CI en verde** y corregir si falla
-- [ ] T064 [MANUAL] En la **terminal integrada de VS Code**, donde el Dueño teclea los comandos, **solo cuando el PR de T063 tenga CI en verde**: `npx supabase login`, `npx supabase link --project-ref <ref>` y `npx supabase db push` (quickstart §5); después activar el Custom Access Token Hook en el panel (quickstart §1.14)
-- [ ] T065 [MANUAL] Antes de hacer merge del PR de US1: en **Settings → Rules → Rulesets → main**, activar *Require status checks to pass* y seleccionar el check de CI, que ya aparece porque corrió en el PR de T063. Guardar el ruleset, comprobar que el PR muestra el check como **requerido** y en verde, y hacer merge con "Create a merge commit" (no squash) una vez que T064 haya aplicado las migraciones en producción
-- [ ] T066 [MANUAL] Vercel: contratar **Pro** para el equipo Nexoru (el costo empieza aquí), importar `adminnexoru/nexoru-op`, cargar las 9 variables solo en Production (secretas marcadas como Sensitive), desactivar las previews, región `iad1` y dominio `op.nexoru.ai` (quickstart §4). El primer despliegue sale de `main` con US1 ya integrada
-- [ ] T067 [MANUAL] DNS: CNAME `op` con el valor que indique Vercel (proxy desactivado si el DNS está en Cloudflare) (quickstart §3)
-- [ ] T068 [MANUAL] Activar la cuenta del Dueño en producción: en la **terminal integrada de VS Code**, donde el Dueño teclea los comandos, exportar las variables de producción solo en esa sesión de terminal y ejecutar `npm run bootstrap:owner`; abrir el correo, definir la contraseña, registrar el TOTP y guardar los 10 códigos fuera del teléfono (quickstart §6)
-- [ ] T069 [MANUAL] Prueba de humo en `https://op.nexoru.ai`: el escenario 1 de la validación del quickstart (login correcto, TOTP incorrecto rechazado, cierre de sesión); y la comprobación de IP no falsificable de la validación 7 del quickstart (SC-011)
+### Pruebas primero (deben fallar donde cambia el comportamiento)
 
-**Checkpoint**: Nexoru Op en producción con acceso seguro para el Dueño.
+- [ ] T060 [US1] Adaptar las pruebas de US1: `tests/e2e/helpers/owner.ts` obtiene el enlace de activación de la salida de `npm run bootstrap:owner` (sin Mailpit); `tests/e2e/us1-login-2fa.spec.ts` deja de esperar correos (avisos de bloqueo y de código de recuperación); nueva `tests/e2e/us1-activation.spec.ts`: el enlace se muestra en la terminal y caduca en 1 hora, ejecutar el script dos veces invalida el primer enlace y el segundo funciona, y con el Dueño activo el script no crea nada y lo indica (FR-036); `supabase/tests/10_auth_lockout.test.sql` sin `last_lock_notice_at` ni aviso (`record_auth_failure` no devuelve nada); `supabase/tests/12_recovery_codes.test.sql` con `consume_recovery_code` devolviendo `boolean`; borrar `tests/unit/email-templates.test.ts`
 
----
+### Implementación
 
-## Phase 5: User Story 2 — Invitar usuarios y asignar roles (Priority: P2)
+- [ ] T061 [US1] Editar las migraciones existentes: quitar `email_failed` del enum `audit_action` y actualizar el comentario que cita `contracts/audit-and-emails.md` (ahora `audit-events.md`) en `types_and_extensions`; quitar `profiles.last_lock_notice_at` en `profiles`; en `auth_functions`, `record_auth_failure` pasa a `returns void` y `consume_recovery_code` a `returns boolean`, sin la lógica de avisos (T060 debe pasar en pgTAP)
+- [ ] T062 [US1] Eliminar el correo del código: borrar `src/lib/email/` (`templates.ts`, `send.ts`); quitar `nodemailer` y `@types/nodemailer` de `package.json`; quitar `SMTP_*` y `EMAIL_FROM` de `src/lib/env.server.ts` y `.env.example`; en `src/lib/auth/actions.ts`, quitar `sendEmail` y el manejo de `notify` / `notify_lock` (FR-032)
+- [ ] T063 [US1] `scripts/bootstrap-owner.ts` sin correo: si el Dueño existe, no hace nada y lo indica; si no, revoca las invitaciones de Dueño pendientes (evento `invitation_revoked`), crea una nueva con caducidad de 1 hora (evento `invitation_sent`) e imprime el enlace `${APP_URL}/invite/<token>` en la terminal (FR-036, research R4)
+- [ ] T064 [US1] Limpieza de configuración: en `supabase/config.toml`, volver a comentar `smtp_port` de Mailpit; borrar `tests/e2e/helpers/mailpit.ts`; en `.github/workflows/ci.yml`, quitar las variables `SMTP_*` y `EMAIL_FROM`, añadir el disparador `pull_request` hacia `main` además de `push` (verificación 3.1 del estándar) y usar `APP_URL=http://127.0.0.1:3000`; solo en local (FR-033): scripts `dev` y `start` de `package.json` con `-H 127.0.0.1`, `baseURL` y `webServer.url` de `playwright.config.ts` en `http://127.0.0.1:3000`, `site_url` y `additional_redirect_urls` de `supabase/config.toml` en `http://127.0.0.1:3000`, y `.env.example` con `APP_URL=http://127.0.0.1:3000` como ejemplo local
+- [ ] T065 [US1] Ejecutar lint, typecheck, Vitest, pgTAP y E2E hasta verde; corregir sin debilitar las pruebas
 
-**Goal**: el Dueño o un Administrador invita por correo con un rol (dentro de sus límites), revoca o reenvía invitaciones y cambia roles; la persona invitada activa su cuenta con 2FA.
-
-**Independent Test**: el Dueño invita a un Lector y a un Administrador; ambos activan su cuenta y cada uno ve y puede hacer solo lo que su rol permite (`tests/e2e/us2-invitations.spec.ts`).
-
-### Pruebas de US2 (escribir primero, deben fallar)
-
-- [ ] T070 [P] [US2] Test pgTAP en `supabase/tests/20_invitations.test.sql`: `create_invitation` permite al Dueño invitar a admin, collaborator o reader y al Administrador solo a collaborator o reader; nadie invita a `owner`; rechaza correos de perfiles existentes (`already_exists`) o con invitación pendiente (`already_invited`); `resend_invitation` revoca la anterior y crea otra; `revoke_invitation` solo funciona sobre `pending`; cada operación registra su evento, y cada rechazo `permission_denied`
-- [ ] T071 [P] [US2] Test pgTAP en `supabase/tests/21_change_role.test.sql`: `change_role` respeta `can_manage` y `can_assign`, rechaza el cambio del propio rol (FR-017), registra `role_changed` con `{from, to}`, y el nuevo rol aplica de inmediato a RLS aunque el JWT tenga el claim antiguo (FR-016)
-- [ ] T072 [US2] Test E2E en `tests/e2e/us2-invitations.spec.ts` que cubre los escenarios 1–7 de la Historia 2: invitar Lector (estado "Invitado"); aceptar y activar; invitación caducada (fecha forzada en la base) o usada rechazada; `/signup` y `/register` devuelven 404; el Administrador no ve la opción de invitar Dueño ni Administrador y la llamada directa devuelve `forbidden`; el cambio de rol aplica en la siguiente acción y envía `notice_role_changed`; revocar o reenviar invalida el enlace anterior
-
-### Implementación de US2
-
-- [ ] T073 [US2] Migración `invitation_functions`: `create_invitation(email, role, token_hash)`, `resend_invitation(invitation_id, new_token_hash)`, `revoke_invitation(invitation_id)` y `change_role(target_id, new_role)`, todas security definer con AAL2, cuenta activa, `can_manage`/`can_assign` y evento en la misma transacción (T070 y T071 deben pasar)
-- [ ] T074 [US2] Implementar `src/lib/users/invitations.ts` con las server actions `inviteUser`, `resendInvitation` y `revokeInvitation` (token de 32 bytes, solo el hash va a la base; envío de la plantilla `invitation`), según contracts/actions.md
-- [ ] T075 [US2] Implementar `src/lib/users/change-role.ts` con la server action `changeRole` y el aviso `notice_role_changed`
-- [ ] T076 [US2] Página `src/app/(app)/users/page.tsx`: tabla con correo, nombre, rol, estado (Invitado, Activo, Bloqueado temporalmente si el correo tiene alguna fila de `auth_attempts` con `locked_until > now()`, Dado de baja) y último acceso (FR-018); las invitaciones pendientes aparecen con su caducidad; acceso solo para Dueño/Administrador (el resto → 404). Para un Administrador, el estado de las filas del Dueño y de otros Administradores nunca muestra "Bloqueado temporalmente", porque RLS no le deja verlo
-- [ ] T077 [P] [US2] Componente `src/components/users/invite-dialog.tsx`: correo y selector de rol limitado por `canAssign`
-- [ ] T078 [P] [US2] Componente `src/components/users/role-select.tsx` con confirmación, visible solo si `canManage`
-- [ ] T079 [US2] Ejecutar T070–T072 hasta verde
-- [ ] T080 [US2] Entrega de US2 en su propio PR: commit y `gh pr create` `001-user-access` → `main` titulado "US2: invitations and roles", con descripción en español y el resultado de `tests/e2e/us2-invitations.spec.ts`; esperar CI en verde
-- [ ] T081 [US2] [MANUAL] Aplicar las migraciones nuevas en producción con `npx supabase db push` en la terminal integrada de VS Code (quickstart §5) y después hacer merge del PR con "Create a merge commit"
-
-**Checkpoint**: US1 y US2 funcionan cada una por separado.
+**Checkpoint**: US1 en verde sin ninguna dependencia de correo.
 
 ---
 
-## Phase 6: User Story 3 — Dar de baja, reactivar y forzar reinicios (Priority: P3)
+## Phase 4: User Story 6 — Puesta en marcha local (Priority: P3)
 
-**Goal**: el Dueño o un Administrador (dentro de sus límites) desactiva a un usuario sin borrar su historial, lo reactiva, y fuerza el reinicio de contraseña o de 2FA.
+**Goal**: el Dueño arranca y detiene Nexoru Op con un comando, en un entorno de uso separado del
+de pruebas (FR-033 a FR-035, research R13 y R14).
 
-**Independent Test**: con un Lector de prueba creado por fixture, el Dueño lo da de baja (su sesión muere y no puede entrar, el historial sigue), lo reactiva, y le fuerza el reinicio de 2FA y de contraseña (`tests/e2e/us3-user-management.spec.ts`).
+**Independent Test**: con `op:start`, la app responde en `http://127.0.0.1:3200` y el Dueño entra;
+la huella del entorno de uso es la misma antes y después de correr todas las pruebas.
 
-### Pruebas de US3 (escribir primero, deben fallar)
+### Pruebas primero (deben fallar)
 
-- [ ] T082 [P] [US3] Test pgTAP en `supabase/tests/30_user_management.test.sql`: `deactivate_user` pone `status = 'deactivated'` y `deactivated_at`, borra las filas del usuario en `auth.sessions` y `app_sessions`, revoca sus invitaciones pendientes y conserva sus eventos; tras la baja, `check_session` devuelve `inactive_user` y el usuario con su JWT aún válido obtiene 0 filas; no se aplica al Dueño ni a uno mismo; un Administrador no puede actuar sobre el Dueño ni sobre otros Administradores; `reactivate_user` restaura `active` con el mismo rol; `force_mfa_reset` borra los códigos de recuperación y revoca sesiones; `force_password_reset` revoca sesiones; todos registran su evento, y los rechazos `permission_denied`
-- [ ] T083 [US3] Test E2E en `tests/e2e/us3-user-management.spec.ts` que cubre los escenarios 1–6 de la Historia 3, con dos contextos de navegador (Dueño y Lector): baja → en su siguiente acción (menos de 1 min, con el token todavía vigente) el Lector es **redirigido a `/login?reason=inactive_user`** y no puede volver a entrar; llega `notice_deactivated`; un enlace de recuperación pedido antes de la baja no da acceso; reactivación con las mismas credenciales y TOTP; reinicio forzado de contraseña con el enlace de Mailpit; reinicio forzado de 2FA con registro nuevo; el Administrador no tiene acciones sobre el Dueño ni sobre otro Administrador; nadie puede darse de baja a sí mismo
+- [ ] T066 [P] [US6] Test Vitest en `tests/unit/env-guard.test.ts` para `scripts/env-guard.ts`: `assertTestEnv(url)` acepta `http://127.0.0.1:54321` y rechaza `http://127.0.0.1:55321` y cualquier URL no local; `assertOpsEnv(url)` acepta 55321 y rechaza 54321; ambos explican el motivo en español
+- [ ] T067 [P] [US6] Test Vitest en `tests/unit/env-isolation.test.ts`: ningún script de pruebas de `package.json` (`test`, `test:e2e`, `db:test`, `dev`, `bootstrap:owner`), ni `playwright.config.ts`, `vitest.config.ts` o archivo de `tests/`, menciona `55321`, `55322`, `55323`, `ops/` ni `.env.op.local`; y todos los scripts `op:*` usan `ops`/`.env.op.local` (SC-012)
 
-### Implementación de US3
+### Implementación
 
-- [ ] T084 [US3] Migración `user_management_functions`: `deactivate_user`, `reactivate_user`, `force_password_reset` y `force_mfa_reset` (security definer; permisos, cambio, borrado en `auth.sessions` y evento en una transacción) (T082 debe pasar)
-- [ ] T085 [US3] Implementar `src/lib/users/manage.ts` con las server actions `deactivateUser` (+ `admin.updateUserById({ ban_duration: '876000h' })`), `reactivateUser` (+ `ban_duration: 'none'`), `forcePasswordReset` (+ contraseña aleatoria con `admin.updateUserById` + `admin.generateLink({ type: 'recovery' })` → correo `forced_password_reset`) y `forceMfaReset` (+ `admin.mfa.deleteFactor` por cada factor); si falla la Admin API, registrar `auth_sync_failed`; las acciones son idempotentes, así que reintentar es repetirlas; enviar el aviso correspondiente
-- [ ] T086 [US3] Route handler `src/app/auth/confirm/route.ts`: `verifyOtp({ type: 'recovery', token_hash })` y redirección a `next` (solo rutas internas); enlaces inválidos o caducados → `/forgot-password?error=link_expired`
-- [ ] T087 [US3] Página `src/app/(auth)/reset-password/page.tsx` y la server action `completePasswordReset` en `src/lib/auth/password-reset.ts`: `validatePassword`, cambio con `admin.updateUserById` para el usuario de la sesión de recuperación (evita el requisito de AAL2), revocación de todas sus sesiones, evento `password_changed` y aviso `notice_password_changed`; redirección a `/login`
-- [ ] T088 [P] [US3] Componente `src/components/users/user-actions-menu.tsx`: "Dar de baja", "Reactivar", "Forzar cambio de contraseña" y "Forzar nuevo 2FA", cada una con `alert-dialog` de confirmación y visible solo si `canManage`; integrarlo en `src/app/(app)/users/page.tsx`
-- [ ] T089 [US3] Ejecutar T082–T083 hasta verde
-- [ ] T090 [US3] Entrega de US3 en su propio PR: commit y `gh pr create` `001-user-access` → `main` titulado "US3: deactivation, reactivation and forced resets", con descripción en español y el resultado de `tests/e2e/us3-user-management.spec.ts`; esperar CI en verde
-- [ ] T091 [US3] [MANUAL] Aplicar las migraciones nuevas en producción con `npx supabase db push` en la terminal integrada de VS Code (quickstart §5) y después hacer merge del PR con "Create a merge commit"
+- [ ] T068 [US6] [MANUAL] Docker solo en local (FR-033, quickstart §1b): con Supabase detenido, crear o editar `/etc/docker/daemon.json` con `{"ip": "127.0.0.1"}`, reiniciar Docker y comprobar con `ss -ltn` que los puertos de la instancia de pruebas (54321–54323) solo escuchan en `127.0.0.1`. Claude da los pasos exactos para la terminal integrada y espera la confirmación
+- [ ] T069 [US6] Implementar `scripts/env-guard.ts` (T066 debe pasar) y aplicarlo: `tests/e2e/helpers/db.ts` y `playwright.config.ts` llaman a `assertTestEnv` antes de conectarse; los scripts `op:*` llaman a `assertOpsEnv`
+- [ ] T070 [US6] Instancia de uso: `ops/supabase/config.toml` con `project_id = "nexoru-op-live"`, puertos 55321–55329, la misma configuración de Auth que `supabase/config.toml` (registro público desactivado, contraseña de 12+, TOTP, `timebox = "12h"`, JWT de 300 s, hook de tokens) y `site_url = "http://127.0.0.1:3200"`; `ops/supabase/migrations` como enlace simbólico a `../../supabase/migrations`; sin seed
+- [ ] T071 [US6] `next.config.ts`: `distDir` desde `NEXT_DIST_DIR` (por defecto `.next`), para que el build de uso (`.next-op`) no choque con el de pruebas; añadir `.next-op/` y `.op/` a `.gitignore`
+- [ ] T072 [US6] `scripts/op-start.ts` y `scripts/op-stop.ts`, con los scripts `op:start`, `op:stop` y `op:bootstrap-owner` en `package.json`: cargan `.env.op.local` y `assertOpsEnv`; `op:start` arranca `supabase start --workdir ops`, aplica migraciones pendientes sin resetear (`supabase migration up --workdir ops --local`), construye con `NEXT_DIST_DIR=.next-op`, comprueba que el puerto 3200 está libre (si no, falla con mensaje claro) y lanza `next start -H 127.0.0.1 -p 3200` en segundo plano, con PID y log en `.op/`; `op:stop` detiene la app por su PID y ejecuta `supabase stop --workdir ops` sin borrar datos
+- [ ] T073 [US6] Script `op:fingerprint` (solo lectura, entorno de uso): imprime una huella de la cuenta del Dueño, sus factores, los códigos de recuperación y el número de eventos de la bitácora, para comprobar el aislamiento (SC-012)
+- [ ] T074 [US6] Ejecutar T066–T067 hasta verde, más lint, typecheck y la batería completa
+- [ ] T075 [US6] [MANUAL] Puesta en marcha real: crear `.env.op.local` (quickstart §2), `npm run op:start`, `npm run op:bootstrap-owner`, activar la cuenta y guardar los códigos (quickstart §4), `npm run op:stop` y `op:start` de nuevo para comprobar que la cuenta persiste; medir el tiempo desde `op:bootstrap-owner` hasta entrar (SC-003: menos de 5 minutos)
+- [ ] T076 [US6] [MANUAL] Validación de aislamiento y red: `npm run op:fingerprint` antes y después de `npm test`, `npm run db:test` y `npm run test:e2e` con el entorno de uso en marcha (misma huella); comprobar con `ss -ltn` que la app (3200), la base de datos (55322) y Studio (55323) solo escuchan en `127.0.0.1`, y que `http://<ip-de-la-máquina>:3200` y `:55323` no responden desde otro dispositivo de la red; ejecutar los procedimientos manuales de 2FA perdido y contraseña olvidada (quickstart §5 y §6) y comprobar sus eventos en la bitácora con las consultas del §7 (quickstart, escenarios 8, 9 y 11; FR-037, FR-038)
+- [ ] T077 [P] [US6] (Opcional, baja prioridad) `op:backup` y `op:restore`: volcado y restauración de la base de uso en `.op/backups/` (ignorado por git)
 
-**Checkpoint**: US1–US3 funcionan cada una por separado.
-
----
-
-## Phase 7: User Story 4 — Recuperación de contraseña por correo (Priority: P4)
-
-**Goal**: quien olvidó su contraseña la recupera por correo (enlace de 1 h); el 2FA sigue siendo obligatorio. Incluye el cambio de la propia contraseña desde "Mi cuenta".
-
-**Independent Test**: un usuario pide la recuperación, recibe el correo, define la contraseña nueva y entra con ella y su TOTP; la anterior deja de funcionar (`tests/e2e/us4-password-recovery.spec.ts`).
-
-### Pruebas de US4 (escribir primero, deben fallar)
-
-- [ ] T092 [P] [US4] Test pgTAP en `supabase/tests/40_password_reset_request.test.sql`: `log_password_reset_request(email, ip)` (solo `service_role`) devuelve true y registra `password_reset_requested` con `success` para usuarios activos; para correos inexistentes o dados de baja devuelve false y registra `failure` con `attempted_email`
-- [ ] T093 [US4] Test E2E en `tests/e2e/us4-password-recovery.spec.ts` que cubre los escenarios 1–5 de la Historia 4: mismo mensaje para un correo válido y uno inexistente, con un solo correo en Mailpit; el enlace cambia la contraseña, cierra todas las sesiones y sigue pidiendo TOTP; un usuario dado de baja no recibe correo; un enlace caducado (más de 1 h, fecha forzada) se rechaza; cambio de contraseña desde `/account` (FR-025a): la otra sesión abierta se cierra, la actual sigue y llega el aviso
-
-### Implementación de US4
-
-- [ ] T094 [US4] Migración `password_reset_request`: función `log_password_reset_request(email, ip)` (T092 debe pasar)
-- [ ] T095 [US4] Server action `requestPasswordReset` en `src/lib/auth/password-reset.ts`: si `log_password_reset_request` devuelve true, llama a `resetPasswordForEmail(email, { redirectTo: APP_URL + '/auth/confirm?next=/reset-password' })`; la respuesta al usuario es idéntica en todos los casos
-- [ ] T096 [P] [US4] Página `src/app/(auth)/forgot-password/page.tsx` (con el mensaje de `error=link_expired`) y enlace "¿Olvidaste tu contraseña?" en `src/app/(auth)/login/page.tsx`
-- [ ] T097 [P] [US4] Plantilla en español `supabase/templates/recovery.html` con el enlace `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password`, referenciada en `supabase/config.toml` (`[auth.email.template.recovery]`, asunto "Recupera tu contraseña de Nexoru Op")
-- [ ] T098 [US4] Sección "Cambiar contraseña" en `src/app/(app)/account/page.tsx` con la server action `changeOwnPassword` en `src/lib/auth/password-reset.ts` (FR-025a: verifica la actual, contando los fallos para el bloqueo; `validatePassword` para la nueva; cierra todas las demás sesiones y conserva la actual; evento `password_changed` con `via: self` y aviso)
-- [ ] T099 [US4] [MANUAL] Supabase, panel de producción: pegar el contenido de `supabase/templates/recovery.html` en Authentication → Emails → Templates → Reset password (quickstart §1.11)
-- [ ] T100 [US4] Ejecutar T092–T093 hasta verde
-- [ ] T101 [US4] Entrega de US4 en su propio PR: commit y `gh pr create` `001-user-access` → `main` titulado "US4: password recovery", con descripción en español y el resultado de `tests/e2e/us4-password-recovery.spec.ts`; esperar CI en verde
-- [ ] T102 [US4] [MANUAL] Aplicar las migraciones nuevas con `npx supabase db push` en la terminal integrada de VS Code, confirmar que T099 está hecha y hacer merge del PR con "Create a merge commit". Desde aquí, la recuperación de contraseña del Dueño ya no usa el procedimiento del panel (quickstart §9)
-
-**Checkpoint**: US1–US4 funcionan cada una por separado.
+**Checkpoint**: el Dueño usa Nexoru Op en local; las pruebas no pueden tocar su entorno, y nada
+escucha fuera de `127.0.0.1`.
 
 ---
 
-## Phase 8: User Story 5 — Consulta de la bitácora de auditoría (Priority: P5)
+## Phase 5: Cierre de la feature
 
-**Goal**: el Dueño y los Administradores consultan la bitácora con filtros; cada rol ve solo lo que le corresponde (FR-029a).
-
-**Independent Test**: tras generar eventos por fixture, el Dueño filtra por usuario y fechas y ve cada evento con autor, acción, afectado, resultado y fecha; un Administrador no ve eventos del Dueño ni de otros Administradores (`tests/e2e/us5-audit.spec.ts`).
-
-### Pruebas de US5 (escribir primero, deben fallar)
-
-- [ ] T103 [P] [US5] Test Vitest en `tests/unit/audit-labels.test.ts`: cada valor de `audit_action` de `contracts/audit-and-emails.md` tiene etiqueta en español en `src/lib/audit/labels.ts`, y cada `audit_result` también
-- [ ] T104 [US5] Test E2E en `tests/e2e/us5-audit.spec.ts` que cubre los escenarios 1–5 de la Historia 5: orden descendente; filtros por usuario, tipo y rango de fechas; paginación de 50; Colaborador y Lector reciben 404; el Administrador no ve eventos del Dueño ni de otros Administradores, ni siquiera filtrando por ellos
-
-### Implementación de US5
-
-- [ ] T105 [P] [US5] Implementar `src/lib/audit/labels.ts` (T103 debe pasar)
-- [ ] T106 [US5] Implementar `src/lib/audit/query.ts` con `listAuditEvents({ userId?, action?, from?, to?, cursor? })`: `select` con el cliente de sesión (RLS decide la visibilidad), orden `occurred_at desc, id desc`, cursor por `(occurred_at, id)` y 50 por página
-- [ ] T107 [US5] Página `src/app/(app)/audit/page.tsx`: filtros (usuario, tipo de evento, desde/hasta) en `searchParams`, tabla con fecha y hora local (America/Mexico_City), autor (o correo intentado), acción, afectado, resultado, IP y "Cargar más"; acceso solo para Dueño/Administrador
-- [ ] T108 [US5] Ejecutar T103–T104 hasta verde
-
-**Checkpoint**: las 5 historias funcionan cada una por separado.
-
----
-
-## Phase 9: Polish y temas transversales
-
-- [ ] T109 [P] Actualizar `CLAUDE.md`: estructura del código, comandos (`dev`, `test`, `db:test`, `test:e2e`, `bootstrap:owner`, `supabase start/db reset/migration new`), regla de "toda tabla con RLS y toda mutación vía función con auditoría" y dónde están los pasos manuales
-- [ ] T110 [P] Verificar con `gh api repos/adminnexoru/nexoru-op/rulesets/<id>` que el ruleset `main` está activo y exige PR **y el check de CI** (regla `required_status_checks`); si falta el check, detenerse y avisar al Dueño. Documentar en `CLAUDE.md` que todo cambio llega a `main` por PR con CI en verde
-- [ ] T111 [P] Crear `README.md` en español: qué es Nexoru Op, cómo levantarlo en local y enlaces a la constitución, la spec y el quickstart
-- [ ] T112 Revisión de seguridad y cobertura de auditoría: ningún archivo de `src/app` o de componentes cliente importa `src/lib/supabase/admin.ts` ni `env` del servidor; `git ls-files | grep -i env` devuelve solo `.env.example`; búsqueda de contraseñas y códigos de prueba en `audit_events` y en los logs de E2E sin coincidencias (SC-008); toda tabla nueva tiene RLS (T013); y test Vitest `tests/unit/audit-coverage.test.ts` que falla si algún valor de `audit_action` de FR-026 no aparece como literal en al menos un archivo de `supabase/migrations/` o `src/` (SC-005); y que quickstart §8 y §9 registran su evento con `log_audit_event` (principio I)
-- [ ] T113 Ejecutar la validación completa en local de `specs/001-user-access/quickstart.md` (Parte 2, escenarios 1–7) y anotar los resultados en el PR
-- [ ] T114 Entrega de US5 y de la fase de cierre en su propio PR (el último de la feature): commit y `gh pr create` `001-user-access` → `main` titulado "US5: audit log and polish", con descripción en español (resultado de `tests/e2e/us5-audit.spec.ts` y de la validación de T113); esperar CI en verde
-- [ ] T115 [MANUAL] Revisar y hacer merge del PR de US5 con "Create a merge commit" (US5 no trae migraciones); Vercel despliega producción automáticamente
-- [ ] T116 [MANUAL] Validar en `https://op.nexoru.ai` los escenarios 3–6 del quickstart con una cuenta de prueba propia (por ejemplo, un alias de admin@nexoru.ai con rol Lector) y darla de baja al terminar
+- [ ] T078 [P] Actualizar `CLAUDE.md` (comandos `op:*`, entornos de uso y pruebas, estructura) y crear `README.md` en español (qué es Nexoru Op, cómo arrancarlo y cómo probarlo)
+- [ ] T079 Revisión de seguridad: ningún archivo de `src/app` o componente cliente importa `src/lib/supabase/admin.ts` ni `src/lib/env.server.ts`; `git ls-files | grep -i env` devuelve solo `.env.example`; `grep -rn nodemailer` no encuentra nada fuera del historial (SC-013); el único `fetch` a un dominio externo es el de HIBP (principio XII); toda tabla tiene RLS (T014); la prueba de cobertura de la bitácora (`tests/unit/audit-coverage.test.ts`: cada valor vigente de `audit_action` aparece en `supabase/migrations/`, `src/` o el quickstart); y `ss -ltn` sin puertos del proyecto en `0.0.0.0` (FR-033)
+- [ ] T080 Ejecutar la validación completa de `specs/001-user-access/quickstart.md` (Parte 2, escenarios 1–11) y anotar los resultados
+- [ ] T081 Al cerrar la fase: actualizar `PROJECT.md` (roadmap, evidencia de validación, pendientes y siguiente hito) y `docs/mapa-funcional.md` según el Estándar de Proyecto Nexoru, y la fila de Nexoru Op en `/home/fili/proyectos/CLAUDE.md`; quitar el "Sync Impact Report" de la constitución
+- [ ] T082 [MANUAL] GitHub: activar en el ruleset `main` *Require status checks to pass* con `lint, types, unit, db and e2e tests` y guardar (quickstart §7); Claude lo verifica con `gh`
+- [ ] T083 Con la autorización de push del Dueño: push de `001-user-access` y PR hacia `main` con `gh pr create`, descripción en español (redefinición, resumen, pruebas y tareas [MANUAL]); esperar CI en verde
+- [ ] T084 [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"
 
 ---
 
 ## Dependencies & Execution Order
 
-### Dependencias entre fases
+- **Fases 1–3**: hechas.
+- **Fase 3b**: primero; deja US1 sin correo y en verde.
+- **Fase 4 (US6)**: depende de 3b. T068, T075 y T076 son [MANUAL]; T075–T076 requieren T068–T074.
+- **Fase 5**: depende de 3b y 4. T082 debe estar antes del merge (T084).
 
-- **Setup (Phase 1)**: sin dependencias. Las [MANUAL] T010–T012 (Resend, ruleset y Secret scanning, todas gratuitas) corren en paralelo con todo lo demás.
-- **Foundational (Phase 2)**: depende de Setup. **Bloquea todas las historias.**
-- **US1 (Phase 3)**: depende de Foundational.
-- **Despliegue MVP (Phase 4)**: depende de US1 y de T010 (dominio verificado en Resend). Aquí se contratan Supabase Pro (T060) y Vercel Pro (T066); antes no hay costo.
-- **US2, US3, US4 y US5 (Phases 5–8)**: dependen de Foundational **y de US1**. No es un acoplamiento arbitrario: US1 aporta el inicio de sesión con 2FA, la aceptación de invitaciones y el layout AAL2 sin los que nadie puede entrar a probar las demás. Entre ellas son independientes, con una excepción: US4 reutiliza `/auth/confirm` y `/reset-password` de US3 (T086, T087). Si se hace US4 antes que US3, esas dos tareas pasan a US4.
-- **Polish (Phase 9)**: depende de US5; se entrega junto con ella en el último PR (T114–T115).
+### Dentro de cada fase
 
-### Entrega: un PR por historia
-
-Cada historia se entrega en **su propio PR** de `001-user-access` hacia `main`, que se abre cuando su fase está en verde:
-
-| Historia | PR (Claude) | Migraciones en producción y merge ([MANUAL]) |
-|----------|-------------|-----------------------------------------------|
-| US1 (+ Setup y Foundational) | T063 | T064 (`db push`) → T065 |
-| US2 | T080 | T081 |
-| US3 | T090 | T091 |
-| US4 | T101 | T102 |
-| US5 + Polish | T114 | T115 (sin migraciones) |
-
-Reglas: CI en verde antes del merge (ruleset de T011); las migraciones se aplican en producción **antes** del merge; merge con "Create a merge commit" para que la rama siga alineada con `main`.
-
-### Dentro de cada historia
-
-1. Pruebas (pgTAP, Vitest, E2E) escritas y **fallando**.
+1. Pruebas escritas y **fallando**.
 2. Migraciones SQL.
-3. Server actions en `src/lib/`.
-4. Páginas y componentes.
-5. Tarea final "ejecutar hasta verde".
-
-### Oportunidades de paralelismo
-
-- Setup: T004–T006, T008 y T009, más las [MANUAL] T010–T012.
-- Foundational: todas las pruebas T013–T020 en paralelo; luego T025–T029, T031 y T032 en paralelo tras las migraciones T021–T024, que son secuenciales.
-- US1: T033–T038 en paralelo; páginas T050–T055 en paralelo tras T048–T049.
-- Tras US1: US2, US3 (salvo el aviso anterior), US4 y US5 pueden desarrollarse en paralelo, y la Phase 4 en paralelo con todas; pero los PR se integran de uno en uno, en el orden de la tabla anterior.
-
----
-
-## Parallel Example: User Story 1
-
-```bash
-# Pruebas de US1 en paralelo (deben fallar):
-Task: "Test pgTAP de bloqueo en supabase/tests/10_auth_lockout.test.sql"
-Task: "Test pgTAP del hook en supabase/tests/11_access_token_hook.test.sql"
-Task: "Test pgTAP de códigos en supabase/tests/12_recovery_codes.test.sql"
-Task: "Test pgTAP de activación en supabase/tests/13_owner_activation.test.sql"
-Task: "Test Vitest de inactividad en tests/unit/idle.test.ts"
-Task: "Test Vitest de formato en tests/unit/recovery-code-format.test.ts"
-Task: "Test E2E de cabeceras en tests/e2e/security-headers.spec.ts"
-
-# Páginas de US1 en paralelo (tras T048–T049):
-Task: "Página login en src/app/(auth)/login/page.tsx"
-Task: "Página MFA en src/app/(auth)/login/mfa/page.tsx"
-Task: "Página de código de recuperación en src/app/(auth)/login/recovery-code/page.tsx"
-Task: "Página de registro de TOTP en src/app/(auth)/mfa/enroll/page.tsx"
-Task: "Página de invitación en src/app/(auth)/invite/[token]/page.tsx"
-Task: "Componente IdleTimer en src/components/idle-timer.tsx"
-```
+3. Código.
+4. Tarea final "ejecutar hasta verde".
 
 ---
 
 ## Implementation Strategy
 
-### MVP primero (solo US1)
+1. Fase 3b → US1 sin correo, en verde.
+2. Fase 4 → el Dueño puede usar Nexoru Op en local (T075).
+3. Fase 5 → un solo PR de la feature hacia `main`, con el push autorizado por el Dueño.
 
-1. Phase 1 (Setup) + las [MANUAL] gratuitas T010–T012 en paralelo. Desarrollo solo con Supabase local.
-2. Phase 2 (Foundational).
-3. Phase 3 (US1) → **parar y validar** con `tests/e2e/us1-login-2fa.spec.ts`.
-4. Phase 4 → se contratan Supabase Pro y Vercel Pro, US1 entra a `main` por su PR (T063–T065) y Nexoru Op queda en `op.nexoru.ai` con acceso seguro para el Dueño.
-
-### Entrega incremental
-
-Tras el MVP: US2 (invitaciones) → US3 (bajas y reinicios) → US4 (recuperación) → US5
-(bitácora). Cada una se valida con su E2E, se entrega en **su propio PR** contra `main` (ver
-"Entrega: un PR por historia") y llega a producción con su merge antes de empezar la siguiente
-entrega.
+La siguiente feature (dashboard del portafolio: lector seguro de `PROJECTS_ROOT`, conformidad con
+el estándar e historial de git) empieza con `/speckit-specify` después del merge.
 
 ---
 
 ## Notes
 
-- **[MANUAL]**: cuando `/speckit-implement` llegue a una de estas tareas, Claude se detiene, te
-  indica la sección exacta del quickstart y espera tu confirmación antes de marcarla.
-- Nunca pegues un valor secreto en el chat ni en un archivo del repo: solo en los paneles o en
-  tu `.env.local`.
+- **[MANUAL]**: Claude se detiene, da los pasos exactos y espera la confirmación del Dueño.
+- Nunca se pega un valor secreto en el chat ni en un archivo versionado: solo en `.env.local` o
+  `.env.op.local`.
 - Si una prueba parece incorrecta, se corrige primero la spec o el contrato y después la prueba;
   nunca se debilita una prueba para que pase.

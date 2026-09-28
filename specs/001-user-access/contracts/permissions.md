@@ -1,5 +1,10 @@
 # Contrato: matriz de permisos
 
+> **Redefinición (2026-09-28)**: Nexoru Op tiene un solo usuario, el Dueño. La matriz y las
+> reglas de lectura por rol siguen implementadas y probadas en la base de datos, pero ningún flujo
+> de esta feature crea usuarios con otros roles. Se retoman con B-003 (requiere enmienda de la
+> constitución).
+
 Fuente única de verdad para la función SQL `can_manage()` y su espejo en TypeScript, que solo
 sirve para mostrar u ocultar botones. **La base de datos es la que decide**. Ambas
 implementaciones se prueban contra esta tabla: pgTAP en SQL y Vitest en TypeScript.

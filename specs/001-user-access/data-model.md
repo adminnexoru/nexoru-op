@@ -1,6 +1,12 @@
-# Data Model: Acceso seguro y administración de usuarios
+# Data Model: Acceso seguro del Dueño y puesta en marcha local
 
-**Feature**: `001-user-access` | **Fecha**: 2026-09-26
+**Feature**: `001-user-access` | **Fecha**: 2026-09-26 · **Redefinida**: 2026-09-28
+
+> **Redefinición (constitución v2.0.0)**: hay un solo usuario, el Dueño. El esquema conserva los
+> roles, la matriz de permisos y la visibilidad por rol ya construidos y probados (se retoman con
+> B-003), pero en uso real todas las filas de `profiles` tienen rol `owner`. La base guarda solo
+> la cuenta, la bitácora y, en features posteriores, un índice regenerable del portafolio
+> (principio XI). Existen dos instancias con el mismo esquema: pruebas y uso (research R13).
 
 Todas las tablas (6) viven en el esquema `public` y tienen **RLS activado**. Los identificadores y
 valores de enumeraciones están en inglés (principio X). Los usuarios de Auth
@@ -23,7 +29,7 @@ modelan las tablas propias.
 | `user_role` | `owner` (Dueño), `admin` (Administrador), `collaborator` (Colaborador), `reader` (Lector) |
 | `user_status` | `active` (Activo), `deactivated` (Dado de baja) |
 | `invitation_status` | `pending`, `accepted`, `revoked`, `expired` (derivado: `pending` con `expires_at < now()`) |
-| `audit_action` | Ver [contracts/audit-and-emails.md](contracts/audit-and-emails.md) |
+| `audit_action` | Ver [contracts/audit-events.md](contracts/audit-events.md) |
 | `audit_result` | `success`, `failure`, `denied` |
 
 ## `profiles`
@@ -38,7 +44,7 @@ misma que `auth.users.id`.
 | `full_name` | text | 1–120 caracteres |
 | `role` | `user_role` | Índice único parcial `where role = 'owner'`: **exactamente un Dueño** |
 | `status` | `user_status` | Por defecto `active`. El Dueño no puede pasar a `deactivated` (check + función) |
-| `last_lock_notice_at` | timestamptz null | Último aviso `notice_account_locked` enviado. Como mucho uno cada 24 h por cuenta, para no agotar el cupo diario de correo (research R3) |
+| ~~`last_lock_notice_at`~~ | — | **Eliminada** con la redefinición: no hay avisos por correo (FR-032) |
 | `created_at` | timestamptz | |
 | `last_sign_in_at` | timestamptz null | Se actualiza al completar AAL2 |
 | `deactivated_at` | timestamptz null | Se rellena con la baja y se vacía con la reactivación |
@@ -71,10 +77,10 @@ menos una fila de `auth_attempts` con `locked_until > now()` (FR-018).
 | `id` | uuid PK | |
 | `email` | citext | Único entre invitaciones `pending`. No puede coincidir con un `profiles.email` existente |
 | `role` | `user_role` | Nunca `owner`, salvo la invitación de arranque del Dueño (creada por el script de puesta en marcha) |
-| `token_hash` | bytea | SHA-256 del token enviado por correo. El token en claro no se guarda |
+| `token_hash` | bytea | SHA-256 del token del enlace de activación. El token en claro no se guarda |
 | `invited_by` | uuid null | FK → `profiles.id`. Es null solo en la invitación de arranque |
 | `status` | `invitation_status` | |
-| `expires_at` | timestamptz | `created_at + 7 días` |
+| `expires_at` | timestamptz | Por defecto `created_at + 7 días` (flujo multiusuario, B-003); la invitación de arranque del Dueño la fija en `created_at + 1 hora` (research R4) |
 | `created_at`, `accepted_at`, `revoked_at` | timestamptz | |
 
 **Transiciones**: `pending → accepted` (acepta) · `pending → revoked` (se revoca, se reenvía,
@@ -171,11 +177,11 @@ incluso para `service_role`, y un trigger que rechaza `UPDATE` y `DELETE` como s
     (`actor_id` y `target_id` nulos).
 - **Colaborador / Lector**: nada.
 
-## Asignaciones (Colaborador)
+## Índice del portafolio
 
-Sin tabla en esta feature: no hay elementos asignables todavía (Assumptions de la spec). El
-primer módulo de negocio con elementos editables añadirá su tabla de asignaciones y sus
-políticas RLS.
+Sin tabla en esta feature. La feature del dashboard del portafolio definirá un **índice
+regenerable** (principio XI): una caché de lo leído en `PROJECTS_ROOT` que se puede borrar y
+reconstruir sin pérdida.
 
 ## Funciones auxiliares (SQL)
 
