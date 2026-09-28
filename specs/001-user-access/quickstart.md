@@ -38,12 +38,16 @@ Para que todo lo que publica Docker escuche solo en `127.0.0.1` (FR-033):
 2. Crea o edita `/etc/docker/daemon.json` con `{"ip": "127.0.0.1"}` (si el archivo ya existe,
    añade esa clave sin borrar las demás).
 3. Reinicia Docker: `sudo systemctl restart docker`.
-4. Arranca Supabase y comprueba con `ss -ltn` que los puertos 54321–54323 (y 55321–55323 del
-   entorno de uso) aparecen como `127.0.0.1:<puerto>` y nunca como `0.0.0.0:<puerto>` ni `*:<puerto>`.
+4. Esa opción solo cubre la red por defecto de Docker: Supabase usa su propia red. Arranca siempre
+   con `npm run db:start` (pruebas) y `npm run op:start` (uso), que crean la red de Supabase con
+   `host_binding_ipv4=127.0.0.1` si falta y se niegan a arrancar si existe sin esa opción.
+5. Comprueba con `ss -ltn` que los puertos 54321–54327 (y 55321–55327 del entorno de uso)
+   aparecen como `127.0.0.1:<puerto>` y nunca como `0.0.0.0:<puerto>` ni `[::]:<puerto>`.
 
 ### 2. Variables del entorno de uso (una vez)
 
-1. Arranca la instancia de uso: `npx supabase start --workdir ops`.
+1. Arranca la instancia de uso con su red solo en local: `npm run op:start` (fallará al
+   construir la app porque aún no existe `.env.op.local`; la instancia de Supabase queda en marcha).
 2. Muestra sus datos: `npx supabase status --workdir ops`.
 3. Crea `.env.op.local` a partir de `.env.example` y rellena:
    - `NEXT_PUBLIC_SUPABASE_URL`: la **API URL** (`http://127.0.0.1:55321`).
@@ -172,7 +176,7 @@ desarrollo).
 
 ```bash
 npm ci
-npx supabase start              # instancia de PRUEBAS (54321)
+npm run db:start                # instancia de PRUEBAS (54321), solo en 127.0.0.1
 npx supabase db reset           # aplica migraciones + seed
 cp .env.example .env.local      # rellena con los valores de `npx supabase status`
 npm run dev                     # http://127.0.0.1:3000 (solo local)

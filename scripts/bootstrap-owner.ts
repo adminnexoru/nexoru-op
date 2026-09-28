@@ -4,6 +4,8 @@
 //   npm run bootstrap:owner      → test environment (.env.local)
 //   npm run op:bootstrap-owner   → use environment (.env.op.local)
 
+import { assertTestEnv } from "./env-guard";
+import { loadOpsEnv } from "./ops-env";
 import { newToken, tokenHashParam } from "../src/lib/auth/token";
 import { getServerEnv } from "../src/lib/env.server";
 import { createAdminClient } from "../src/lib/supabase/admin";
@@ -11,7 +13,26 @@ import { createAdminClient } from "../src/lib/supabase/admin";
 const OWNER_EMAIL = "admin@nexoru.ai";
 const LINK_LIFETIME_MS = 60 * 60 * 1000;
 
-async function main(): Promise<number> {
+export type Environment = "test" | "ops";
+
+/** Loads and checks the environment's variables before touching any database (FR-034). */
+function prepareEnvironment(environment: Environment): void {
+  if (environment === "ops") {
+    loadOpsEnv();
+    return;
+  }
+  // Local convenience: if the terminal has no Supabase variables at all, use .env.local.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    try {
+      process.loadEnvFile(".env.local");
+    } catch {
+      // No .env.local: the guard below reports it.
+    }
+  }
+  assertTestEnv(process.env.NEXT_PUBLIC_SUPABASE_URL);
+}
+
+async function bootstrapOwner(): Promise<number> {
   const admin = createAdminClient();
 
   const { data: owner, error: ownerError } = await admin.from("profiles").select("id").eq("role", "owner").maybeSingle();
@@ -65,20 +86,24 @@ async function main(): Promise<number> {
   return 0;
 }
 
-// Local convenience only: if the terminal has no Supabase variables at all, use .env.local.
-// op:bootstrap-owner passes .env.op.local explicitly, so environments never mix.
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+/** Runs the script for one environment and exits with its status. */
+export function runBootstrapOwner(environment: Environment): void {
   try {
-    process.loadEnvFile(".env.local");
-  } catch {
-    // No .env.local: getServerEnv() will report the missing variables.
-  }
-}
-
-main().then(
-  (code) => process.exit(code),
-  (error: unknown) => {
+    prepareEnvironment(environment);
+  } catch (error) {
     console.error("bootstrap-owner falló:", error instanceof Error ? error.message : error);
     process.exit(1);
-  },
-);
+  }
+  bootstrapOwner().then(
+    (code) => process.exit(code),
+    (error: unknown) => {
+      console.error("bootstrap-owner falló:", error instanceof Error ? error.message : error);
+      process.exit(1);
+    },
+  );
+}
+
+// `npm run bootstrap:owner` → test environment.
+if (process.argv[1]?.endsWith("bootstrap-owner.ts") && !process.argv[1].endsWith("op-bootstrap-owner.ts")) {
+  runBootstrapOwner("test");
+}

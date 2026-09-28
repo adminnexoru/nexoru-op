@@ -24,7 +24,16 @@ en `0.0.0.0` (expondría el dashboard en la red).
 **Puertos de Docker (2026-09-28)**: Supabase local publica sus puertos en todas las interfaces
 (`0.0.0.0`), así que la base de datos (con usuario `postgres`/`postgres`) y Studio (sin
 autenticación) quedaban accesibles desde la red local. Se corrige para todo Docker con
-`/etc/docker/daemon.json` → `{"ip": "127.0.0.1"}`, y se comprueba con `ss -ltn`. Los servidores
+`/etc/docker/daemon.json` → `{"ip": "127.0.0.1"}`, y se comprueba con `ss -ltn`.
+
+**Hallazgo en la implementación (2026-09-28)**: `{"ip": "127.0.0.1"}` solo se aplica a la red por
+defecto de Docker (`bridge`). Supabase CLI crea su propia red (`supabase_network_<project_id>`) sin
+esa opción, así que sus puertos seguían en `0.0.0.0` (comprobado: la base y Studio respondían desde
+la IP de la red local). La solución es crear esa red **antes** de arrancar Supabase con
+`com.docker.network.bridge.host_binding_ipv4=127.0.0.1`; Supabase CLI la reutiliza y la red se
+conserva entre `supabase stop` y `start`. `npm run db:start` (pruebas) y `npm run op:start` (uso)
+la crean si falta y se niegan a arrancar si existe sin esa opción. `daemon.json` se mantiene para
+el resto de contenedores de la máquina. Los servidores
 de Next.js (`dev`, `start`, Playwright y `op:start`) usan `-H 127.0.0.1`, y las URL de la app son
 `http://127.0.0.1:<puerto>` (con `localhost` el navegador podría intentar `::1`).
 

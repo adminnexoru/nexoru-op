@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { assertTestEnv } from "./scripts/env-guard";
 
 // Locally, read the same variables the app uses. In CI they come from the workflow environment.
 try {
@@ -6,6 +7,9 @@ try {
 } catch {
   // No .env.local (CI): nothing to load.
 }
+
+// The E2E suite cleans data: it may only run against the test Supabase instance (FR-034).
+assertTestEnv(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 export default defineConfig({
   testDir: "./tests/e2e",
