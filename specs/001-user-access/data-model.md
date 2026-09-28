@@ -118,7 +118,8 @@ las funciones `security definer`.
 | `used_at` | timestamptz null | Un código usado no vuelve a aceptarse |
 | `created_at` | timestamptz | |
 
-Cada usuario tiene como mucho 10 códigos vigentes: regenerar borra los anteriores. **Lectura
+Cada usuario tiene como mucho 10 códigos vigentes: regenerar borra los anteriores, y usar uno
+invalida todos los demás (se reemplazan al registrar el autenticador nuevo, FR-003a). **Lectura
 (RLS)**: nadie lee hashes; el usuario solo puede consultar cuántos le quedan, mediante la
 función `remaining_recovery_codes()`.
 

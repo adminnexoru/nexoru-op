@@ -23,7 +23,10 @@ create function tests.visible_rows_in_public() returns bigint
 language plpgsql as $$
 declare r record; c bigint; total bigint := 0;
 begin
-  for r in select tablename from pg_tables where schemaname = 'public' loop
+  -- Tables the role cannot even SELECT count as 0 visible rows (e.g. recovery_codes).
+  for r in select c.relname as tablename from pg_class c join pg_namespace n on n.oid = c.relnamespace
+            where n.nspname = 'public' and c.relkind in ('r', 'p')
+              and has_table_privilege(current_user, c.oid, 'SELECT') loop
     execute format('select count(*) from public.%I', r.tablename) into c;
     total := total + c;
   end loop;

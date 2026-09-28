@@ -9,7 +9,7 @@ export type EmailTemplate =
   | { name: "notice_password_changed"; at: Date; via: "self" | "recovery" | "forced" }
   | { name: "notice_mfa_enrolled"; at: Date }
   | { name: "notice_mfa_reset"; at: Date; by: string }
-  | { name: "notice_recovery_code_used"; at: Date; remaining: number }
+  | { name: "notice_recovery_code_used"; at: Date }
   | { name: "notice_role_changed"; at: Date; from: Role; to: Role; by: string }
   | { name: "notice_account_locked"; at: Date }
   | { name: "notice_deactivated"; at: Date; by: string }
@@ -84,8 +84,8 @@ function content(template: EmailTemplate): Content {
       return {
         subject: "Se usó un código de recuperación en tu cuenta de Nexoru Op",
         paragraphs: [
-          `Se usó uno de tus códigos de recuperación el ${when(template.at)}. Te quedan ${template.remaining}.`,
-          "Tu app autenticadora anterior dejó de funcionar y se pidió registrar una nueva.",
+          `Se usó uno de tus códigos de recuperación el ${when(template.at)}.`,
+          "Tu app autenticadora anterior dejó de funcionar y tus códigos de recuperación fueron reemplazados por un juego nuevo de 10, que se entrega al registrar la app autenticadora nueva. Los códigos anteriores ya no sirven.",
         ],
         notice: true,
       };

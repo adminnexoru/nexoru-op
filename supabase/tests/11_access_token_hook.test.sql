@@ -1,7 +1,11 @@
--- T034: Custom Access Token Hook (research R5, R6), run as supabase_auth_admin with RLS active.
+-- T034: Custom Access Token Hook (research R5, R6).
+-- Supabase reserves membership in supabase_auth_admin to superusers, so this file cannot
+-- SET ROLE to it. It checks the hook logic and, explicitly, every grant and policy the hook
+-- role needs. The real path (GoTrue calling the hook as supabase_auth_admin with RLS active)
+-- is exercised by every sign-in of the E2E suite.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(6);
+select plan(10);
 
 insert into auth.users (id, email, aud, role) values
   ('00000000-0000-4000-8000-000000000401', 'active.t034@example.test', 'authenticated', 'authenticated'),
@@ -19,9 +23,18 @@ create function pg_temp.event(user_id uuid, session_id uuid) returns jsonb langu
     'claims', jsonb_build_object('sub', user_id, 'role', 'authenticated', 'aal', 'aal1', 'session_id', session_id)) $$;
 create function pg_temp.hook(user_id uuid, session_id uuid) returns jsonb language sql as $$
   select public.custom_access_token_hook(pg_temp.event(user_id, session_id)) $$;
-grant execute on all functions in schema pg_temp to supabase_auth_admin;
 
-set local role supabase_auth_admin;
+select ok(has_function_privilege('supabase_auth_admin', 'public.custom_access_token_hook(jsonb)', 'EXECUTE'),
+  'supabase_auth_admin can execute the hook');
+select ok(not has_function_privilege('authenticated', 'public.custom_access_token_hook(jsonb)', 'EXECUTE'),
+  'authenticated cannot execute the hook');
+select ok(has_table_privilege('supabase_auth_admin', 'public.profiles', 'SELECT')
+          and has_table_privilege('supabase_auth_admin', 'public.app_sessions', 'SELECT'),
+  'supabase_auth_admin can read profiles and app_sessions');
+select is((select count(*) from pg_policies
+            where schemaname = 'public' and tablename in ('profiles', 'app_sessions')
+              and 'supabase_auth_admin' = any(roles) and cmd = 'SELECT'),
+  2::bigint, 'RLS lets supabase_auth_admin read profiles and app_sessions');
 
 select is(pg_temp.hook('00000000-0000-4000-8000-000000000401', '00000000-0000-4000-8000-0000000004a1') -> 'claims' ->> 'user_role',
   'reader', 'an active user with a recent session gets a token with the user_role claim');
@@ -36,6 +49,5 @@ select is((pg_temp.hook('00000000-0000-4000-8000-000000000403', '00000000-0000-4
 select is(pg_temp.hook('00000000-0000-4000-8000-000000000401', '00000000-0000-4000-8000-0000000004a1') -> 'error',
   null, 'an allowed token carries no error');
 
-reset role;
 select * from finish();
 rollback;

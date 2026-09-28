@@ -50,10 +50,16 @@ export async function submitPassword(page: Page, email: string, password: string
   await page.getByRole("button", { name: "Iniciar sesión" }).click();
 }
 
-/** TOTP step of the sign-in. */
+/**
+ * TOTP step of the sign-in. Waits for the Server Action response: React resets the form when
+ * an action finishes, so typing the next code before that would be wiped out.
+ */
 export async function submitTotp(page: Page, code: string): Promise<void> {
   await page.getByLabel("Código de 6 dígitos").fill(code);
-  await page.getByRole("button", { name: "Verificar" }).click();
+  await Promise.all([
+    page.waitForResponse((response) => response.request().method() === "POST"),
+    page.getByRole("button", { name: "Verificar" }).click(),
+  ]);
 }
 
 export async function signOut(page: Page): Promise<void> {

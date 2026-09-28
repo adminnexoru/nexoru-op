@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { connection } from "next/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,7 +18,9 @@ export const metadata: Metadata = {
   description: "Sistema de control para operar, automatizar y gobernar Nexoru.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Every page renders per request so Next.js can apply the CSP nonce from src/proxy.ts (research R12).
+  await connection();
   return (
     <html
       lang="es"

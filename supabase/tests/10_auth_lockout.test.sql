@@ -75,7 +75,7 @@ select set_config('request.jwt.claims', json_build_object(
   'session_id', '00000000-0000-4000-8000-0000000003aa')::text, true);
 select public.record_sign_in('0.0.0.0', 'totp');
 reset role;
-select is((select coalesce(max(failed_count), 0) from public.auth_attempts where email = 'owner.t033@example.test' and ip = '0.0.0.0'),
+select is((select coalesce(max(failed_count), 0::smallint) from public.auth_attempts where email = 'owner.t033@example.test' and ip = '0.0.0.0'),
   0::smallint, 'record_sign_in resets the counter of its email + IP');
 select ok(
   (select last_sign_in_at is not null from public.profiles where id = '00000000-0000-4000-8000-000000000301')

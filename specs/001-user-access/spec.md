@@ -36,6 +36,15 @@
   podría dejarlo fuera fallando 5 veces a propósito. El mensaje de bloqueo es genérico e idéntico
   exista o no la cuenta (FR-005, FR-006, SC-010).
 
+### Session 2026-09-28 (implementación de US1)
+
+- Q: ¿De dónde sale la IP del bloqueo? → A: Solo de un encabezado que fija la plataforma de
+  hosting; nunca de uno que el cliente pueda enviar o falsificar. En producción, sin IP confiable
+  el intento se rechaza y se registra (FR-005, SC-011).
+- Q: ¿Qué pasa con los demás códigos de recuperación al usar uno? → A: Quedan invalidados en ese
+  momento y se reemplazan por un juego nuevo de 10 al registrar el autenticador nuevo. El aviso
+  por correo lo dice así, sin contar cuántos quedan (FR-003a, FR-031a).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Inicio de sesión con segundo factor obligatorio (Priority: P1)
@@ -78,8 +87,9 @@ factores.
    Dueño inicia sesión desde otra IP con sus datos correctos, **Then** accede con normalidad.
 9. **Given** un usuario que perdió su app autenticadora y conserva sus códigos de recuperación,
    **When** introduce correo, contraseña y un código de recuperación válido, **Then** el sistema
-   le exige registrar un autenticador nuevo antes de dar acceso, invalida el anterior y el código
-   usado, y le envía un correo de aviso.
+   le exige registrar un autenticador nuevo antes de dar acceso, invalida el anterior y todos
+   sus códigos de recuperación (que se reemplazan por un juego nuevo de 10 al registrar el
+   autenticador), y le envía un correo de aviso.
 
 ---
 
@@ -234,7 +244,14 @@ la bitácora, filtra por un usuario y ve cada evento con autor, acción, objetiv
   bloqueo.
 - **Ataque desde muchas IP**: cada IP tiene su propio contador, así que un atacante con muchas
   IP puede hacer más intentos en total. Lo contienen el segundo factor obligatorio y los límites
-  de velocidad del servidor de autenticación (riesgo documentado en el plan).
+  de velocidad del servidor de autenticación (riesgo documentado en el plan). Un aviso al
+  Dueño cuando una cuenta acumule muchos fallos desde varias IP queda en el backlog
+  (`specs/backlog.md`).
+- **IP falsificada por el cliente**: los encabezados de IP que el navegador puede enviar se
+  ignoran; solo cuenta el que fija la plataforma de hosting. Un atacante no puede cambiar de
+  contador falsificando su IP.
+- **Sin IP confiable en producción**: el intento se rechaza con el mensaje genérico y queda en la
+  bitácora. Solo en desarrollo local se usa una IP de respaldo.
 - **Actividad en varias pestañas**: la actividad en cualquier pestaña cuenta para el temporizador
   de inactividad.
 
@@ -255,7 +272,9 @@ la bitácora, filtra por un usuario y ve cada evento con autor, acción, objetiv
   a cada usuario sobre su propia cuenta.
 - **FR-003a**: Un código de recuperación DEBE poder usarse en lugar del código TOTP. Al usarlo,
   el sistema DEBE exigir registrar un autenticador nuevo antes de dar acceso, invalidar el
-  autenticador anterior y el código usado, y enviar al usuario un correo de aviso.
+  autenticador anterior y **todos** sus códigos de recuperación restantes (que se reemplazan
+  por un juego nuevo de 10 al registrar el autenticador nuevo), y enviar al usuario un correo de
+  aviso.
 - **FR-004**: Las contraseñas DEBEN tener al menos 12 caracteres y NO DEBEN coincidir con
   contraseñas conocidas como comprometidas.
 - **FR-005**: Los intentos fallidos (contraseña, código TOTP o código de recuperación) DEBEN
@@ -263,6 +282,9 @@ la bitácora, filtra por un usuario y ve cada evento con autor, acción, objetiv
   correo desde una misma IP, los intentos de ese correo desde esa IP DEBEN rechazarse durante
   15 minutos. Los intentos desde otras IP no se ven afectados. El conteo se aplica igual a
   correos que no pertenecen a ningún usuario, para que el comportamiento sea idéntico (FR-006).
+  La IP DEBE tomarse solo de un encabezado que fija la plataforma de hosting, nunca de uno que
+  el cliente pueda enviar o falsificar. En producción, si no hay IP confiable, el intento DEBE
+  rechazarse con el mensaje genérico y registrarse en la bitácora.
 - **FR-006**: Los mensajes de error de inicio de sesión y recuperación, **incluido el de
   bloqueo**, NO DEBEN revelar si un correo está registrado: el texto es genérico e idéntico en
   todos los casos.
@@ -355,7 +377,8 @@ la bitácora, filtra por un usuario y ve cada evento con autor, acción, objetiv
 
 - **FR-031a**: El sistema DEBE enviar un correo al usuario afectado cuando: cambia su
   contraseña (por él mismo, por recuperación o por reinicio forzado), se registra o se reinicia
-  su segundo factor, se usa uno de sus códigos de recuperación, cambia su rol, se bloquean los
+  su segundo factor, se usa uno de sus códigos de recuperación (el aviso dice que sus códigos
+  fueron reemplazados por un juego nuevo), cambia su rol, se bloquean los
   intentos sobre su cuenta desde alguna IP (como mucho un aviso de este tipo cada 24 h por
   cuenta, para no agotar el cupo de correo), o se le da de baja o se le reactiva. El correo indica qué
   ocurrió, cuándo y, si aplica, quién lo hizo, y NO DEBE incluir contraseñas, códigos ni enlaces
@@ -411,6 +434,8 @@ la bitácora, filtra por un usuario y ve cada evento con autor, acción, objetiv
   24 h por cuenta.
 - **SC-010**: En las pruebas, 5 o más intentos fallidos desde una IP sobre un correo nunca
   impiden que el usuario legítimo acceda desde otra IP.
+- **SC-011**: En las pruebas, un encabezado de IP falsificado por el cliente nunca cambia la
+  combinación correo + IP que se cuenta ni la IP que queda en la bitácora.
 
 ## Assumptions
 
@@ -432,5 +457,5 @@ la bitácora, filtra por un usuario y ve cada evento con autor, acción, objetiv
 - **Correo**: se requiere un servicio de envío de correo para invitaciones, recuperación,
   reinicios y avisos de seguridad; su elección y costo se documentan en el plan (principio III).
 - **Fuera de alcance**: inicio de sesión con Google u otros proveedores, facturación, módulos de
-  negocio, cambio del propio correo, transferencia del rol Dueño y segundo factor por SMS o
-  WhatsApp.
+  negocio, cambio del propio correo, transferencia del rol Dueño, segundo factor por SMS o
+  WhatsApp, y el aviso al Dueño por fallos acumulados desde varias IP (en `specs/backlog.md`).

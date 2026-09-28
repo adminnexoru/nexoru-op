@@ -1,33 +1,52 @@
-// T019: client IP from Vercel headers, with the 0.0.0.0 fallback (research R5).
+// T019 (updated 2026-09-28): client IP only from the header Vercel sets (research R5, SC-011).
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getClientIp } from "@/lib/request";
 
 afterEach(() => vi.restoreAllMocks());
 
+const onVercel = { onVercel: true };
+const local = { onVercel: false };
+
 describe("getClientIp", () => {
-  it("prefers x-real-ip", () => {
-    const headers = new Headers({ "x-real-ip": "192.0.2.1", "x-forwarded-for": "198.51.100.7, 192.0.2.99" });
-    expect(getClientIp(headers)).toBe("192.0.2.1");
+  it("takes the IP from x-vercel-forwarded-for", () => {
+    expect(getClientIp(new Headers({ "x-vercel-forwarded-for": "192.0.2.1" }), onVercel)).toBe("192.0.2.1");
+    expect(getClientIp(new Headers({ "x-vercel-forwarded-for": "2001:db8::1" }), local)).toBe("2001:db8::1");
   });
 
-  it("falls back to the first x-forwarded-for value", () => {
-    const headers = new Headers({ "x-forwarded-for": " 198.51.100.7 , 192.0.2.99" });
-    expect(getClientIp(headers)).toBe("198.51.100.7");
+  it("ignores X-Forwarded-For and x-real-ip, which a client could forge", () => {
+    const headers = new Headers({
+      "x-vercel-forwarded-for": "192.0.2.1",
+      "x-forwarded-for": "203.0.113.9",
+      "x-real-ip": "203.0.113.10",
+    });
+    expect(getClientIp(headers, onVercel)).toBe("192.0.2.1");
   });
 
-  it("accepts IPv6 addresses", () => {
-    expect(getClientIp(new Headers({ "x-real-ip": "2001:db8::1" }))).toBe("2001:db8::1");
+  it("never falls back to X-Forwarded-For or x-real-ip when the trusted header is missing", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const forged = new Headers({ "x-forwarded-for": "203.0.113.9", "x-real-ip": "203.0.113.10" });
+    expect(getClientIp(forged, local)).toBe("0.0.0.0");
+    expect(getClientIp(forged, onVercel)).toBeNull();
   });
 
-  it("returns 0.0.0.0 and warns when there is no IP header", () => {
+  it("outside Vercel, without a trusted IP, uses 0.0.0.0 and warns", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    expect(getClientIp(new Headers())).toBe("0.0.0.0");
+    expect(getClientIp(new Headers(), local)).toBe("0.0.0.0");
     expect(warn).toHaveBeenCalledOnce();
   });
 
-  it("returns 0.0.0.0 when the header is not a valid IP", () => {
+  it("on Vercel, without a trusted IP, returns null so the attempt is rejected", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    expect(getClientIp(new Headers({ "x-real-ip": "not-an-ip" }))).toBe("0.0.0.0");
-    expect(getClientIp(new Headers({ "x-forwarded-for": "evil<script>" }))).toBe("0.0.0.0");
+    expect(getClientIp(new Headers(), onVercel)).toBeNull();
+    expect(getClientIp(new Headers({ "x-vercel-forwarded-for": "not-an-ip" }), onVercel)).toBeNull();
+  });
+
+  it("detects Vercel from the VERCEL environment variable by default", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubEnv("VERCEL", "1");
+    expect(getClientIp(new Headers())).toBeNull();
+    vi.stubEnv("VERCEL", "");
+    expect(getClientIp(new Headers())).toBe("0.0.0.0");
+    vi.unstubAllEnvs();
   });
 });

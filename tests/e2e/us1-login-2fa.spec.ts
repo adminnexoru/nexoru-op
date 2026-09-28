@@ -5,13 +5,42 @@ import { clearMailbox, latestEmail } from "./helpers/mailpit";
 import { OWNER_EMAIL, OWNER_PASSWORD, activateOwner, signOut, submitPassword, submitTotp } from "./helpers/owner";
 import { freshTotp, nextTotpWindow } from "./helpers/totp";
 
+// Some tests wait for a fresh 30-second TOTP window on top of the activation flow.
+test.describe.configure({ timeout: 120_000 });
+
 const LOCK_MESSAGE = "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.";
 const BAD_CREDENTIALS = "Correo o contraseña incorrectos.";
 
 // Documentation IPs (RFC 5737): the lockout is per email + IP, so each test uses its own.
-async function pageFromIp(browser: Browser, ip: string, baseURL: string | undefined): Promise<Page> {
-  const context = await browser.newContext({ baseURL, extraHTTPHeaders: { "x-forwarded-for": ip } });
-  return context.newPage();
+// Locally the tests play the role of Vercel by setting x-vercel-forwarded-for (research R5).
+async function pageFromIp(
+  browser: Browser,
+  ip: string,
+  baseURL: string | undefined,
+  extraHeaders: Record<string, string> = {},
+): Promise<Page> {
+  const context = await browser.newContext({
+    baseURL,
+    extraHTTPHeaders: { "x-vercel-forwarded-for": ip, ...extraHeaders },
+  });
+  const page = await context.newPage();
+  watchCsp(page);
+  return page;
+}
+
+// Every flow must run with the nonce-based CSP active and without CSP violations.
+const cspViolations: string[] = [];
+function watchCsp(page: Page) {
+  page.on("console", (message) => {
+    if (/Content[- ]Security[- ]Policy|Refused to (execute|load|apply)/i.test(message.text())) {
+      cspViolations.push(message.text());
+    }
+  });
+}
+
+// The form's error message. Next.js also renders a route announcer with role="alert".
+function formAlert(page: Page) {
+  return page.locator('[data-slot="alert"][role="alert"]');
 }
 
 async function ownerId(): Promise<string> {
@@ -20,9 +49,15 @@ async function ownerId(): Promise<string> {
   return data.id as string;
 }
 
-test.beforeEach(async () => {
+test.beforeEach(async ({ page }) => {
+  cspViolations.length = 0;
+  watchCsp(page);
   await resetAppData();
   await clearMailbox();
+});
+
+test.afterEach(() => {
+  expect(cspViolations, "CSP violations in the browser console").toEqual([]);
 });
 
 test("activation with mandatory TOTP, then sign-in and sign-out (scenarios 1, 2 and manual sign-out)", async ({ page }) => {
@@ -58,7 +93,7 @@ test("wrong TOTP is rejected and logged; with aal1 nothing internal is reachable
 
   // Scenario 3.
   await submitTotp(page, "000000");
-  await expect(page.getByRole("alert")).toContainText("Código incorrecto.");
+  await expect(formAlert(page)).toContainText("Código incorrecto.");
   await expect(page).toHaveURL(/\/login\/mfa/);
 
   const { data } = await adminClient()
@@ -74,10 +109,10 @@ test("error messages never reveal whether the email exists (scenario 6)", async 
   await signOut(page);
 
   await submitPassword(page, OWNER_EMAIL, "contraseña-equivocada-123");
-  await expect(page.getByRole("alert")).toHaveText(BAD_CREDENTIALS);
+  await expect(formAlert(page)).toHaveText(BAD_CREDENTIALS);
 
   await submitPassword(page, "nadie@example.test", "contraseña-equivocada-123");
-  await expect(page.getByRole("alert")).toHaveText(BAD_CREDENTIALS);
+  await expect(formAlert(page)).toHaveText(BAD_CREDENTIALS);
 });
 
 test("5 wrong passwords lock that email from that IP only; the message is identical for unknown emails (scenarios 7, 8, SC-010)", async ({ page, browser, baseURL }) => {
@@ -87,17 +122,17 @@ test("5 wrong passwords lock that email from that IP only; the message is identi
   const attacker = await pageFromIp(browser, "192.0.2.50", baseURL);
   for (let i = 0; i < 5; i++) {
     await submitPassword(attacker, OWNER_EMAIL, `contraseña-equivocada-${i}`);
-    await expect(attacker.getByRole("alert")).toBeVisible();
+    await expect(formAlert(attacker)).toBeVisible();
   }
 
   // 6th attempt from the same IP, with the right password: still rejected.
   await submitPassword(attacker, OWNER_EMAIL, OWNER_PASSWORD);
-  await expect(attacker.getByRole("alert")).toHaveText(LOCK_MESSAGE);
+  await expect(formAlert(attacker)).toHaveText(LOCK_MESSAGE);
   await expect(attacker).toHaveURL(/\/login$/);
 
   // Same behavior and text for an email that does not exist.
   for (let i = 0; i < 6; i++) await submitPassword(attacker, "nadie@example.test", `contraseña-equivocada-${i}`);
-  await expect(attacker.getByRole("alert")).toHaveText(LOCK_MESSAGE);
+  await expect(formAlert(attacker)).toHaveText(LOCK_MESSAGE);
 
   // The legitimate owner signs in from another IP (scenario 8, SC-010).
   const owner = await pageFromIp(browser, "198.51.100.60", baseURL);
@@ -110,6 +145,35 @@ test("5 wrong passwords lock that email from that IP only; the message is identi
   await expect((await latestEmail(OWNER_EMAIL, { subjectIncludes: "Bloqueamos" })).Text).toContain("15 minutos");
 });
 
+test("a forged X-Forwarded-For never changes the email + IP pair that is counted (SC-011)", async ({ page, browser, baseURL }) => {
+  await activateOwner(page);
+  await signOut(page);
+
+  // Same trusted IP, a different forged X-Forwarded-For (and x-real-ip) on every attempt.
+  for (let i = 0; i < 5; i++) {
+    const attempt = await pageFromIp(browser, "192.0.2.80", baseURL, {
+      "x-forwarded-for": `203.0.113.${i + 1}`,
+      "x-real-ip": `203.0.113.${i + 101}`,
+    });
+    await submitPassword(attempt, OWNER_EMAIL, `contraseña-equivocada-${i}`);
+    await expect(formAlert(attempt)).toBeVisible();
+    await attempt.context().close();
+  }
+
+  const retry = await pageFromIp(browser, "192.0.2.80", baseURL, { "x-forwarded-for": "203.0.113.200" });
+  await submitPassword(retry, OWNER_EMAIL, OWNER_PASSWORD);
+  await expect(formAlert(retry)).toHaveText(LOCK_MESSAGE);
+
+  const db = adminClient();
+  const { data: attempts } = await db.from("auth_attempts").select("ip, failed_count, locked_until").eq("email", OWNER_EMAIL);
+  expect(attempts).toHaveLength(1);
+  expect(attempts?.[0].ip).toBe("192.0.2.80");
+  expect(attempts?.[0].locked_until).not.toBeNull();
+
+  const { data: events } = await db.from("audit_events").select("ip").eq("action", "sign_in_failed").eq("target_id", await ownerId());
+  expect(new Set(events?.map((e) => e.ip))).toEqual(new Set(["192.0.2.80"]));
+});
+
 test("5 wrong TOTP codes after a correct password also lock that email + IP (FR-005)", async ({ page, browser, baseURL }) => {
   const { secret } = await activateOwner(page);
   await signOut(page);
@@ -119,12 +183,12 @@ test("5 wrong TOTP codes after a correct password also lock that email + IP (FR-
   await expect(attempt).toHaveURL(/\/login\/mfa/);
   for (let i = 0; i < 5; i++) {
     await submitTotp(attempt, "000000");
-    await expect(attempt.getByRole("alert")).toBeVisible();
+    await expect(formAlert(attempt)).toBeVisible();
   }
 
   await nextTotpWindow();
   await submitTotp(attempt, await freshTotp(secret));
-  await expect(attempt.getByRole("alert")).toHaveText(LOCK_MESSAGE);
+  await expect(formAlert(attempt)).toHaveText(LOCK_MESSAGE);
   await expect(attempt).not.toHaveURL(/\/$/);
 });
 
@@ -184,7 +248,8 @@ test("a recovery code replaces the lost authenticator and forces a new enrollmen
   await expect(page).toHaveURL(/\/$/);
 
   const notice = await latestEmail(OWNER_EMAIL, { subjectIncludes: "código de recuperación" });
-  expect(notice.Text).toContain("Te quedan 9");
+  expect(notice.Text).toContain("reemplazados por un juego nuevo");
+  expect(notice.Text).not.toMatch(/Te quedan/i);
 
   // The used code does not work again.
   await signOut(page);
@@ -192,5 +257,5 @@ test("a recovery code replaces the lost authenticator and forces a new enrollmen
   await page.getByRole("link", { name: "Usar un código de recuperación" }).click();
   await page.getByLabel("Código de recuperación").fill(recoveryCodes[0]);
   await page.getByRole("button", { name: "Continuar" }).click();
-  await expect(page.getByRole("alert")).toContainText("Código incorrecto.");
+  await expect(formAlert(page)).toContainText("Código incorrecto.");
 });

@@ -11,7 +11,7 @@ const templates: EmailTemplate[] = [
   { name: "notice_password_changed", at, via: "self" },
   { name: "notice_mfa_enrolled", at },
   { name: "notice_mfa_reset", at, by: "Admin de prueba" },
-  { name: "notice_recovery_code_used", at, remaining: 3 },
+  { name: "notice_recovery_code_used", at },
   { name: "notice_role_changed", at, from: "reader", to: "collaborator", by: "Dueño de prueba" },
   { name: "notice_account_locked", at },
   { name: "notice_deactivated", at, by: "Dueño de prueba" },
@@ -49,6 +49,12 @@ describe("email templates", () => {
   it("includes the link in the invitation and the forced reset", () => {
     expect(renderEmail(templates[0]).text).toContain(link);
     expect(renderEmail(templates[1]).html).toContain("https://op.example.test/auth/confirm?x=1");
+  });
+
+  it("the recovery code notice says the codes were replaced, without a remaining count", () => {
+    const email = renderEmail({ name: "notice_recovery_code_used", at });
+    expect(email.text).toContain("reemplazados por un juego nuevo");
+    expect(email.text).not.toMatch(/Te quedan/i);
   });
 
   it("escapes HTML in interpolated values", () => {

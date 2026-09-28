@@ -128,15 +128,21 @@ no permite invalidar el enlace anterior.
   - El conteo se hace también para correos que no existen, y el mensaje es siempre el mismo
     ("Demasiados intentos. Espera unos minutos e inténtalo de nuevo."), exista o no la cuenta
     (FR-006).
-- La IP se toma **solo** de las cabeceras que fija Vercel (`x-real-ip`, o el primer valor de
-  `x-forwarded-for`, que Vercel reescribe). Vercel no reenvía el valor que mande el cliente, así
-  que la IP no se puede falsificar desde el navegador. Si la app se moviera de Vercel, hay que
+- **IP confiable (2026-09-28)**: la IP se toma **solo** de `x-vercel-forwarded-for`, que fija
+  Vercel. Según la documentación de Vercel ("Request headers"), Vercel reescribe
+  `X-Forwarded-For` para impedir la suplantación, y `x-vercel-forwarded-for` es idéntico pero
+  además no se pisa aunque haya otro proxy delante. `X-Forwarded-For` y `x-real-ip` se ignoran
+  siempre: son los que un cliente intentaría falsificar.
+- **Sin IP confiable**:
+  - En producción (`VERCEL=1`), `getClientIp()` devuelve `null`. El intento se rechaza con el
+    mensaje genérico, sin llegar a Supabase Auth, y se registra como `sign_in_failed` con
+    `{ reason: "untrusted_ip" }`.
+  - Solo en local (fuera de Vercel) se usa la IP de respaldo **`0.0.0.0`**, con un aviso en el
+    log. En local las pruebas simulan el encabezado de Vercel.
+- **Verificación en producción**: la prueba de humo tras el despliegue envía un
+  `X-Forwarded-For` y un `x-vercel-forwarded-for` falsos y comprueba en la bitácora que la IP
+  registrada es la real (quickstart, validación 7). Si la app se moviera de Vercel, hay que
   revisar esta regla.
-- Si no hay cabecera de IP o no es válida (por ejemplo, en local sin `x-forwarded-for`),
-  `getClientIp()` devuelve la IP centinela **`0.0.0.0`** y escribe un aviso en el log del
-  servidor, sin datos personales. Todos los intentos sin IP comparten ese contador, lo que es
-  aceptable en local. En producción, detrás de Vercel, no debería ocurrir; si ocurre, el aviso
-  lo delata.
 - El **Custom Access Token Hook** (disponible en Free y Pro) se niega a emitir tokens a cuentas
   dadas de baja o a sesiones inactivas. No aplica el bloqueo, porque no conoce la IP de la
   petición: el bloqueo vive en las server actions.
@@ -201,9 +207,14 @@ pantalla, así que no cumple FR-007 por sí solo.
   ambigüedades). Se muestran una vez y se guardan solo como hash (`crypt()` de pgcrypto con
   bcrypt).
 - Para usar uno, el usuario tiene la sesión en AAL1 (contraseña correcta) e introduce el código.
-- El servidor lo verifica, lo marca como usado, elimina los factores TOTP del usuario con la
-  Admin API (`auth.admin.mfa.deleteFactor`), le envía el aviso por correo y lo redirige a
-  registrar un autenticador nuevo antes de dar acceso (FR-003a).
+- El servidor lo verifica y en la misma operación **invalida todos los códigos** del usuario
+  (2026-09-28). Después elimina los factores TOTP con la Admin API
+  (`auth.admin.mfa.deleteFactor`), le envía el aviso por correo y lo redirige a registrar un
+  autenticador nuevo antes de dar acceso. Al confirmarlo se genera un juego nuevo de 10 códigos
+  (FR-003a).
+- El aviso no dice cuántos quedan: dice que se usó un código y que los códigos fueron
+  reemplazados por un juego nuevo. Invalidarlos todos en el momento del uso evita que los 9
+  restantes sigan valiendo mientras el usuario registra su autenticador nuevo.
 
 **Rationale**: Supabase MFA no tiene códigos de recuperación nativos. Su documentación recomienda
 implementarlos por cuenta propia o registrar un segundo factor.
@@ -299,22 +310,42 @@ sensible.
 
 ## R12. Cabeceras de seguridad HTTP
 
-**Decision**: definirlas en `next.config.ts` (`headers()`) para todas las rutas:
+**Decision (revisada el 2026-09-28)**:
 
-| Cabecera | Valor | Para qué |
-|----------|-------|----------|
-| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | Solo HTTPS durante 2 años. Sin `preload`, que es difícil de revertir |
-| `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' <NEXT_PUBLIC_SUPABASE_URL>; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'` (en desarrollo se añade `'unsafe-eval'` a `script-src`, que Next.js necesita) | Limita el origen de scripts, conexiones y formularios; `frame-ancestors 'none'` impide incrustar la app en un iframe (clickjacking); `img-src data:` permite el QR del TOTP |
-| `X-Content-Type-Options` | `nosniff` | Evita que el navegador interprete archivos con otro tipo |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | No filtra rutas con tokens (`/invite/<token>`) a otros sitios |
+- **CSP con nonce, generada en `src/proxy.ts`** para cada petición de página. Next.js aplica el
+  nonce a sus propios scripts y estilos en línea. Por eso las páginas se renderizan de forma
+  dinámica (el layout raíz llama a `connection()`).
+- **Sin `'unsafe-eval'` ni `'unsafe-inline'` en `script-src`, en ningún entorno.** La guía de
+  Next.js indica que React usa `eval` solo en desarrollo para mejorar las trazas de error. Sin él
+  se pierde ese detalle en `next dev`, pero la app funciona.
 
-**Rationale**: es gratis, cabe en un archivo y se prueba con Playwright leyendo las cabeceras
-de la respuesta.
+| Cabecera | Valor | Dónde |
+|----------|-------|-------|
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'nonce-<n>' 'strict-dynamic'; style-src 'self' 'nonce-<n>'; img-src 'self' data:; font-src 'self'; connect-src 'self' <NEXT_PUBLIC_SUPABASE_URL>; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'` | `proxy.ts`, en cada respuesta que pasa por el proxy (páginas y redirecciones) |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | `next.config.ts` (todas las rutas) y `proxy.ts` (redirecciones) |
+| `X-Content-Type-Options` | `nosniff` | ídem |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | ídem |
 
-**Alternatives considered**: CSP con *nonce* generado en `proxy.ts`. Permite quitar
-`'unsafe-inline'` de `script-src` y es más estricta, pero obliga a renderizar todas las páginas
-de forma dinámica y añade código al proxy. Queda como mejora futura; la app no carga scripts de
-terceros ni muestra contenido de usuarios sin escapar.
+**Qué permite la CSP y por qué**:
+
+- `img-src data:`: el QR del TOTP que devuelve Supabase (`mfa.enroll`) es una imagen `data:`.
+- `connect-src` con la URL de Supabase: el cliente de Supabase en el navegador.
+- `frame-ancestors 'none'`: impide incrustar la app en un iframe (clickjacking).
+- `form-action 'self'`: los formularios solo envían a la propia app.
+
+**Verificado en la implementación (2026-09-28)**:
+
+- Con el build de producción, las 14 E2E recorren todos los flujos de US1 y no registran ninguna
+  violación de CSP en la consola.
+- En `next dev`, la app funciona sin `'unsafe-eval'`. Las únicas violaciones vienen de
+  `next-devtools`, el panel de ayuda que Next.js inyecta solo en desarrollo: pierde parte de sus
+  estilos, sin efecto en la app. No se relaja la política por ello.
+- Por la misma razón (estilos en atributos `style`, bloqueados sin `'unsafe-inline'`), el campo
+  del código TOTP usa un `Input` normal en lugar del componente `input-otp`, y no se monta
+  `sonner`.
+
+**Alternatives considered**: CSP estática en `next.config.ts` con `'unsafe-inline'`. Se
+descartó el 2026-09-28 por pedido del Dueño: con nonce, un script inyectado no se ejecuta.
 
 ---
 

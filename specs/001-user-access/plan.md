@@ -26,8 +26,11 @@ inmutable.
 
   Un **Custom Access Token Hook** impide que el servidor de Auth emita tokens a cuentas
   dadas de baja o a sesiones inactivas.
-- Cabeceras de seguridad HTTP (HSTS, CSP con `frame-ancestors 'none'`, `X-Content-Type-Options`,
-  `Referrer-Policy`) en `next.config.ts` (research R12).
+- Cabeceras de seguridad HTTP (research R12): CSP con **nonce por petición** generada en
+  `proxy.ts`, sin `'unsafe-eval'` ni `'unsafe-inline'` en scripts; HSTS, `X-Content-Type-Options`
+  y `Referrer-Policy` en `next.config.ts`.
+- IP del bloqueo tomada solo de `x-vercel-forwarded-for`, nunca de un encabezado que el cliente
+  pueda falsificar. En producción, sin IP confiable el intento se rechaza (research R5).
 - Correo por SMTP con **Resend Free** desde `no-reply@nexoru.ai`.
 - **Costo total recomendado: 45 USD/mes** (detalle en [research.md](research.md#resumen-de-costos)).
   Supabase Pro y Vercel Pro se contratan al desplegar el MVP; mientras tanto, el desarrollo usa
@@ -166,7 +169,7 @@ tests/
 
 .github/workflows/ci.yml         # lint, typecheck, vitest, pgTAP y Playwright
 .env.example                     # Solo nombres de variables
-next.config.ts                   # Cabeceras de seguridad HTTP (R12)
+next.config.ts                   # HSTS, nosniff y Referrer-Policy (la CSP va en proxy.ts, R12)
 ```
 
 **Structure Decision**: un único proyecto Next.js en la raíz del repo, con `src/`. La lógica de

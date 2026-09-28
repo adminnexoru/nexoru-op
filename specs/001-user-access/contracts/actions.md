@@ -3,7 +3,9 @@
 La app no expone una API pública. La interfaz son **páginas** (App Router) y **server actions**.
 Cada server action valida la entrada con zod y devuelve `{ ok: true, data? }` o
 `{ ok: false, error: <código> }`. Los mensajes de error visibles están en español y **nunca**
-revelan si un correo existe (FR-006). Los códigos de error de Supabase Auth, que llegan en
+revelan si un correo existe (FR-006). Todas las acciones de autenticación toman la IP de
+`getClientIp()` (solo `x-vercel-forwarded-for`); en producción, sin IP confiable, rechazan el
+intento con el mensaje genérico y lo registran (research R5). Los códigos de error de Supabase Auth, que llegan en
 inglés, se traducen a mensajes en español en un único mapa (`src/lib/auth/errors.ts`, FR-031).
 "Service role" significa que la llamada usa la clave secreta de Supabase (`SUPABASE_SECRET_KEY`),
 que solo existe en el servidor y nunca llega al navegador.
@@ -44,7 +46,7 @@ que solo existe en el servidor y nunca llega al navegador.
 |--------|---------|--------|---------|
 | `signIn` | email, password | Si hay bloqueo vigente para **correo + IP** (`auth_attempts`), rechaza sin intentar. Si no, `signInWithPassword`. Si falla: `record_auth_failure(email, ip, factor: 'password')` (service role), también si el correo no existe; si esa llamada indica que hay que avisar, envía `notice_account_locked` (solo si el correo es de un usuario; como mucho uno cada 24 h por cuenta). Si acierta: pone a 0 el contador de ese correo + IP y pasa a sesión AAL1 y redirección al paso de MFA o de registro | `invalid_credentials`, `locked`: el mensaje de bloqueo es **genérico e idéntico** exista o no la cuenta ("Demasiados intentos. Espera unos minutos e inténtalo de nuevo."), sin minutos exactos ni referencia a la cuenta (FR-006) |
 | `verifyTotp` | code (6 dígitos) | Si hay bloqueo vigente para correo + IP, rechaza sin verificar. Si no, `mfa.challengeAndVerify`. Si falla: `record_auth_failure(email, ip, factor: 'totp')`, que cuenta para el bloqueo de 5 fallos (FR-005). Si acierta: RPC `record_sign_in` (pone a 0 el contador de correo + IP, `last_sign_in_at`, evento `sign_in`, crea la fila en `app_sessions`) | `invalid_code`, `locked` |
-| `redeemRecoveryCode` | code | RPC `consume_recovery_code` (service role; si hay bloqueo vigente para correo + IP, rechaza; un código inválido cuenta como intento con factor `recovery_code` sobre correo + IP), después `admin.mfa.deleteFactor` por cada factor, correo de aviso y redirección a `/mfa/enroll` | `invalid_code`, `locked` |
+| `redeemRecoveryCode` | code | RPC `consume_recovery_code` (service role; si hay bloqueo vigente para correo + IP, rechaza; un código inválido cuenta como intento con factor `recovery_code` sobre correo + IP; uno válido invalida en la misma operación todos los códigos del usuario), después `admin.mfa.deleteFactor` por cada factor, correo de aviso y redirección a `/mfa/enroll` | `invalid_code`, `locked` |
 | `enrollTotp` / `confirmTotp` | code | `mfa.enroll` → `challengeAndVerify`. Al confirmar: RPC `complete_mfa_enrollment` (evento `mfa_enrolled`), genera 10 códigos (RPC `regenerate_recovery_codes`, devuelve los códigos en claro **una única vez**) y correo de aviso | `invalid_code` |
 | `signOut` | — | `signOut({ scope: 'local' })` y evento `sign_out` | — |
 | `requestPasswordReset` | email | Si existe y está activo: `resetPasswordForEmail` (1 h). La respuesta es la misma en cualquier caso | — |

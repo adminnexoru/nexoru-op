@@ -41,6 +41,8 @@ nada.
    y la **secret key**.
 4. **Authentication → Sign In / Providers**:
    - **Allow new users to sign up: OFF** (FR-009).
+   - ⚠️ **Deja activado el proveedor Email** ("Enable Email provider"): si se desactiva, también se
+     bloquea el inicio de sesión con contraseña. El registro público lo corta solo la opción anterior.
    - Email provider activo. "Confirm email": ON.
    - Desactiva todos los proveedores sociales.
 5. **Authentication → Passwords** (o "Password security"):
@@ -305,7 +307,13 @@ Cada uno corresponde a una historia de la [spec](spec.md). Resultado esperado en
 7. **Sin secretos y con cabeceras de seguridad**:
    - `git ls-files | grep -i env` [solo `.env.example`].
    - `curl -sI https://op.nexoru.ai/login` [incluye `Strict-Transport-Security`,
-     `Content-Security-Policy` con `frame-ancestors 'none'`, `X-Content-Type-Options: nosniff` y
-     `Referrer-Policy`].
+     `Content-Security-Policy` con `'nonce-…'`, `'strict-dynamic'` y `frame-ancestors 'none'`,
+     **sin** `'unsafe-eval'` ni `'unsafe-inline'` en `script-src`; `X-Content-Type-Options: nosniff`
+     y `Referrer-Policy`].
+   - **IP no falsificable (SC-011), solo en producción**: intenta iniciar sesión en
+     `https://op.nexoru.ai/login` con un correo ficticio (`prueba@example.test`) enviando
+     encabezados falsos, por ejemplo con la extensión "ModHeader" del navegador:
+     `X-Forwarded-For: 203.0.113.9` y `x-vercel-forwarded-for: 203.0.113.9`. [En la bitácora, el
+     `sign_in_failed` de ese intento muestra tu IP real, no `203.0.113.9`.]
    - Buscar en `audit_events` y en los logs cualquier contraseña o código de prueba. [0
      coincidencias.]
