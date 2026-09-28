@@ -20,7 +20,12 @@ export function assertTestEnv(url: string | undefined): void {
   if (port === USE_API_PORT) {
     throw new Error("Las pruebas apuntan al entorno de uso del Dueño (puerto 55321). Usa .env.local, no .env.op.local.");
   }
-  if (port !== TEST_API_PORT) throw new Error(`Las pruebas solo pueden usar la instancia de pruebas (puerto ${TEST_API_PORT}).`);
+  if (port !== TEST_API_PORT) {
+    throw new Error(
+      `NEXT_PUBLIC_SUPABASE_URL usa el puerto ${port || "(ninguno)"}, pero las pruebas solo pueden usar la API de ` +
+        `la instancia de pruebas (http://127.0.0.1:${TEST_API_PORT}).`,
+    );
+  }
 }
 
 /** For op:* scripts: only the use instance (port 55321). */
@@ -29,5 +34,10 @@ export function assertOpsEnv(url: string | undefined): void {
   if (port === TEST_API_PORT) {
     throw new Error("Los scripts op:* apuntan a la instancia de pruebas (puerto 54321). Revisa .env.op.local.");
   }
-  if (port !== USE_API_PORT) throw new Error(`Los scripts op:* solo pueden usar el entorno de uso (puerto ${USE_API_PORT}).`);
+  if (port !== USE_API_PORT) {
+    throw new Error(
+      `NEXT_PUBLIC_SUPABASE_URL usa el puerto ${port || "(ninguno)"}, pero los scripts op:* solo pueden usar la API ` +
+        `del entorno de uso (http://127.0.0.1:${USE_API_PORT}). Ojo: 55323 es Studio, no la API.`,
+    );
+  }
 }
