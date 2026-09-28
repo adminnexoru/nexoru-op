@@ -57,3 +57,7 @@ Thumbs.db
 
 # --- Claude Code (config local por máquina) ---
 .claude/settings.local.json
+
+# Entorno de uso de Nexoru Op (build, PID, logs y respaldos locales)
+.next-op/
+.op/

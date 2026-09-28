@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # CLAUDE.md — nexoru-op
 
 Guía para Claude Code en este repositorio. Léela antes de hacer cualquier cambio.
@@ -45,5 +47,61 @@ No te saltes pasos. Si un artefacto previo no existe o está desactualizado, vue
 
 ## Stack y seguridad
 
-- Aplicación prevista: **Next.js** (los detalles se fijan en `plan.md` de cada feature).
+- **Qué es Nexoru Op**: dashboard local, de solo lectura y para un solo usuario (el Dueño), que
+  muestra el estado del portafolio leyendo los proyectos de `PROJECTS_ROOT` según el Estándar de
+  Proyecto Nexoru (constitución v2.0.0). Next.js + Supabase local; los detalles están en
+  `plan.md` de cada feature.
+- **Nunca** envía correos ni notificaciones ni escribe en los proyectos, en git o en GitHub.
 - **Nunca** se suben archivos `.env*` ni secretos al repositorio. El `.gitignore` los bloquea; si hace falta documentar variables, usa `.env.example` sin valores reales.
+
+## Comandos y entornos
+
+Hay **dos entornos locales separados** (research R13 de `specs/001-user-access/`); ningún script de
+un entorno puede tocar el otro (`scripts/env-guard.ts`):
+
+| Entorno | Supabase | App | Variables | Comandos |
+|---------|----------|-----|-----------|----------|
+| Pruebas y desarrollo | `supabase/` (API `127.0.0.1:54321`) | `http://127.0.0.1:3000` | `.env.local` | `npm run db:start`, `npm run dev`, `npm test`, `npm run db:test`, `npm run test:e2e`, `npm run bootstrap:owner` |
+| Uso del Dueño | `ops/supabase/` (API `127.0.0.1:55321`) | `http://127.0.0.1:3200` | `.env.op.local` | `npm run op:start`, `npm run op:stop`, `npm run op:bootstrap-owner`, `npm run op:fingerprint` |
+
+- Todo escucha solo en `127.0.0.1`. Arranca Supabase siempre con `npm run db:start` / `npm run op:start`:
+  crean la red de Docker de Supabase con `host_binding_ipv4=127.0.0.1` (la opción `ip` de
+  `daemon.json` no cubre esa red).
+- **Nunca** ejecutes pruebas, `supabase db reset` ni limpiezas contra el entorno de uso: guarda la
+  cuenta real del Dueño y su bitácora.
+- Antes de `npm run db:test`, resetea la base de pruebas (`npx supabase db reset`): las E2E dejan
+  datos que chocan con los fixtures de pgTAP.
+- Estructura: `src/app` (páginas), `src/lib` (auth, Supabase, IP, contraseñas), `src/proxy.ts`
+  (CSP con nonce y sesión), `supabase/migrations` (esquema, RLS y funciones, compartido por los dos
+  entornos), `supabase/tests` (pgTAP), `tests/unit` (Vitest), `tests/e2e` (Playwright), `scripts/`
+  (bootstrap y `op:*`).
+- Regla de la base de datos: toda tabla con RLS y toda mutación sensible mediante función
+  `security definer` que escribe su evento en la bitácora en la misma transacción.
+- Todo cambio llega a `main` por PR con CI en verde; el push lo autoriza el Dueño tras revisar.
+
+## Repositorio público: qué nunca entra al repo
+
+El repositorio `adminnexoru/nexoru-op` es **público** (decisión del Dueño por costo; se revisará antes de que el sistema maneje datos de clientes, ver `specs/001-user-access/research.md` R11). Todo lo que se sube lo puede leer cualquiera.
+
+- **Nunca** datos reales de clientes, en ningún archivo: código, specs, fixtures, logs, issues ni descripciones de PR.
+- **Nunca** correos personales ni de terceros. Los únicos correos reales permitidos son las cuentas de Nexoru que ya figuran en la constitución (`admin@nexoru.ai`) y el remitente `no-reply@nexoru.ai`.
+- **Nunca** capturas de pantalla ni grabaciones del sistema, porque pueden mostrar usuarios, la bitácora o configuración.
+- En pruebas y seeds se usan **solo datos ficticios**: correos en dominios reservados (`@example.com`, `@example.test`), nombres inventados e IP de documentación (`192.0.2.0/24`, `198.51.100.0/24`).
+- GitHub tiene activados Secret scanning y Push protection, que rechazan un push con una llave reconocible. Es una segunda barrera; la primera es no escribir nunca un secreto en un archivo del repo.
+
+## Documentación de proyecto (Estándar Nexoru)
+
+Al cerrar cada fase, actualiza `PROJECT.md` (roadmap, specs vinculadas, decisiones clave,
+costo mensual, riesgos, pendientes, evidencia de validación y siguiente hito) y
+`docs/mapa-funcional.md` (componentes, flujo, reglas, datos y fuentes, integraciones) para
+que reflejen lo construido. El mapa funcional no lleva estados de avance.
+
+- Si algo no coincide con `specs/`, `specs/` es la fuente de verdad. Excepción: si el
+  código y la documentación técnica coinciden entre sí y la spec quedó desactualizada, se
+  corrige la spec. Reporta siempre qué cambiaste y por qué.
+- No captures a mano lo que se deriva de git, GitHub o Spec Kit (fecha del primer commit,
+  estado de fases con `tasks.md`, estado de la CI).
+- Lo que no sepas y no puedas derivar va como `CONFIRMAR` para que lo responda el Dueño;
+  nunca lo inventes. Un proyecto con `CONFIRMAR` no es conforme.
+- Estándar: https://github.com/adminnexoru/nexoru-governance (versión en
+  `version_estandar` de `PROJECT.md`).

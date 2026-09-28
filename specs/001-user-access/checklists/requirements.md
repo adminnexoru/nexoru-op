@@ -1,0 +1,41 @@
+# Specification Quality Checklist: Acceso seguro y administración de usuarios
+
+**Purpose**: Validate specification completeness and quality before proceeding to planning
+**Created**: 2026-09-26
+**Feature**: [spec.md](../spec.md)
+
+## Content Quality
+
+- [x] No implementation details (languages, frameworks, APIs)
+- [x] Focused on user value and business needs
+- [x] Written for non-technical stakeholders
+- [x] All mandatory sections completed
+
+## Requirement Completeness
+
+- [x] No [NEEDS CLARIFICATION] markers remain
+- [x] Requirements are testable and unambiguous
+- [x] Success criteria are measurable
+- [x] Success criteria are technology-agnostic (no implementation details)
+- [x] All acceptance scenarios are defined
+- [x] Edge cases are identified
+- [x] Scope is clearly bounded
+- [x] Dependencies and assumptions identified
+
+## Feature Readiness
+
+- [x] All functional requirements have clear acceptance criteria
+- [x] User scenarios cover primary flows
+- [x] Feature meets measurable outcomes defined in Success Criteria
+- [x] No implementation details leak into specification
+
+## Notes
+
+- FR-015 resuelto el 2026-09-26: solo el Dueño gestiona Administradores (opción A).
+- "TOTP" y "app autenticadora" son requisitos explícitos del negocio y de la constitución, no
+  detalles de implementación.
+- 2026-09-28, redefinición (constitución v2.0.0): la spec nombra los comandos de terminal
+  (`bootstrap:owner`, `op:start`, `op:stop`) y la dirección `127.0.0.1`. Se consideran la
+  interfaz del producto para el Dueño (lo que teclea y dónde abre la app), no detalles de
+  implementación. Los ítems se revalidaron contra la spec redefinida.
+- Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`

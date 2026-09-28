@@ -1,0 +1,81 @@
+name: CI
+
+# Runs on every push (feature branches included) and on every pull request to main, as the
+# Nexoru Project Standard requires (conformance 3.1). The pull_request run is the check the
+# main ruleset requires.
+on:
+  push:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: lint, types, unit, db and e2e tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests (Vitest)
+        run: npm test -- --passWithNoTests
+
+      # Local Supabase (Postgres, Auth, Mailpit) in Docker. No GitHub secrets are used:
+      # every key comes from the throwaway local stack.
+      - name: Start local Supabase
+        run: npx supabase start
+
+      - name: Apply migrations
+        run: npx supabase db reset
+
+      - name: Database tests (pgTAP)
+        run: |
+          if ls supabase/tests/*.sql >/dev/null 2>&1; then
+            npm run db:test
+          else
+            echo "No pgTAP tests yet"
+          fi
+
+      - name: Export local Supabase environment
+        run: |
+          status=$(npx supabase status -o json)
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$(echo "$status" | jq -r '.API_URL')"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(echo "$status" | jq -r '.PUBLISHABLE_KEY // .ANON_KEY')"
+            echo "SUPABASE_SECRET_KEY=$(echo "$status" | jq -r '.SECRET_KEY // .SERVICE_ROLE_KEY')"
+            echo "APP_URL=http://127.0.0.1:3000"
+          } >> "$GITHUB_ENV"
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests (Playwright)
+        run: npm run test:e2e -- --pass-with-no-tests
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
