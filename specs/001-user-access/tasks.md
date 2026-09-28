@@ -171,8 +171,8 @@ la huella del entorno de uso es la misma antes y después de correr todas las pr
 
 ### Pruebas primero (deben fallar)
 
-- [ ] T066 [P] [US6] Test Vitest en `tests/unit/env-guard.test.ts` para `scripts/env-guard.ts`: `assertTestEnv(url)` acepta `http://127.0.0.1:54321` y rechaza `http://127.0.0.1:55321` y cualquier URL no local; `assertOpsEnv(url)` acepta 55321 y rechaza 54321; ambos explican el motivo en español
-- [ ] T067 [P] [US6] Test Vitest en `tests/unit/env-isolation.test.ts`: ningún script de pruebas de `package.json` (`test`, `test:e2e`, `db:test`, `dev`, `bootstrap:owner`), ni `playwright.config.ts`, `vitest.config.ts` o archivo de `tests/`, menciona `55321`, `55322`, `55323`, `ops/` ni `.env.op.local`; y todos los scripts `op:*` usan `ops`/`.env.op.local` (SC-012)
+- [X] T066 [P] [US6] Test Vitest en `tests/unit/env-guard.test.ts` para `scripts/env-guard.ts`: `assertTestEnv(url)` acepta `http://127.0.0.1:54321` y rechaza `http://127.0.0.1:55321` y cualquier URL no local; `assertOpsEnv(url)` acepta 55321 y rechaza 54321; ambos explican el motivo en español
+- [X] T067 [P] [US6] Test Vitest en `tests/unit/env-isolation.test.ts`: ningún script de pruebas de `package.json` (`test`, `test:e2e`, `db:test`, `dev`, `bootstrap:owner`), ni `playwright.config.ts`, `vitest.config.ts` o archivo de `tests/`, menciona `55321`, `55322`, `55323`, `ops/` ni `.env.op.local`; y todos los scripts `op:*` usan `ops`/`.env.op.local` (SC-012)
 
 ### Implementación
 
