@@ -1,15 +1,16 @@
 -- T033: failed attempts are counted per email + IP (FR-005, FR-006, research R5).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(22);
+select plan(20);
 
 insert into auth.users (id, email, aud, role) values
   ('00000000-0000-4000-8000-000000000301', 'owner.t033@example.test', 'authenticated', 'authenticated');
 insert into public.profiles (id, email, full_name, role) values
   ('00000000-0000-4000-8000-000000000301', 'owner.t033@example.test', 'Dueño', 'owner');
 
--- Four failures from IP A, mixing factors: counted, not locked, no notice.
-select is(public.record_auth_failure('owner.t033@example.test', '192.0.2.1', 'password'), false, '1st failure: no notice');
+-- Four failures from IP A, mixing factors: counted, not locked. No notices exist (FR-032).
+select is(pg_typeof(public.record_auth_failure('owner.t033@example.test', '192.0.2.1', 'password'))::text, 'void',
+  'record_auth_failure returns nothing: there are no email notices');
 select public.record_auth_failure('owner.t033@example.test', '192.0.2.1', 'totp');
 select public.record_auth_failure('owner.t033@example.test', '192.0.2.1', 'password');
 select public.record_auth_failure('owner.t033@example.test', '192.0.2.1', 'totp');
@@ -17,15 +18,13 @@ select is((select failed_count from public.auth_attempts where email = 'owner.t0
   4::smallint, 'failures of password and totp add up on the same email + IP');
 select is(public.is_locked('owner.t033@example.test', '192.0.2.1'), false, 'not locked after 4 failures');
 
--- 5th failure (a recovery code) locks that email + IP for 15 minutes and asks for the notice.
-select is(public.record_auth_failure('owner.t033@example.test', '192.0.2.1', 'recovery_code'), true,
-  '5th failure of an existing account: send the lock notice');
+-- 5th failure (a recovery code) locks that email + IP for 15 minutes.
+select public.record_auth_failure('owner.t033@example.test', '192.0.2.1', 'recovery_code');
 select ok((select locked_until between now() + interval '14 minutes' and now() + interval '16 minutes'
              from public.auth_attempts where email = 'owner.t033@example.test' and ip = '192.0.2.1'),
   'locked for 15 minutes');
 select is(public.is_locked('owner.t033@example.test', '192.0.2.1'), true, 'is_locked reports the lock for that IP');
-select isnt((select last_lock_notice_at from public.profiles where email = 'owner.t033@example.test'), null,
-  'last_lock_notice_at is recorded');
+select hasnt_column('public', 'profiles', 'last_lock_notice_at', 'profiles has no lock-notice column (FR-032)');
 select is((select count(*) from public.audit_events
             where action = 'sign_in_failed' and target_id = '00000000-0000-4000-8000-000000000301' and ip = '192.0.2.1'),
   5::bigint, 'each failure is logged as sign_in_failed');
@@ -41,15 +40,13 @@ select is(public.is_locked('owner.t033@example.test', '198.51.100.2'), false, 't
 select is((select count(*) from public.auth_attempts where email = 'owner.t033@example.test' and ip = '198.51.100.2'),
   0::bigint, 'the other IP has no counter');
 
--- A second lock within 24 h (from another IP) does not send another notice.
-select public.record_auth_failure('owner.t033@example.test', '198.51.100.2', 'password') from generate_series(1, 4);
-select is(public.record_auth_failure('owner.t033@example.test', '198.51.100.2', 'password'), false,
-  'a second lock within 24 h does not send another notice');
+-- The other IP is locked on its own after its own 5 failures.
+select public.record_auth_failure('owner.t033@example.test', '198.51.100.2', 'password') from generate_series(1, 5);
+select is(public.is_locked('owner.t033@example.test', '198.51.100.2'), true,
+  'a second IP gets its own lock after its own 5 failures');
 
 -- Unknown emails are counted and locked the same way, without creating a profile (FR-006).
-select public.record_auth_failure('nobody.t033@example.test', '192.0.2.1', 'password') from generate_series(1, 4);
-select is(public.record_auth_failure('nobody.t033@example.test', '192.0.2.1', 'password'), false,
-  'an unknown email never triggers a notice');
+select public.record_auth_failure('nobody.t033@example.test', '192.0.2.1', 'password') from generate_series(1, 5);
 select is(public.is_locked('nobody.t033@example.test', '192.0.2.1'), true, 'an unknown email is locked like a real one');
 select is((select count(*) from public.profiles where email = 'nobody.t033@example.test'), 0::bigint, 'no profile is created');
 select is((select count(*) from public.audit_events where attempted_email = 'nobody.t033@example.test' and action = 'sign_in_failed'),

@@ -1,7 +1,6 @@
 // T039: user story 1 — sign-in with mandatory second factor (scenarios 1–9, SC-010).
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { adminClient, resetAppData } from "./helpers/db";
-import { clearMailbox, latestEmail } from "./helpers/mailpit";
 import { OWNER_EMAIL, OWNER_PASSWORD, activateOwner, signOut, submitPassword, submitTotp } from "./helpers/owner";
 import { freshTotp, nextTotpWindow } from "./helpers/totp";
 
@@ -53,7 +52,6 @@ test.beforeEach(async ({ page }) => {
   cspViolations.length = 0;
   watchCsp(page);
   await resetAppData();
-  await clearMailbox();
 });
 
 test.afterEach(() => {
@@ -141,8 +139,13 @@ test("5 wrong passwords lock that email from that IP only; the message is identi
   await submitTotp(owner, await freshTotp(secret));
   await expect(owner).toHaveURL(/\/$/);
 
-  // The owner is told about the lock.
-  await expect((await latestEmail(OWNER_EMAIL, { subjectIncludes: "Bloqueamos" })).Text).toContain("15 minutos");
+  // The lock is in the audit log (there are no email notices, FR-032).
+  const { data: locks } = await adminClient()
+    .from("audit_events")
+    .select("id")
+    .eq("action", "account_locked")
+    .eq("target_id", await ownerId());
+  expect(locks?.length).toBeGreaterThan(0);
 });
 
 test("a forged X-Forwarded-For never changes the email + IP pair that is counted (SC-011)", async ({ page, browser, baseURL }) => {
@@ -247,9 +250,12 @@ test("a recovery code replaces the lost authenticator and forces a new enrollmen
   await page.getByRole("button", { name: "Ya los guardé" }).click();
   await expect(page).toHaveURL(/\/$/);
 
-  const notice = await latestEmail(OWNER_EMAIL, { subjectIncludes: "código de recuperación" });
-  expect(notice.Text).toContain("reemplazados por un juego nuevo");
-  expect(notice.Text).not.toMatch(/Te quedan/i);
+  const { data: used } = await adminClient()
+    .from("audit_events")
+    .select("id")
+    .eq("action", "recovery_code_used")
+    .eq("target_id", await ownerId());
+  expect(used).toHaveLength(1);
 
   // The used code does not work again.
   await signOut(page);

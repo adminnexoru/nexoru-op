@@ -1,13 +1,15 @@
-// T046: creates the owner's bootstrap invitation (FR-010) and emails the activation link.
-// Run with `npm run bootstrap:owner` in the VS Code integrated terminal, with the variables
-// of the target environment exported in that terminal session only (quickstart §6).
+// T063: creates the owner's single-use activation link and prints it in the terminal
+// (FR-010, FR-036, research R4). No email is sent (FR-032).
+// Run it in the VS Code integrated terminal:
+//   npm run bootstrap:owner      → test environment (.env.local)
+//   npm run op:bootstrap-owner   → use environment (.env.op.local)
 
-import { tokenHashParam, newToken } from "../src/lib/auth/token";
-import { sendEmail } from "../src/lib/email/send";
-import { createAdminClient } from "../src/lib/supabase/admin";
+import { newToken, tokenHashParam } from "../src/lib/auth/token";
 import { getServerEnv } from "../src/lib/env.server";
+import { createAdminClient } from "../src/lib/supabase/admin";
 
 const OWNER_EMAIL = "admin@nexoru.ai";
+const LINK_LIFETIME_MS = 60 * 60 * 1000;
 
 async function main(): Promise<number> {
   const admin = createAdminClient();
@@ -15,25 +17,31 @@ async function main(): Promise<number> {
   const { data: owner, error: ownerError } = await admin.from("profiles").select("id").eq("role", "owner").maybeSingle();
   if (ownerError) throw ownerError;
   if (owner) {
-    console.log("Ya existe un Dueño: no se crea ninguna invitación.");
+    console.log("Ya existe un Dueño: no se crea ningún enlace de activación.");
     return 0;
   }
 
-  const { data: pending, error: pendingError } = await admin
+  // Only one valid link at a time: running the script again revokes the previous one.
+  const { data: revoked, error: revokeError } = await admin
     .from("invitations")
-    .select("id")
+    .update({ status: "revoked", revoked_at: new Date().toISOString() })
     .eq("role", "owner")
     .eq("status", "pending")
-    .gt("expires_at", new Date().toISOString())
-    .maybeSingle();
-  if (pendingError) throw pendingError;
-  if (pending) {
-    console.log("Ya hay una invitación de Dueño pendiente: revisa el correo de admin@nexoru.ai.");
-    return 0;
-  }
+    .select("id");
+  if (revokeError) throw revokeError;
+  await Promise.all(
+    (revoked ?? []).map(() =>
+      admin.rpc("log_audit_event", {
+        p_action: "invitation_revoked",
+        p_result: "success",
+        p_attempted_email: OWNER_EMAIL,
+        p_metadata: { email: OWNER_EMAIL, role: "owner" },
+      }),
+    ),
+  );
 
   const token = newToken();
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + LINK_LIFETIME_MS);
   const { error: insertError } = await admin.from("invitations").insert({
     email: OWNER_EMAIL,
     role: "owner",
@@ -51,17 +59,14 @@ async function main(): Promise<number> {
   });
 
   const link = `${getServerEnv().APP_URL}/invite/${token}`;
-  const sent = await sendEmail(OWNER_EMAIL, { name: "invitation", link, role: "owner", expiresAt });
-  if (!sent) {
-    console.error("La invitación se creó, pero el correo no se pudo enviar. Revisa la configuración SMTP.");
-    return 1;
-  }
-  console.log("Invitación enviada a admin@nexoru.ai. Caduca en 7 días.");
+  console.log("Enlace de activación de admin@nexoru.ai (un solo uso; caduca en 1 hora):");
+  console.log(link);
+  console.log("Ábrelo en el navegador de esta máquina. No lo compartas.");
   return 0;
 }
 
 // Local convenience only: if the terminal has no Supabase variables at all, use .env.local.
-// If any variable is exported (production), nothing is loaded, so environments never mix.
+// op:bootstrap-owner passes .env.op.local explicitly, so environments never mix.
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
   try {
     process.loadEnvFile(".env.local");

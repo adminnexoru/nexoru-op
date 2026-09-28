@@ -1,26 +1,35 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page } from "@playwright/test";
-import { extractLink, latestEmail } from "./mailpit";
 import { freshTotp } from "./totp";
 
 export const OWNER_EMAIL = "admin@nexoru.ai";
 export const OWNER_PASSWORD = "clave-ficticia-del-dueño-2026";
 
-/** Runs the real `npm run bootstrap:owner` script against the local stack. */
-export function bootstrapOwner(): void {
-  execFileSync("npm", ["run", "--silent", "bootstrap:owner"], { stdio: "pipe", env: process.env });
+/** Runs the real `npm run bootstrap:owner` script against the test stack and returns its output. */
+export function runBootstrapOwner(): string {
+  return execFileSync("npm", ["run", "--silent", "bootstrap:owner"], { encoding: "utf8", env: process.env });
+}
+
+/** The single-use activation link printed by `bootstrap:owner` (FR-036). */
+export function activationLinkFrom(output: string): string {
+  const link = /https?:\/\/\S+\/invite\/[A-Za-z0-9_-]+/.exec(output)?.[0];
+  if (!link) throw new Error(`bootstrap:owner did not print an activation link:\n${output}`);
+  return link;
+}
+
+/** Runs `bootstrap:owner` and returns the activation link it prints. */
+export function bootstrapOwner(): string {
+  return activationLinkFrom(runBootstrapOwner());
 }
 
 export type ActivatedOwner = { secret: string; recoveryCodes: string[] };
 
 /**
- * Activates the owner from the invitation email: password, TOTP enrollment and the 10
- * recovery codes shown once (scenario 1 of user story 1). Leaves the page signed in at "/".
+ * Activates the owner with the link printed in the terminal: password, TOTP enrollment and the
+ * 10 recovery codes shown once (scenario 1 of user story 1). Leaves the page signed in at "/".
  */
 export async function activateOwner(page: Page): Promise<ActivatedOwner> {
-  bootstrapOwner();
-  const email = await latestEmail(OWNER_EMAIL, { subjectIncludes: "invitaron" });
-  await page.goto(extractLink(email, "/invite/"));
+  await page.goto(bootstrapOwner());
 
   await page.getByLabel("Nombre completo").fill("Dueña Ficticia");
   await page.getByLabel("Contraseña", { exact: true }).fill(OWNER_PASSWORD);

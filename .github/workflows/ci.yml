@@ -1,10 +1,12 @@
 name: CI
 
-# Runs on every push to any branch (feature branches included), so a branch is tested as soon
-# as it is pushed. PRs come from branches of this repo, and the check on the PR head commit is
-# the one the main ruleset requires. No pull_request trigger, to avoid running everything twice.
+# Runs on every push (feature branches included) and on every pull request to main, as the
+# Nexoru Project Standard requires (conformance 3.1). The pull_request run is the check the
+# main ruleset requires.
 on:
   push:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -61,12 +63,7 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_URL=$(echo "$status" | jq -r '.API_URL')"
             echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(echo "$status" | jq -r '.PUBLISHABLE_KEY // .ANON_KEY')"
             echo "SUPABASE_SECRET_KEY=$(echo "$status" | jq -r '.SECRET_KEY // .SERVICE_ROLE_KEY')"
-            echo "APP_URL=http://localhost:3000"
-            echo "SMTP_HOST=127.0.0.1"
-            echo "SMTP_PORT=54325"
-            echo "SMTP_USER="
-            echo "SMTP_PASSWORD="
-            echo "EMAIL_FROM=Nexoru Op <no-reply@nexoru.ai>"
+            echo "APP_URL=http://127.0.0.1:3000"
           } >> "$GITHUB_ENV"
 
       - name: Install Playwright browser

@@ -28,11 +28,11 @@ select is((select count(*) from public.audit_events where action = 'recovery_cod
   2::bigint, 'each regeneration is logged');
 
 set local role service_role;
-select is((public.consume_recovery_code('00000000-0000-4000-8000-000000000501', split_part(current_setting('tests.codes'), ',', 1), '192.0.2.5')).accepted,
+select is(public.consume_recovery_code('00000000-0000-4000-8000-000000000501', split_part(current_setting('tests.codes'), ',', 1), '192.0.2.5'),
   true, 'a valid code is accepted');
-select is((public.consume_recovery_code('00000000-0000-4000-8000-000000000501', split_part(current_setting('tests.codes'), ',', 1), '192.0.2.5')).accepted,
+select is(public.consume_recovery_code('00000000-0000-4000-8000-000000000501', split_part(current_setting('tests.codes'), ',', 1), '192.0.2.5'),
   false, 'the same code is not accepted twice');
-select is((public.consume_recovery_code('00000000-0000-4000-8000-000000000501', split_part(current_setting('tests.codes'), ',', 2), '192.0.2.5')).accepted,
+select is(public.consume_recovery_code('00000000-0000-4000-8000-000000000501', split_part(current_setting('tests.codes'), ',', 2), '192.0.2.5'),
   false, 'using one code invalidates all the others at once (FR-003a)');
 reset role;
 
@@ -42,7 +42,7 @@ select is((select failed_count from public.auth_attempts where email = 'user.t03
   2::smallint, 'each rejected code counts as a failed attempt on email + IP');
 select is((select count(*) from public.audit_events where action = 'recovery_code_used' and target_id = '00000000-0000-4000-8000-000000000501'),
   1::bigint, 'the use is logged once');
-select is((public.consume_recovery_code('00000000-0000-4000-8000-000000000501', 'ZZZZZZZZZZ', '192.0.2.5')).accepted,
+select is(public.consume_recovery_code('00000000-0000-4000-8000-000000000501', 'ZZZZZZZZZZ', '192.0.2.5'),
   false, 'an invalid code is rejected');
 
 select * from finish();

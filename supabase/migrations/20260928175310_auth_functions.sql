@@ -21,10 +21,10 @@ begin
 end
 $$;
 
--- Records a failed attempt. Returns true when the account owner must get the lock notice
--- (at most one every 24 h per account, FR-031a).
+-- Records a failed attempt and locks the email + IP pair at the 5th consecutive failure.
+-- Nothing is notified: the audit log is the only trace (FR-032).
 create function public.record_auth_failure(p_email extensions.citext, p_ip inet, p_factor text)
-returns boolean
+returns void
 language plpgsql
 security definer
 set search_path = ''
@@ -33,7 +33,6 @@ declare
   v_target uuid;
   v_count smallint;
   v_until timestamptz;
-  v_notify boolean;
 begin
   if p_ip is null then
     raise exception 'ip is required';
@@ -71,18 +70,8 @@ begin
     if v_until is not null then
       perform public.log_audit_event('account_locked', 'success', null, v_target, p_email, p_ip,
         jsonb_build_object('until', v_until));
-
-      if v_target is not null then
-        update public.profiles
-          set last_lock_notice_at = now()
-          where id = v_target
-            and (last_lock_notice_at is null or last_lock_notice_at < now() - interval '24 hours')
-          returning true into v_notify;
-      end if;
     end if;
   end if;
-
-  return coalesce(v_notify, false);
 end
 $$;
 
@@ -245,15 +234,9 @@ $$;
 
 -- Validates a recovery code (the caller normalizes it). A valid code invalidates ALL the
 -- user's codes at once; the new set is issued when the new authenticator is confirmed.
--- An invalid code counts as a failed attempt on email + IP; notify_lock tells the caller to
--- send the lock notice.
-create function public.consume_recovery_code(
-  p_user_id uuid,
-  p_code text,
-  p_ip inet,
-  out accepted boolean,
-  out notify_lock boolean
-)
+-- An invalid code counts as a failed attempt on email + IP. Returns whether it was accepted.
+create function public.consume_recovery_code(p_user_id uuid, p_code text, p_ip inet)
+returns boolean
 language plpgsql
 security definer
 set search_path = ''
@@ -262,12 +245,9 @@ declare
   v_email extensions.citext;
   v_code_id uuid;
 begin
-  accepted := false;
-  notify_lock := false;
-
   select email into v_email from public.profiles where id = p_user_id and status = 'active';
   if v_email is null then
-    return;
+    return false;
   end if;
 
   select id into v_code_id
@@ -276,13 +256,13 @@ begin
     limit 1;
 
   if v_code_id is null then
-    notify_lock := public.record_auth_failure(v_email, p_ip, 'recovery_code');
-    return;
+    perform public.record_auth_failure(v_email, p_ip, 'recovery_code');
+    return false;
   end if;
 
   delete from public.recovery_codes where user_id = p_user_id;
   perform public.log_audit_event('recovery_code_used', 'success', p_user_id, p_user_id, null, p_ip, '{}');
-  accepted := true;
+  return true;
 end
 $$;
 

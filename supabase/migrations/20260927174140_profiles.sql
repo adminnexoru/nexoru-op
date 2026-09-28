@@ -7,7 +7,6 @@ create table public.profiles (
   full_name text not null check (char_length(full_name) between 1 and 120),
   role public.user_role not null,
   status public.user_status not null default 'active',
-  last_lock_notice_at timestamptz,
   created_at timestamptz not null default now(),
   last_sign_in_at timestamptz,
   deactivated_at timestamptz,

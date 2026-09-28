@@ -3,7 +3,6 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { sendEmail } from "@/lib/email/send";
 import { getClientIp } from "@/lib/request";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -43,13 +42,12 @@ async function isLocked(email: string, ip: string): Promise<boolean> {
 
 /** Records a failure; returns the message to show (lock message when this failure locked it). */
 async function recordFailure(email: string, ip: string, factor: Factor, message: string): Promise<string> {
-  const { data: notify, error } = await createAdminClient().rpc("record_auth_failure", {
+  const { error } = await createAdminClient().rpc("record_auth_failure", {
     p_email: email,
     p_ip: ip,
     p_factor: factor,
   });
   if (error) throw new Error(`record_auth_failure failed: ${error.message}`);
-  if (notify === true) await sendEmail(email, { name: "notice_account_locked", at: new Date() });
   return (await isLocked(email, ip)) ? MESSAGES.locked : message;
 }
 
@@ -122,10 +120,7 @@ export async function redeemRecoveryCode(_prev: FormState, formData: FormData): 
   const admin = createAdminClient();
   const { data, error } = await admin.rpc("consume_recovery_code", { p_user_id: user.id, p_code: code, p_ip: ip });
   if (error) throw new Error(`consume_recovery_code failed: ${error.message}`);
-  const result = (Array.isArray(data) ? data[0] : data) as { accepted: boolean; notify_lock: boolean };
-
-  if (!result.accepted) {
-    if (result.notify_lock) await sendEmail(email, { name: "notice_account_locked", at: new Date() });
+  if (data !== true) {
     return { error: (await isLocked(email, ip)) ? MESSAGES.locked : MESSAGES.badCode };
   }
 
@@ -146,7 +141,6 @@ export async function redeemRecoveryCode(_prev: FormState, formData: FormData): 
     }
   }
 
-  await sendEmail(email, { name: "notice_recovery_code_used", at: new Date() }, { targetId: user.id });
   (await cookies()).set(RECOVERY_COOKIE, "1", { httpOnly: true, sameSite: "lax", secure: true, path: "/", maxAge: 15 * 60 });
   redirect("/mfa/enroll");
 }
@@ -200,7 +194,6 @@ export async function confirmTotp(_prev: EnrollState, formData: FormData): Promi
   const { error: signInError } = await supabase.rpc("record_sign_in", { p_ip: ip, p_method: method });
   if (signInError) throw new Error(`record_sign_in failed: ${signInError.message}`);
 
-  await sendEmail(email, { name: "notice_mfa_enrolled", at: new Date() }, { targetId: user.id });
   return { recoveryCodes: codes as string[] };
 }
 

@@ -16,7 +16,7 @@ create type public.invitation_status as enum ('pending', 'accepted', 'revoked', 
 
 create type public.audit_result as enum ('success', 'failure', 'denied');
 
--- Every event of contracts/audit-and-emails.md (FR-026, FR-031b).
+-- Every event of contracts/audit-events.md (FR-026). There are no email events (FR-032).
 create type public.audit_action as enum (
   'sign_in',
   'sign_in_failed',
@@ -39,6 +39,5 @@ create type public.audit_action as enum (
   'recovery_code_used',
   'recovery_codes_regenerated',
   'permission_denied',
-  'email_failed',
   'auth_sync_failed'
 );
