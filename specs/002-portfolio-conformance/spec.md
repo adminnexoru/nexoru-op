@@ -34,6 +34,15 @@ dependen de git o GitHub se muestran como 'no evaluadas en esta fase'."
   que pasa todo lo demás del nivel 3? → A: "Nivel 3 (provisional)", indicando que falta verificar
   la CI en GitHub. En la Fase 4, al evaluarse 3.2, el nivel pasa a definitivo (3 o 2).
 
+### Session 2026-09-28 (clarify)
+
+- Q: ¿De qué versión de los archivos lee el dashboard cada proyecto: de lo que hay en disco o de
+  la rama principal? → A: De lo que hay en disco, mostrando la rama actual y con un aviso si no es
+  la rama principal o si hay cambios sin commit.
+- Q: Si una carpeta no es repositorio git o no tiene remoto `origin`, ¿la verificación 1.7 cuenta
+  como fallida o como no evaluable? → A: Fallida (el proyecto queda en nivel 0), con el detalle
+  "no es repositorio git" o "sin remoto `origin`".
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ver el portafolio completo (Priority: P1)
@@ -69,6 +78,10 @@ el Dueño inicia sesión y comprueba que cada proyecto aparece con exactamente l
    **Then** el portafolio se vuelve a leer antes de mostrarse.
 7. **Given** la carpeta `nexoru-governance`, **When** el Dueño abre el dashboard, **Then** la ve
    aparte, como "estándar", con su versión vigente y sin nivel de conformidad.
+8. **Given** un proyecto cuya copia en disco está en una rama distinta de la principal o tiene
+   cambios sin commit, **When** el Dueño abre el dashboard, **Then** ve sus datos tal como están en
+   disco, junto con el nombre de la rama y el aviso "no es la rama principal" o "cambios sin
+   commit".
 
 ---
 
@@ -170,8 +183,9 @@ que aparece sin nivel y con el aviso, y que los demás proyectos se evalúan nor
   archivo que reporta git, nunca el contenido.
 - **Archivo demasiado grande** (más de 1 MB) o que no es un archivo regular (dispositivo, tubería):
   no se lee; se reporta como ilegible.
-- **Carpeta que no es repositorio git**: las verificaciones que dependen de git (remoto `origin`,
-  archivos `.env*` versionados) se marcan "no evaluables: no es un repositorio git".
+- **Carpeta que no es repositorio git, o repositorio sin remoto `origin`**: la verificación 1.7
+  falla (FR-031). En una carpeta que no es repositorio, el hallazgo de `.env*` versionados se
+  marca "no evaluable: no es un repositorio git".
 - **Carpetas ocultas** (que empiezan con `.`) en `PROJECTS_ROOT`: no son proyectos.
 - **`PROJECTS_ROOT` no configurado o inexistente**: el dashboard lo dice claramente y no muestra
   proyectos; no usa una ruta por defecto.
@@ -200,7 +214,9 @@ que aparece sin nivel y con el aviso, y que los demás proyectos se evalúan nor
   (`*.pem`, `*.key`, `id_*`) ni otros archivos de secretos, sin importar cómo se llegue a ellos.
 - **FR-005**: El sistema NO DEBE ejecutar nada de los proyectos. La única excepción son comandos
   de git de solo lectura, sin shell y con argumentos fijos, para: el remoto `origin` (validación
-  cruzada 1.7) y la lista de archivos versionados que coinciden con `.env*` (hallazgo crítico).
+  cruzada 1.7), la lista de archivos versionados que coinciden con `.env*` (hallazgo crítico), la
+  rama actual, la rama principal y si hay cambios sin commit (FR-030). Ninguno de esos comandos
+  puede modificar el repositorio, ni siquiera sus archivos internos.
 - **FR-006**: El sistema NO DEBE escribir, crear ni modificar nada dentro de `PROJECTS_ROOT`.
 - **FR-007**: El sistema DEBE rechazar archivos de más de 1 MB o que no sean archivos regulares y
   reportarlos como ilegibles.
@@ -223,6 +239,11 @@ que aparece sin nivel y con el aviso, y que los demás proyectos se evalúan nor
 
 **Portafolio y detalle**
 
+- **FR-030**: El sistema DEBE leer los archivos de cada proyecto tal como están en disco y mostrar,
+  por proyecto, la rama actual y un aviso si no es la rama principal (la que `origin` marca como
+  principal; si no se puede saber, `main`) o si hay cambios sin commit. En una carpeta que no es
+  repositorio git, esos datos se muestran como ausentes.
+
 - **FR-015**: La vista del portafolio DEBE mostrar por proyecto: nombre (o carpeta, si no hay
   nombre), tipo, cliente, fase, estado, fecha objetivo, siguiente hito y nivel de conformidad.
 - **FR-016**: El detalle de un proyecto DEBE mostrar todos los campos del manifiesto, el roadmap
@@ -242,6 +263,9 @@ que aparece sin nivel y con el aviso, y que los demás proyectos se evalúan nor
 - **FR-021**: El sistema DEBE ejecutar las verificaciones 1.1–1.11, 2.1–2.10 y 3.1, 3.3–3.8 de
   `standard/conformance.md` v1.0, incluidas las validaciones cruzadas del manifiesto, con la
   fecha de la lectura como fecha de evaluación.
+- **FR-031**: La validación cruzada 1.7 "`repo` coincide con el remoto `origin`" DEBE contar como
+  fallida si la carpeta no es repositorio git o no tiene remoto `origin`, con el detalle "no es
+  repositorio git" o "sin remoto `origin`".
 - **FR-022**: El nivel DEBE calcularse de forma acumulativa: el más alto cuyas verificaciones, y
   las de todos los niveles anteriores, pasan completas.
 - **FR-023**: Las verificaciones que requieren GitHub (3.2 y la visibilidad del repo) y la
@@ -275,7 +299,8 @@ que aparece sin nivel y con el aviso, y que los demás proyectos se evalúan nor
 
 - **Portafolio**: el conjunto de proyectos de `PROJECTS_ROOT` en una lectura; tiene la fecha de
   lectura, la versión del estándar encontrada en `nexoru-governance` y los avisos generales.
-- **Proyecto**: una carpeta del portafolio; tiene su carpeta, su manifiesto (si existe), su
+- **Proyecto**: una carpeta del portafolio; tiene su carpeta, su rama actual y sus avisos de rama
+  (rama no principal, cambios sin commit), su manifiesto (si existe), su
   roadmap, su resultado de conformidad y los errores de lectura.
 - **Manifiesto**: los campos del frontmatter de `PROJECT.md`, cada uno presente o ausente.
 - **Fase del roadmap**: fase, objetivo, specs vinculadas, fecha objetivo, estado manual, estado
