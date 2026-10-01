@@ -11,8 +11,12 @@ export function levelLabel(project: ProjectReading): string {
   return conformance.provisional ? `${conformance.level} (provisional)` : String(conformance.level);
 }
 
-export function LevelBadge({ project }: { project: ProjectReading }) {
+export function LevelBadge({ project, ...props }: { project: ProjectReading } & React.ComponentProps<"span">) {
   const { level, evaluation } = project.conformance;
   const variant = evaluation !== "evaluated" ? "outline" : level === 0 ? "destructive" : level === 3 ? "default" : "secondary";
-  return <Badge variant={variant}>{levelLabel(project)}</Badge>;
+  return (
+    <Badge variant={variant} {...props}>
+      {levelLabel(project)}
+    </Badge>
+  );
 }

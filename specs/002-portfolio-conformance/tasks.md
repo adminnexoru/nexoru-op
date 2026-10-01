@@ -243,7 +243,7 @@ advertencias, los hallazgos y las verificaciones no evaluadas.
 
 ### Pruebas de US2 (escribir primero, deben fallar)
 
-- [ ] T039 [P] [US2] E2E en `tests/e2e/us2-conformance.spec.ts`:
+- [X] T039 [P] [US2] E2E en `tests/e2e/us2-conformance.spec.ts`:
   - `confirmar`: nivel 0 y falla 1.11 con su línea;
   - `map-state-column`: nivel 1 y falla 2.6;
   - `spec-no-tasks`: advertencia, no falla;
@@ -254,9 +254,9 @@ advertencias, los hallazgos y las verificaciones no evaluadas.
 
 ### Implementación de US2
 
-- [ ] T040 [US2] Crear `src/app/(app)/projects/[folder]/page.tsx`: busca `folder` por igualdad exacta en el índice (`getPortfolio()`), sin usarlo nunca como ruta, y si no está responde `notFound()`. Muestra las secciones Manifiesto, Repositorio, Conformidad y Errores de lectura de contracts/ui.md
-- [ ] T041 [P] [US2] Componentes `src/components/portfolio/manifest-card.tsx`, `repository-card.tsx`, `conformance-panel.tsx` (nivel, fallas con número y detalle, advertencias, hallazgos con severidad, no evaluadas con motivo, y lista plegable de todas las verificaciones) y `read-errors.tsx`. Enlazar el nombre de cada fila de `portfolio-table.tsx` a `/projects/<folder>` *(ya hecho en T036)*
-- [ ] T042 [US2] Ejecutar `npm test` y `npm run test:e2e` hasta verde
+- [X] T040 [US2] Crear `src/app/(app)/projects/[folder]/page.tsx`: busca `folder` por igualdad exacta en el índice (`getPortfolio()`), sin usarlo nunca como ruta, y si no está responde `notFound()`. Muestra las secciones Manifiesto, Repositorio, Conformidad y Errores de lectura de contracts/ui.md
+- [X] T041 [P] [US2] Componentes `src/components/portfolio/manifest-card.tsx`, `repository-card.tsx`, `conformance-panel.tsx` (nivel, fallas con número y detalle, advertencias, hallazgos con severidad, no evaluadas con motivo, y lista plegable de todas las verificaciones) y `read-errors.tsx`. Enlazar el nombre de cada fila de `portfolio-table.tsx` a `/projects/<folder>` *(ya hecho en T036)*
+- [X] T042 [US2] Ejecutar `npm test` y `npm run test:e2e` hasta verde
 
 **Checkpoint**: US1 y US2 funcionan juntas y por separado.
 
