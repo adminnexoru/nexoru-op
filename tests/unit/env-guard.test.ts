@@ -1,6 +1,8 @@
 // T066: guards that keep the test and use environments apart (FR-034, research R13).
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { assertOpsEnv, assertTestEnv } from "../../scripts/env-guard";
+import { assertOpsEnv, assertTestEnv, assertTestProjectsRoot } from "../../scripts/env-guard";
 
 describe("assertTestEnv", () => {
   it("accepts the test Supabase instance", () => {
@@ -30,5 +32,24 @@ describe("assertOpsEnv", () => {
   it("rejects any non-local URL", () => {
     expect(() => assertOpsEnv("https://abcd.supabase.co")).toThrow(/local/);
     expect(() => assertOpsEnv(undefined)).toThrow();
+  });
+});
+
+// T006: tests may only read the fictitious portfolio in a temporary folder (FR-028).
+describe("assertTestProjectsRoot", () => {
+  it("accepts a nexoru-op-fixture-* folder under the system temp directory", () => {
+    const root = join(tmpdir(), "nexoru-op-fixture-abc123");
+    expect(assertTestProjectsRoot(root)).toBe(root);
+  });
+
+  it("rejects the owner's real portfolio", () => {
+    expect(() => assertTestProjectsRoot("/home/fili/proyectos")).toThrow(/portafolio ficticio/);
+  });
+
+  it("rejects relative paths, escapes with .. and a missing value", () => {
+    expect(() => assertTestProjectsRoot("nexoru-op-fixture-abc")).toThrow(/absoluta/);
+    expect(() => assertTestProjectsRoot(join(tmpdir(), "nexoru-op-fixture-abc", "..", "..", "home"))).toThrow();
+    expect(() => assertTestProjectsRoot(join(tmpdir(), "other-folder"))).toThrow(/portafolio ficticio/);
+    expect(() => assertTestProjectsRoot(undefined)).toThrow(/PROJECTS_ROOT/);
   });
 });

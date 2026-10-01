@@ -52,6 +52,11 @@ No te saltes pasos. Si un artefacto previo no existe o está desactualizado, vue
   Proyecto Nexoru (constitución v2.0.0). Next.js + Supabase local; los detalles están en
   `plan.md` de cada feature.
 - **Nunca** envía correos ni notificaciones ni escribe en los proyectos, en git o en GitHub.
+- **Lector seguro (principio XIII)**: todo acceso al disco del portafolio pasa por
+  `src/lib/portfolio/safe-fs.ts` (catálogo cerrado de rutas del estándar, rutas reales dentro de
+  `PROJECTS_ROOT`, nunca abre `.env*` ni llaves) y todo git por `src/lib/portfolio/git.ts` (comandos
+  fijos de solo lectura, sin shell). Ningún otro archivo importa `node:fs` ni `node:child_process`
+  para leer proyectos (`specs/002-portfolio-conformance/contracts/reader.md`).
 - **Nunca** se suben archivos `.env*` ni secretos al repositorio. El `.gitignore` los bloquea; si hace falta documentar variables, usa `.env.example` sin valores reales.
 
 ## Comandos y entornos
@@ -71,12 +76,20 @@ un entorno puede tocar el otro (`scripts/env-guard.ts`):
   cuenta real del Dueño y su bitácora.
 - Antes de `npm run db:test`, resetea la base de pruebas (`npx supabase db reset`): las E2E dejan
   datos que chocan con los fixtures de pgTAP.
-- Estructura: `src/app` (páginas), `src/lib` (auth, Supabase, IP, contraseñas), `src/proxy.ts`
-  (CSP con nonce y sesión), `supabase/migrations` (esquema, RLS y funciones, compartido por los dos
-  entornos), `supabase/tests` (pgTAP), `tests/unit` (Vitest), `tests/e2e` (Playwright), `scripts/`
-  (bootstrap y `op:*`).
+- Estructura: `src/app` (páginas: `/` portafolio y `/projects/[folder]` detalle), `src/lib` (auth,
+  Supabase, IP, contraseñas), `src/lib/portfolio` (lector seguro, git, lectura del portafolio e
+  índice), `src/lib/standard` (reglas puras de conformidad, por versión del estándar en `v1_0/`),
+  `src/components/portfolio`, `src/proxy.ts` (CSP con nonce y sesión), `supabase/migrations`
+  (esquema, RLS y funciones, compartido por los dos entornos), `supabase/tests` (pgTAP),
+  `tests/unit` (Vitest), `tests/e2e` (Playwright), `tests/fixtures/portfolio` (portafolio ficticio),
+  `scripts/` (bootstrap y `op:*`).
+- `PROJECTS_ROOT`: carpeta del portafolio. En uso va en `.env.op.local` (`/home/fili/proyectos`).
+  Las pruebas generan solas una copia temporal del portafolio ficticio (`nexoru-op-fixture-*`) y
+  `assertTestProjectsRoot` impide que lean cualquier otra carpeta; no la pongas en `.env.local`.
 - Regla de la base de datos: toda tabla con RLS y toda mutación sensible mediante función
   `security definer` que escribe su evento en la bitácora en la misma transacción.
+  Excepción documentada: `save_portfolio_snapshot` guarda el índice regenerable del portafolio sin
+  evento de bitácora (no es una acción sobre la cuenta).
 - Todo cambio llega a `main` por PR con CI en verde; el push lo autoriza el Dueño tras revisar.
 
 ## Repositorio público: qué nunca entra al repo

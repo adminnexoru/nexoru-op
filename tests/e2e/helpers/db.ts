@@ -18,6 +18,7 @@ export function adminClient(): SupabaseClient {
 // Child tables first. audit_events is append-only by design (FR-028) and is never cleaned:
 // tests must filter events by the ids of the users they create.
 const TABLES: Array<{ table: string; key: string }> = [
+  { table: "portfolio_snapshots", key: "id" },
   { table: "recovery_codes", key: "id" },
   { table: "app_sessions", key: "session_id" },
   { table: "auth_attempts", key: "email" },
@@ -45,4 +46,13 @@ export async function resetAppData(): Promise<void> {
       if (deleteError) throw deleteError;
     }
   }
+}
+
+/** Makes the stored portfolio index look older, to test the 10-minute expiry (FR-012). */
+export async function ageSnapshot(minutes: number): Promise<string> {
+  const readAt = new Date(Date.now() - minutes * 60_000).toISOString();
+  const { data, error } = await adminClient().from("portfolio_snapshots").update({ read_at: readAt }).not("id", "is", null).select("id");
+  if (error) throw error;
+  if (!data?.length) throw new Error("there is no portfolio snapshot to age");
+  return readAt;
 }

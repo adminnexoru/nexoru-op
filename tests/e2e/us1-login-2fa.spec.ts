@@ -60,7 +60,7 @@ test.afterEach(() => {
 
 test("activation with mandatory TOTP, then sign-in and sign-out (scenarios 1, 2 and manual sign-out)", async ({ page }) => {
   const { secret } = await activateOwner(page);
-  await expect(page.getByRole("heading", { name: /Nexoru Op/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Portafolio", level: 1 })).toBeVisible();
 
   await signOut(page);
   await page.goto("/");
