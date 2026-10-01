@@ -45,7 +45,7 @@ npm run test:e2e            # portafolio y detalle con el portafolio ficticio
 | 7 | Editar un `PROJECT.md` (p. ej. el `siguiente_hito` de un proyecto) y pulsar **Actualizar** | El cambio aparece y la hora de lectura se actualiza |
 | 8 | Esperar más de 10 minutos y volver a abrir `/` | La hora de lectura es nueva sin haber pulsado Actualizar |
 | 9 | Solo lectura (SC-007) | Antes y después de pulsar Actualizar, `git -C <proyecto> status --porcelain` da lo mismo en todos los proyectos, y la huella de fechas de modificación del paso 10 no cambia |
-| 10 | Huella de fechas | `find /home/fili/proyectos -path '*/node_modules' -prune -o -type f -printf '%T@ %p\n' \| sha256sum`, antes y después de Actualizar, con los editores cerrados, da el mismo resultado |
+| 10 | Huella de fechas | `find /home/fili/proyectos \( -name node_modules -o -name .next -o -name .next-op -o -path '*/nexoru-op/.op' -o -name test-results -o -name playwright-report \) -prune -o -type f -printf '%T@ %s %p\n' \| sort -k3`, guardado antes y después de Actualizar (con los editores cerrados) y comparado con `diff`, no muestra diferencias. Se excluye lo que cambia solo (dependencias, builds y el log de la app de uso). Los `git status` de comparación usan `--no-optional-locks` para no reescribir `.git/index` |
 | 11 | Seguridad (SC-005) | Cubierta por las pruebas unitarias con el portafolio ficticio: enlaces fuera de la raíz, `..`, `.env`, llaves, FIFO y archivo > 1 MB. Resultado: ninguno se lee |
 | 12 | Sin sesión | `/` y `/projects/nexoru-op` redirigen a `/login` |
 | 13 | Tiempo (SC-001, SC-006) | Desde que termina el inicio de sesión hasta ver el portafolio: menos de 1 minuto; la vista desde el índice abre en menos de 2 s |

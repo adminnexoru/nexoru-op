@@ -120,11 +120,16 @@ function sectionOrderIssues(body: string): string[] {
   return issues;
 }
 
+/** T057: a row matches a service when its id appears in the normalized name ("Anthropic API" → anthropic-api). */
+export function normalizeServiceName(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, "-");
+}
+
 function costIssues(body: string, servicios: string[]): string[] {
   const rows = costTable(body);
   if (rows === null) return ["`## Costo mensual` no tiene la tabla Servicio | USD/mes | Nota"];
   const issues = servicios
-    .filter((service) => !rows.some((row) => (row[0] ?? "").includes(service)))
+    .filter((service) => !rows.some((row) => normalizeServiceName(row[0] ?? "").includes(service)))
     .map((service) => `Falta la fila del servicio \`${service}\``);
   if (costTotal(rows) === null) issues.push("Falta la fila Total");
   return issues;

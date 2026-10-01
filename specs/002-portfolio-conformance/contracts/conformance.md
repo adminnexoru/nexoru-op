@@ -26,7 +26,7 @@ un caso que pasa y uno que falla** en `tests/unit/standard/` (SC-003).
 | 1.7 | `fase_desde` ≤ fecha de lectura; `fecha_objetivo` ≥ `fecha_inicio`; `urls` no vacía si aplica; `repo` = remoto `origin` normalizado (FR-031); `costo_mensual_usd` = fila **Total**; `mapa_funcional` existe | "`repo` es adminnexoru/x pero origin es adminnexoru/y" / "no es repositorio git" / "sin remoto origin" |
 | 1.8 | Las 9 secciones H2 con título exacto, en orden (se permiten otras H2 intercaladas) | "Falta `## Evidencia de validación`" / "`## Alcance` está fuera de orden" |
 | 1.9 | En `## Resumen ejecutivo` hay una línea que empieza con `**Métricas de éxito:**` | |
-| 1.10 | En `## Costo mensual` hay una tabla con encabezado `Servicio \| USD/mes \| Nota`, una fila cuyo primer valor contiene cada elemento de `servicios` y una fila cuyo primer valor, sin `*`, es `Total` | "Falta la fila del servicio `api-pagos`" |
+| 1.10 | En `## Costo mensual` hay una tabla con encabezado `Servicio \| USD/mes \| Nota`, una fila por cada elemento de `servicios` y una fila cuyo primer valor, sin `*`, es `Total`. **Correspondencia fila–servicio**: la fila corresponde al servicio si el identificador aparece en el primer valor de la fila normalizado (minúsculas y cada tramo de espacios a un guion): "Anthropic API" → `anthropic-api`, "Amazon SP-API" → `amazon-sp-api`, "API Demo (`api-demo`)" también vale | "Falta la fila del servicio `api-pagos`" |
 | 1.11 | `CONFIRMAR` no aparece en el archivo (distingue mayúsculas) | "CONFIRMAR en la línea 12" |
 
 Filas de 1.10 y 1.7: el valor de la columna `USD/mes` se interpreta quitando `*` y espacios; `—`

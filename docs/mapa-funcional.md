@@ -23,11 +23,11 @@ Es un **sistema de información local, de solo lectura y para un solo usuario**:
 | Acceso seguro | Inicio de sesión del Dueño con contraseña y TOTP obligatorio, bloqueo por intentos, sesiones con inactividad (30 min) y duración máxima (12 h), códigos de recuperación | Automático; lo decide la base de datos (RLS que exige AAL2) |
 | Proxy (`proxy.ts`) | CSP con nonce por petición, refresco de sesión, redirección según el nivel de autenticación y comprobación de la sesión en cada petición | Automático |
 | Bitácora | Registro de solo inserción de accesos, intentos fallidos, bloqueos y acciones sobre la cuenta; el Dueño la consulta con SQL de solo lectura en Supabase Studio del entorno de uso | Automático; nadie puede modificarla |
-| Lector del portafolio | Lee, dentro de `PROJECTS_ROOT`, solo los archivos que define el estándar (`PROJECT.md`, `docs/mapa-funcional.md`, `specs/`, `.specify/`) | Solo lectura; nunca lee `.env*` ni secretos |
-| Evaluador de conformidad | Calcula el nivel de conformidad (0 a 3) de cada proyecto con las reglas de `nexoru-governance` y avisa de versiones del estándar no soportadas | Automático; aplica las reglas del estándar sin interpretarlas |
-| Lector de git | Obtiene fechas y autores con comandos de git de solo lectura, sin shell y con argumentos fijos | Solo lectura |
+| Lector del portafolio | Lee, dentro de `PROJECTS_ROOT`, solo los archivos que define el estándar (`PROJECT.md`, `docs/mapa-funcional.md`, `CLAUDE.md`, los `tasks.md` de `specs/` y los flujos de `.github/workflows/`) y comprueba la existencia de `.specify/`, specs, planes y `.env.example`. Muestra la copia en disco tal como está (rama actual) | Solo lectura; una sola puerta al disco con catálogo cerrado de rutas; nunca abre `.env*` ni llaves; archivos de hasta 1 MB |
+| Evaluador de conformidad | Calcula el nivel de conformidad (0 a 3) de cada proyecto con las reglas de `nexoru-governance`, versionadas por versión del estándar; muestra las fallas del siguiente nivel, advertencias, hallazgos y lo que no se puede evaluar sin GitHub (nivel 3 provisional). No evalúa proyectos con una versión no soportada o sin versión, y avisa si el estándar local es más nuevo | Automático; aplica las reglas del estándar sin interpretarlas |
+| Lector de git | Obtiene la rama actual y la principal, si hay cambios sin commit, el remoto `origin`, los nombres de archivos `.env*` versionados y, para el historial, fechas y autores, con comandos de git de solo lectura, sin shell y con argumentos fijos | Solo lectura; no ejecuta programas configurados en el repo (`core.fsmonitor`) ni reescribe su índice |
 | Cliente de GitHub | Consulta CI, visibilidad y PRs de cada repo | Solo lectura; token opcional |
-| Índice del portafolio | Caché en la base de datos de lo leído, para mostrarlo rápido | Regenerable: se puede borrar y reconstruir sin pérdida |
+| Índice del portafolio | El resultado de la última lectura, en una fila de la base de datos; se vuelve a leer al abrir el dashboard si tiene más de 10 minutos o con el botón Actualizar | Regenerable: se puede borrar y reconstruir sin pérdida; solo lo lee y lo escribe el Dueño con segundo factor |
 | Scripts de terminal | `op:start` / `op:stop` (entorno de uso), `op:bootstrap-owner` (enlace de activación), `op:fingerprint` (huella de solo lectura del entorno de uso) y `db:start` (instancia de pruebas); todos arrancan Supabase en una red de Docker solo en `127.0.0.1` | Los ejecuta el Dueño en la terminal integrada de VS Code; los de un entorno se niegan a tocar el otro |
 
 ## 3. Flujo
@@ -53,6 +53,7 @@ flowchart LR
 - **Solo lectura:** el sistema no envía correos, mensajes ni notificaciones, y nunca escribe en los proyectos, en git ni en GitHub.
 - **Fuente de verdad:** el estado del portafolio sale siempre de los archivos de cada proyecto, de git y de GitHub. La base de datos solo guarda autenticación, bitácora e índice regenerable. Un dato que falta se muestra como ausente; nunca se inventa.
 - **Lector seguro:** solo rutas dentro de `PROJECTS_ROOT` (resolviendo rutas reales), solo los archivos del estándar, nunca `.env*` ni secretos, y sin ejecutar nada de los proyectos salvo comandos de git de solo lectura.
+- **Copia en disco:** cada proyecto se lee tal como está en disco; si no está en su rama principal o tiene cambios sin commit, se avisa.
 - **Estándar:** las reglas de conformidad se toman de `nexoru-governance`; un proyecto con una versión del estándar no soportada se señala en lugar de evaluarse con reglas que no le corresponden.
 - **Seguridad:** un solo usuario, el Dueño; segundo factor obligatorio; la app, la base de datos y Supabase Studio escuchan solo en `127.0.0.1`; ningún secreto en el repo ni en la base de datos.
 - **Entornos separados:** las pruebas corren contra una instancia distinta y no pueden tocar los datos de uso del Dueño.
@@ -64,6 +65,8 @@ flowchart LR
 | Manifiesto del proyecto (fase, estado, fechas, costos) | Frontmatter de `PROJECT.md` | Si el proyecto tiene `PROJECT.md` | Alta: es la decisión del Dueño. Si falta o no se puede parsear, el proyecto queda en nivel 0 |
 | Estado de cada fase del roadmap | `tasks.md` de las specs vinculadas | Si las specs tienen `tasks.md` | Alta: se deriva contando casillas, según `standard/roadmap.md`. Sin `tasks.md`, se usa el estado manual |
 | Nivel de conformidad | Reglas de `nexoru-governance/standard/conformance.md` aplicadas a los archivos | Siempre | Alta si la versión del estándar está soportada; si no, se avisa y no se evalúa |
+| Carpeta del portafolio | `PROJECTS_ROOT` en `.env.op.local` | Siempre que esté configurada | Si falta o no es una carpeta, el dashboard lo dice y no muestra proyectos |
+| Rama, cambios sin commit, remoto y `.env*` versionados | git (solo lectura) | Si la carpeta es la raíz de un repo git | Alta; de los `.env*` solo se leen nombres, nunca contenido |
 | Fechas y autores | git (`log`, solo lectura) | Si la carpeta es un repo git | Alta |
 | CI, visibilidad y PRs | API de GitHub | Con red; con o sin token | Alta cuando responde; si no responde, el dato se muestra como ausente |
 | Versión del estándar | `nexoru-governance` (`CHANGELOG.md` y `version_estandar`) | Si `nexoru-governance` está en `PROJECTS_ROOT` | Alta |

@@ -68,6 +68,23 @@ describe("level 1 allowed variants", () => {
     expect(check(files, "1.3").status).toBe("pass");
   });
 
+  it("matches a service row by its normalized name (T057): lowercase and spaces to hyphens", () => {
+    const files = replaceIn(baseFiles(), "project", "servicios:\n  - api-demo", "servicios:\n  - api-demo\n  - anthropic-api\n  - amazon-sp-api");
+    replaceIn(
+      files,
+      "project",
+      "| API Demo (`api-demo`) | 12 | Ficticio |",
+      "| API Demo (`api-demo`) | 12 | Ficticio |\n| Anthropic API | 0 | Ficticio |\n| Amazon SP-API | — | Sin costo |",
+    );
+    expect(check(files, "1.10").status).toBe("pass");
+  });
+
+  it("still fails when no row corresponds to a service after normalizing", () => {
+    const files = replaceIn(baseFiles(), "project", "servicios:\n  - api-demo", "servicios:\n  - api-demo\n  - anthropic-api");
+    replaceIn(files, "project", "| API Demo (`api-demo`) | 12 | Ficticio |", "| API Demo (`api-demo`) | 12 | Ficticio |\n| Anthropic | 0 | Sin la palabra API |");
+    expect(check(files, "1.10")).toMatchObject({ status: "fail", detail: "Falta la fila del servicio `anthropic-api`" });
+  });
+
   it("counts — as 0 in the cost table", () => {
     const files = replaceIn(baseFiles(), "project", "costo_mensual_usd: 12", "costo_mensual_usd: 0");
     replaceIn(files, "project", "| API Demo (`api-demo`) | 12 | Ficticio |", "| API Demo (`api-demo`) | — | Sin costo |");

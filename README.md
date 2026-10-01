@@ -12,6 +12,19 @@ estado del portafolio leyendo los proyectos de `PROJECTS_ROOT` según el
 Nexoru Op no envía correos ni notificaciones, no escribe en los proyectos, en git ni en GitHub, y
 escucha solo en `127.0.0.1`.
 
+## Qué muestra
+
+- **Portafolio (`/`):** cada proyecto de `PROJECTS_ROOT` con los datos de su `PROJECT.md` (tipo,
+  cliente, fase, estado, fecha objetivo, siguiente hito), su nivel de conformidad con el estándar
+  (0 a 3) y su rama actual. `nexoru-governance` aparece aparte, como estándar. El portafolio se
+  vuelve a leer al abrirlo si la última lectura tiene más de 10 minutos, o con el botón
+  **Actualizar**.
+- **Detalle (`/projects/<carpeta>`):** fallas para subir de nivel, advertencias, hallazgos (p. ej.
+  un `.env` versionado), verificaciones que todavía no se evalúan (las que necesitan GitHub),
+  manifiesto completo, roadmap con el estado derivado de `tasks.md` y errores de lectura.
+
+Un dato que no está en los archivos del proyecto se muestra como ausente (—); nunca se inventa.
+
 ## Requisitos
 
 - Node.js 24 (`nvm use 24`) y Docker.
@@ -27,7 +40,8 @@ npm run op:bootstrap-owner  # solo la primera vez: enlace de activación en la t
 npm run op:stop             # detiene todo sin borrar datos
 ```
 
-Variables en `.env.op.local` (ver `.env.example`). Guía completa, procedimientos de recuperación y
+Variables en `.env.op.local` (ver `.env.example`), incluida `PROJECTS_ROOT=/home/fili/proyectos`
+(la carpeta del portafolio; sin ella el dashboard avisa que falta). Guía completa, procedimientos de recuperación y
 consulta de la bitácora: [specs/001-user-access/quickstart.md](specs/001-user-access/quickstart.md).
 
 ## Desarrollo y pruebas (entorno de pruebas)
@@ -43,4 +57,5 @@ npm run test:e2e            # Playwright
 ```
 
 Variables en `.env.local` (ver `.env.example`). Las pruebas se niegan a correr contra el entorno de
-uso.
+uso y leen solo un portafolio ficticio que generan en una carpeta temporal
+(`tests/fixtures/portfolio/`); `PROJECTS_ROOT` no va en `.env.local`.

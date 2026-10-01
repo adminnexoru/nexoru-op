@@ -300,8 +300,8 @@ el dashboard avisa si el estándar local es más nuevo o no se encuentra.
 
 ## Phase 7: Cierre de la feature
 
-- [ ] T050 [P] Actualizar `CLAUDE.md` (estructura: `src/lib/portfolio`, `src/lib/standard`, `tests/fixtures`; regla "todo acceso al portafolio pasa por `safe-fs.ts` y `git.ts`"; `PROJECTS_ROOT`) y `README.md` (qué muestra el dashboard y cómo configurar `PROJECTS_ROOT`)
-- [ ] T051 Revisión de seguridad:
+- [X] T050 [P] Actualizar `CLAUDE.md` (estructura: `src/lib/portfolio`, `src/lib/standard`, `tests/fixtures`; regla "todo acceso al portafolio pasa por `safe-fs.ts` y `git.ts`"; `PROJECTS_ROOT`) y `README.md` (qué muestra el dashboard y cómo configurar `PROJECTS_ROOT`)
+- [X] T051 Revisión de seguridad:
   - `grep -rn "node:fs\|node:child_process\|from \"fs\"\|child_process" src/` solo encuentra `src/lib/portfolio/safe-fs.ts` y `src/lib/portfolio/git.ts`;
   - ningún componente cliente importa `src/lib/portfolio/*` salvo la action;
   - ninguna llamada a `exec`/`spawn` con `shell: true`;
@@ -312,8 +312,9 @@ el dashboard avisa si el estándar local es más nuevo o no se encuentra.
   - toda tabla con RLS (`supabase/tests/00_rls_enabled.test.sql` cubre la nueva);
   - `ss -ltn` sin puertos del proyecto en `0.0.0.0`.
 - [ ] T052 [MANUAL] Entorno de uso: el Dueño añade `PROJECTS_ROOT=/home/fili/proyectos` a `.env.op.local` y reinicia con `npm run op:stop` y `npm run op:start` (quickstart Parte 1 §2); Claude confirma después con `npx supabase migration list --workdir ops --local` que la migración del índice quedó aplicada
-- [ ] T053 [MANUAL] Validación en el entorno de uso: el Dueño recorre los escenarios 1–13 de `specs/002-portfolio-conformance/quickstart.md` (Parte 2), con Claude dando los comandos de la huella (escenarios 9 y 10), y confirma los resultados; Claude los anota como evidencia
-- [ ] T054 Al cerrar la fase:
+- [X] T053 [MANUAL] Validación en el entorno de uso: el Dueño recorre los escenarios 1–13 de `specs/002-portfolio-conformance/quickstart.md` (Parte 2), con Claude dando los comandos de la huella (escenarios 9 y 10), y confirma los resultados; Claude los anota como evidencia
+- [X] T057 *(añadida el 2026-10-01 con aprobación del Dueño, durante T053)* Verificación 1.10 con comparación normalizada: una fila de `## Costo mensual` corresponde a un servicio si el identificador aparece en el primer valor de la fila normalizado (minúsculas y espacios a guiones), p. ej. "Anthropic API" → `anthropic-api`. Documentarlo en `contracts/conformance.md`, añadir los casos a `tests/unit/standard/level1.test.ts` (nombre legible que pasa y nombre que no corresponde y falla) y cambiar `costIssues` en `src/lib/standard/v1_0/level1.ts`. Motivo: `amazon-business-engine` usa nombres legibles y el estándar 1.0 no define la correspondencia (aclaración propuesta para el estándar 1.0.1)
+- [X] T054 Al cerrar la fase:
   - actualizar `PROJECT.md`: roadmap (Fase 2 derivada y `Estado manual` vacío), decisiones clave (`yaml`, índice `jsonb`, git endurecido), riesgos, pendientes, evidencia de validación y siguiente hito (Fase 3);
   - actualizar `docs/mapa-funcional.md`: componentes Lector del portafolio, Evaluador de conformidad e Índice ya construidos, flujo y datos;
   - actualizar la fila de Nexoru Op en `/home/fili/proyectos/CLAUDE.md`.

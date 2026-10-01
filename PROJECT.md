@@ -18,7 +18,7 @@ stack:
 servicios:
   - have-i-been-pwned
 costo_mensual_usd: 0
-siguiente_hito: "Fase 2: especificar, planificar y construir el lector seguro del portafolio y la conformidad con el estándar (002-portfolio-conformance)"
+siguiente_hito: "Integrar la Fase 2 en main (PR de 002-portfolio-conformance) y especificar la Fase 3: historial de git"
 mapa_funcional: docs/mapa-funcional.md
 version_estandar: "1.0"
 ---
@@ -53,7 +53,7 @@ version_estandar: "1.0"
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) ya tiene `tasks.md`, así que su estado también se deriva. Las fases 3 y 4 no tienen spec y llevan estado manual.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) se deriva de su `tasks.md`; se validó con el portafolio real el 2026-10-01 y queda pendiente su integración en `main` (T055–T056). Las fases 3 y 4 no tienen spec y llevan estado manual.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
@@ -78,6 +78,14 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | La bitácora se consulta desde Supabase Studio del entorno de uso | Con un solo usuario no justifica una pantalla propia (B-007) |
 | Se conservan en la base los roles y la matriz de permisos ya construidos | Están probados; quitarlos cuesta más que mantenerlos y se retoman con B-003 |
 | Repo público | Tipo `interno` sin datos sensibles; permite rulesets y CI gratuitos. La constitución v2.0.0 retiró el número de WhatsApp y la lista de productos, que siguen en el historial de git |
+| Una sola puerta al disco del portafolio (`safe-fs.ts`) con catálogo cerrado de rutas del estándar, rutas reales dentro de `PROJECTS_ROOT` y lista de nombres de secretos | El portafolio contiene repos con secretos locales; un lector sin límites los expondría (principio XIII) |
+| Git solo con 6 comandos fijos, sin shell, con `core.fsmonitor` desactivado y `--no-optional-locks` | Un `.git/config` puede hacer que `git status` ejecute un programa, y `git status` normal reescribe `.git/index`; así no se ejecuta nada del repo ni cambia ningún archivo |
+| Reglas de conformidad como código puro y probado, por versión del estándar (`src/lib/standard/v1_0/`); solo se evalúan versiones soportadas | Una versión nueva del estándar es una carpeta nueva, no condiciones repartidas; evaluar con otra versión daría resultados falsos (principio XIV) |
+| Mientras GitHub no se consulte (Fase 4), la verificación 3.2 queda "no evaluada" y el nivel 3 se muestra como provisional | No se presenta como cumplido lo que no se verificó |
+| La correspondencia fila–servicio de la tabla de costos (1.10) se compara normalizada (minúsculas, espacios a guiones) | El estándar 1.0 no la define y `amazon-business-engine` usa nombres legibles; aclaración propuesta para el estándar 1.0.1 |
+| Índice regenerable en una sola fila `jsonb`, que se vuelve a leer si tiene más de 10 minutos o con Actualizar; guardarlo no deja evento de bitácora | Solo se consulta completo; no es una acción sobre la cuenta |
+| Cada proyecto se lee tal como está en disco, con aviso si no está en su rama principal o tiene cambios sin commit | Decisión del Dueño (clarify de la Fase 2): datos reales y aviso de cuándo desconfiar |
+| Dependencia nueva: `yaml` 2.x (sin dependencias, sin costo) | YAML 1.2 con acceso a nodos y comentarios, necesario para las verificaciones 1.2, 1.5, 1.6 y 3.1 |
 
 ## Costo mensual
 
@@ -95,10 +103,14 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 - **Riesgo de calidad:** las dos pilas de Supabase local (uso y pruebas) consumen unos 2–3 GB de memoria cada una; la de pruebas se puede detener cuando no se usa.
 - **Dependencia:** la conformidad se evalúa con el Estándar de Proyecto Nexoru v1.0 (`nexoru-governance`); cada versión nueva del estándar puede requerir actualizar el dashboard (principio XIV).
 - **Riesgo de calidad:** el repo es público; la constitución anterior, con el número comercial de WhatsApp y la lista de productos, sigue visible en el historial de git.
+- **Riesgo de calidad:** la regla normalizada de la verificación 1.10 es una interpretación del dashboard hasta que el estándar 1.0.1 la aclare (pendiente de la sesión de portafolio, anotado en `/home/fili/proyectos/CLAUDE.md`).
+- **Riesgo de calidad:** `nexoru-onboarding-line-endings` es un worktree de `nexoru-onboarding`, no un proyecto, y hoy se evalúa como tal (nivel 0) hasta que exista una forma de excluir carpetas (`.nexoruignore`, backlog B-011).
 
 ## Pendientes conocidos
 
-- Backlog en `specs/backlog.md`: B-001 a B-009. En particular, B-008 (validar los procedimientos manuales de recuperación) y B-009 (`op:backup` / `op:restore`, opcional).
+- T055 y T056 de `specs/002-portfolio-conformance/tasks.md`: PR de `002-portfolio-conformance` hacia `main` y merge.
+- Backlog en `specs/backlog.md`: B-001 a B-011. En particular, B-008 (validar los procedimientos manuales de recuperación), B-009 (`op:backup` / `op:restore`, opcional), B-010 (adoptar el look and feel de `nexoru-onboarding`, para la siguiente iteración) y B-011 (soportar `.nexoruignore`).
+- Para la sesión de portafolio: aclaración del estándar 1.0.1 (correspondencia fila–servicio) y propuesta de `.nexoruignore`.
 
 ## Evidencia de validación
 
@@ -110,11 +122,14 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | Todo escucha solo en `127.0.0.1` (FR-033) | `ss -ltn`: app (3000, 3200) y las dos instancias de Supabase (5432x, 5532x) solo en `127.0.0.1`; desde la IP de red y desde otro dispositivo no responden (2026-09-28) |
 | Bitácora inmutable y consultable desde Studio (FR-028, FR-038) | La consulta del quickstart devuelve los eventos del entorno de uso; un `update` falla con `audit_events is append-only` (2026-09-28) |
 | CSP con nonce | La app de uso responde con `script-src 'self' 'nonce-…' 'strict-dynamic'`, sin `'unsafe-eval'`; las E2E fallan ante cualquier violación de CSP y no hubo ninguna |
+| Fase 2: lector seguro, git, conformidad v1.0, portafolio, detalle, roadmap y versiones | En local, rama `002-portfolio-conformance`, 2026-10-01: Vitest 281/281 (una prueba por verificación de conformidad, enlaces fuera de la raíz, `.env`, FIFO, archivo > 1 MB, `core.fsmonitor` malicioso), pgTAP 88/88 y Playwright 38/38, con un portafolio ficticio |
+| Solo lectura sobre el portafolio real (SC-007) | Entorno de uso, 2026-10-01: antes y después de pulsar Actualizar, fechas de modificación y tamaño de 5206 archivos de `/home/fili/proyectos` idénticos y `git status` de los 7 repos sin cambios |
+| Validación con el portafolio real (quickstart Fase 2, escenarios 1–13) | Validada por el Dueño el 2026-10-01 en el entorno de uso: 6 proyectos y el estándar aparte; niveles: `amazon-business-engine` 3 (provisional), `nexoru-op` 3 (provisional) y 0 los cuatro sin `PROJECT.md`; ramas y avisos correctos; Actualizar, vencimiento a 10 min y acceso sin sesión (redirige a `/login`) comprobados; sin discrepancias con los `PROJECT.md` |
+| Lectura de 50 proyectos (SC-006) | Prueba unitaria: 50 copias de un proyecto ficticio con repo git se leen en menos de 10 s |
 
 ## Siguiente hito
 
-Fase 2: especificar, planificar y construir el lector seguro del portafolio y la conformidad con el estándar (002-portfolio-conformance).
+Integrar la Fase 2 en main (PR de 002-portfolio-conformance) y especificar la Fase 3: historial de git.
 
-1. **Spec:** `specs/002-portfolio-conformance/spec.md`, con `/speckit-clarify` para las preguntas abiertas y aprobación del Dueño.
-2. **Plan, tareas y análisis:** `/speckit-plan`, `/speckit-tasks` y `/speckit-analyze` sin hallazgos críticos, y aprobación del `tasks.md`.
-3. **Construcción y cierre:** implementación con pruebas, PR con CI en verde y merge. Fecha objetivo de la fase: 2026-10-18.
+1. **Cierre de la Fase 2:** PR con CI en verde y merge (T055–T056). Fecha objetivo de la fase: 2026-10-18.
+2. **Fase 3 (fecha objetivo 2026-10-25):** nueva spec con `/speckit-specify` para el historial de git de cada proyecto (fechas y autores, solo lectura). En esa iteración se decide también la adopción del look and feel de `nexoru-onboarding` (backlog B-010).
