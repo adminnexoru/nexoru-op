@@ -269,9 +269,9 @@ advertencias, los hallazgos y las verificaciones no evaluadas.
 **Independent Test**: el detalle de `roadmap-states` muestra `completa (12/12)`,
 `en-curso (10/12)`, `pendiente (0/5)`, `pendiente` manual y la falla 3.6.
 
-- [ ] T043 [P] [US3] E2E en `tests/e2e/us3-roadmap.spec.ts`: las fases de `roadmap-states` con sus estados, conteos y distintivos "derivado" o "manual"; la falla 3.6 en la conformidad; y `no-manifest` con el roadmap como ausente
-- [ ] T044 [US3] Crear `src/components/portfolio/roadmap-table.tsx` (Fase, Objetivo, Specs, Fecha objetivo y Estado con distintivo "derivado (hechas/total)" o "manual") y añadirlo al detalle en `src/app/(app)/projects/[folder]/page.tsx`
-- [ ] T045 [US3] Ejecutar `npm run test:e2e` hasta verde
+- [X] T043 [P] [US3] E2E en `tests/e2e/us3-roadmap.spec.ts`: las fases de `roadmap-states` con sus estados, conteos y distintivos "derivado" o "manual"; la falla 3.6 en la conformidad; y `no-manifest` con el roadmap como ausente
+- [X] T044 [US3] Crear `src/components/portfolio/roadmap-table.tsx` (Fase, Objetivo, Specs, Fecha objetivo y Estado con distintivo "derivado (hechas/total)" o "manual") y añadirlo al detalle en `src/app/(app)/projects/[folder]/page.tsx`
+- [X] T045 [US3] Ejecutar `npm run test:e2e` hasta verde
 
 ---
 
