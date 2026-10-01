@@ -1,0 +1,30 @@
+// T048: evaluates a project only with a supported version of the standard (FR-026, constitution
+// XIV). A project that declares another version, or none, is not evaluated with rules that are not
+// its own: its manifest and roadmap are still shown. Without a readable manifest there is no
+// version to read, and level 0 is true with any version, so it is evaluated with 1.0.
+import type { ConformanceResult } from "@/lib/portfolio/types";
+import { parseFrontmatter } from "./frontmatter";
+import type { ProjectFiles } from "./project-files";
+import { evaluateProject as evaluateV1_0, type ProjectEvaluation } from "./v1_0/evaluate";
+import { isSupportedVersion } from "./versions";
+
+function notEvaluated(evaluation: "unsupported_version" | "no_version"): ConformanceResult {
+  return { standardVersion: null, evaluation, level: null, provisional: false, checks: [], failures: [], warnings: [], findings: [] };
+}
+
+export function evaluateProject(files: ProjectFiles, evaluationDate: string): ProjectEvaluation {
+  const result = evaluateV1_0(files, evaluationDate);
+  const fm = files.project.ok ? parseFrontmatter(files.project.text) : null;
+  if (fm?.status !== "ok") return result;
+
+  const declared = fm.data.version_estandar;
+  if (declared === undefined || declared === null || declared === "") return { ...result, conformance: notEvaluated("no_version") };
+  if (typeof declared !== "string" || !isSupportedVersion(declared)) {
+    return {
+      ...result,
+      manifest: result.manifest && { ...result.manifest, version_estandar: String(declared) },
+      conformance: notEvaluated("unsupported_version"),
+    };
+  }
+  return result;
+}

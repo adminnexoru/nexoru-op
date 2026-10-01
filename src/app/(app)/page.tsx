@@ -44,6 +44,26 @@ export default async function PortfolioPage() {
         </Alert>
       ) : null}
 
+      {standard.found && standard.newerThanSupported ? (
+        <Alert data-testid="standard-warning">
+          <AlertTitle>El estándar local es más nuevo</AlertTitle>
+          <AlertDescription>
+            {standard.folder} está en la versión {standard.version}, pero el dashboard solo sabe evaluar la{" "}
+            {portfolio.supportedStandardVersions.join(", ")}. Los proyectos que declaren la versión nueva no se evalúan.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {root.status === "ok" && !standard.found ? (
+        <Alert data-testid="standard-warning">
+          <AlertTitle>No se encontró el estándar</AlertTitle>
+          <AlertDescription>
+            No hay una carpeta {standard.folder} en el portafolio. Los proyectos se evalúan con la versión soportada:{" "}
+            {portfolio.supportedStandardVersions.join(", ")}.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       {warnings.map((warning) => (
         <Alert key={warning.detail}>
           <AlertTitle>Identificador duplicado</AlertTitle>

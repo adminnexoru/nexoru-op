@@ -172,3 +172,36 @@ describe("performance (SC-006)", () => {
     }
   });
 });
+
+// T046: the standard found in nexoru-governance (FR-027).
+describe("standard version found in nexoru-governance", () => {
+  it("flags a CHANGELOG newer than the supported versions", async () => {
+    const copy = await buildFixturePortfolio({ standardVersion: "1.1.0" });
+    try {
+      expect((await readPortfolio(copy)).standard).toEqual({
+        folder: "nexoru-governance",
+        found: true,
+        version: "1.1",
+        newerThanSupported: true,
+      });
+    } finally {
+      await removeFixturePortfolio(copy);
+    }
+  });
+
+  it("reports when nexoru-governance is not in the portfolio, and still evaluates with 1.0", async () => {
+    const copy = await buildFixturePortfolio({ withoutStandard: true });
+    try {
+      const result = await readPortfolio(copy);
+      expect(result.standard.found).toBe(false);
+      expect(result.projects.find((p) => p.folder === "level3-demo")?.conformance).toMatchObject({ standardVersion: "1.0", level: 3 });
+    } finally {
+      await removeFixturePortfolio(copy);
+    }
+  });
+
+  it("does not evaluate the fictitious projects with an unsupported version or without one", () => {
+    expect(project("unsupported-version").conformance).toMatchObject({ evaluation: "unsupported_version", level: null });
+    expect(project("no-version").conformance).toMatchObject({ evaluation: "no_version", level: null });
+  });
+});

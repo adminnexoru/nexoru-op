@@ -1,7 +1,7 @@
 // T032: reads one project folder through the safe reader and git (contracts/reader.md) and
-// evaluates it with the standard v1.0. Only catalog paths are requested.
+// evaluates it with its (supported) version of the standard. Only catalog paths are requested.
 import type { FileContent, ProjectFiles, SpecFolder } from "@/lib/standard/project-files";
-import { evaluateProject } from "@/lib/standard/v1_0/evaluate";
+import { evaluateProject } from "@/lib/standard/evaluate";
 import { readGitInfo, type GitReading } from "./git";
 import type { SafeRoot } from "./safe-fs";
 import type { Problem, ProjectReading } from "./types";

@@ -284,7 +284,7 @@ el dashboard avisa si el estándar local es más nuevo o no se encuentra.
 `CHANGELOG.md` ficticio en `## [1.1.0]` aparece el aviso general; sin `nexoru-governance`, el aviso
 "no se encontró el estándar".
 
-- [ ] T046 [P] [US4] Pruebas en `tests/unit/standard/evaluate.test.ts` y `tests/unit/portfolio/read-portfolio.test.ts`:
+- [X] T046 [P] [US4] Pruebas en `tests/unit/standard/versions.test.ts` (antes previstas en `evaluate.test.ts`) y `tests/unit/portfolio/read-portfolio.test.ts`:
   - `version_estandar: "2.0"` ⇒ `evaluation="unsupported_version"`, `level=null`, `checks=[]` y manifiesto presente;
   - sin `version_estandar` ⇒ `"no_version"`;
   - sin `PROJECT.md` o con YAML inválido ⇒ se evalúa con 1.0 y queda en nivel 0 (contracts/conformance.md, "Versiones");
@@ -292,9 +292,9 @@ el dashboard avisa si el estándar local es más nuevo o no se encuentra.
   - sin carpeta `nexoru-governance` ⇒ `found=false`.
 
   Para los dos últimos, crear copias del portafolio ficticio con esas variantes.
-- [ ] T047 [P] [US4] E2E en `tests/e2e/us4-standard-version.spec.ts`: la fila de `unsupported-version` y la de `no-version` con sus etiquetas; el portafolio muestra las versiones soportadas y la encontrada
-- [ ] T048 [US4] Aplicar en `src/lib/standard/v1_0/evaluate.ts` (o en un despachador `src/lib/standard/evaluate.ts` por versión) la regla de versiones de contracts/conformance.md, y mostrar en `src/app/(app)/page.tsx` los avisos de estándar más nuevo o no encontrado
-- [ ] T049 [US4] Ejecutar `npm test` y `npm run test:e2e` hasta verde
+- [X] T047 [P] [US4] E2E en `tests/e2e/us4-standard-version.spec.ts`: la fila de `unsupported-version` y la de `no-version` con sus etiquetas; el portafolio muestra las versiones soportadas y la encontrada
+- [X] T048 [US4] Aplicar en `src/lib/standard/v1_0/evaluate.ts` (o en un despachador `src/lib/standard/evaluate.ts` por versión) la regla de versiones de contracts/conformance.md, y mostrar en `src/app/(app)/page.tsx` los avisos de estándar más nuevo o no encontrado
+- [X] T049 [US4] Ejecutar `npm test` y `npm run test:e2e` hasta verde
 
 ---
 
