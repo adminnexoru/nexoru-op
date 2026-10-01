@@ -18,7 +18,7 @@ un caso que pasa y uno que falla** en `tests/unit/standard/` (SC-003).
 | # | Implementación | Detalle típico de la falla |
 |---|---|---|
 | 1.1 | Existe `PROJECT.md` legible | "No existe PROJECT.md" |
-| 1.2 | Empieza con `---\n`, cierra con `---` y el YAML (esquema `core`) no tiene errores | "El frontmatter no se puede interpretar (línea N)" |
+| 1.2 | Empieza con `---\n`, cierra con `---` y el YAML (esquema `core`) no tiene errores | "El frontmatter no se puede interpretar (cerca de la línea N)": la línea donde el intérprete detecta el error |
 | 1.3 | Campos obligatorios con su tipo: texto, número (`costo_mensual_usd`) o lista de texto (`stack`, `servicios`, `urls`). `fecha_objetivo` es obligatoria salvo en `operacion` y `pausado`; `urls` lo es con `despliegue` `nexoru-subdominio` o `dominio-cliente` | "Falta el campo `repo`" |
 | 1.4 | `tipo`, `fase`, `estado`, `despliegue` en sus listas; `id` con `^[a-z0-9]+(-[a-z0-9]+)*$`; `version_estandar` con `^\d+\.\d+$`; `mapa_funcional` = `docs/mapa-funcional.md` | "`estado: amarillo` no es un valor permitido" |
 | 1.5 | Sin mapas anidados, listas de objetos, anclas, alias ni escalares de bloque (`\|`, `>`) | "`stack` contiene un objeto" |
@@ -63,13 +63,22 @@ casillas.
 | 3.7 | Las fases sin estado derivado tienen `Estado manual` con un valor permitido |
 | 3.8 | Toda fase `bloqueada` tiene una línea que empieza con `- **Bloqueo` en `## Riesgos, bloqueos y dependencias` |
 
+## Verificaciones dependientes
+
+Una verificación que necesita el resultado de otra que falló no se repite como falla: queda
+`not_evaluated` con el detalle "Depende de X". Por ejemplo, sin `PROJECT.md` (1.1), las 1.2–1.11
+quedan "Depende de 1.1"; con el YAML ilegible (1.2), las 1.3–1.7 y 1.10 quedan "Depende de 1.2";
+sin tabla de roadmap (3.3), las 3.4–3.8 quedan "Depende de 3.3". Así, las fallas mostradas son solo
+las reales. Estas verificaciones siempre acompañan a una falla de su nivel o de uno anterior, por lo
+que no producen un nivel provisional: **solo 3.2** (pendiente de GitHub) lo produce.
+
 ## Cálculo del nivel
 
 ```text
 nivel = 0
 para N en 1..3:
   si todas las verificaciones de N son pass: nivel = N
-  si no, si las únicas que no pasan son not_evaluated (hoy solo 3.2): nivel = N, provisional = true; parar
+  si no, si las únicas que no pasan son not_evaluated pendientes de otra fase (hoy solo 3.2): nivel = N, provisional = true; parar
   si no: parar
 failures = verificaciones fail del nivel (nivel + 1)
 ```

@@ -89,8 +89,8 @@ e índice. Ninguna historia empieza sin esta fase.
 
 ### Pruebas primero (deben fallar)
 
-- [ ] T006 [P] Pruebas de `assertTestProjectsRoot` en `tests/unit/env-guard.test.ts`: acepta solo rutas absolutas bajo `os.tmpdir()` cuyo último componente empiece con `nexoru-op-fixture-`; rechaza `/home/fili/proyectos`, rutas relativas, rutas con `..` que salgan de `tmpdir` y `undefined`, con mensaje en español
-- [ ] T007 [P] Pruebas del lector seguro en `tests/unit/portfolio/safe-fs.test.ts`, contra el portafolio ficticio (SC-005):
+- [X] T006 [P] Pruebas de `assertTestProjectsRoot` en `tests/unit/env-guard.test.ts`: acepta solo rutas absolutas bajo `os.tmpdir()` cuyo último componente empiece con `nexoru-op-fixture-`; rechaza `/home/fili/proyectos`, rutas relativas, rutas con `..` que salgan de `tmpdir` y `undefined`, con mensaje en español
+- [X] T007 [P] Pruebas del lector seguro en `tests/unit/portfolio/safe-fs.test.ts`, contra el portafolio ficticio (SC-005):
   - una ruta fuera del catálogo se rechaza sin tocar el disco (espía sobre `fs`);
   - `../otro/PROJECT.md` → `outside_root`;
   - enlace de `symlink-escape` → `outside_root`;
@@ -102,7 +102,7 @@ e índice. Ninguna historia empieza sin esta fase.
   - CRLF normalizado;
   - `.env.example` se comprueba con `lstat` y nunca con `open` (espía);
   - listar `specs/` ignora entradas que no coinciden con `^\d{3}-[a-z0-9-]+$`.
-- [ ] T008 [P] Pruebas de git en `tests/unit/portfolio/git.test.ts`, contra repos del portafolio ficticio:
+- [X] T008 [P] Pruebas de git en `tests/unit/portfolio/git.test.ts`, contra repos del portafolio ficticio:
   - `no-git` → `isRepo=false`, aunque esté dentro de otra carpeta con repo;
   - `no-origin` → `originRepo=null` y `mainBranch="main"` (sin `origin/HEAD`, se usa `main`);
   - `feature-branch` → rama `feature/x`, `onMainBranch=false`, `hasUncommittedChanges=true`;
@@ -110,27 +110,27 @@ e índice. Ninguna historia empieza sin esta fase.
   - normalización de remotos https, `git@` y `ssh://` a `org/nombre`;
   - un repo con `core.fsmonitor` configurado a un script que crea un archivo testigo: tras leer, **el testigo no existe**;
   - tras todas las lecturas, `mtime` y hash de `.git/index` sin cambios.
-- [ ] T009 [P] Pruebas del intérprete de Markdown en `tests/unit/standard/markdown.test.ts`:
+- [X] T009 [P] Pruebas del intérprete de Markdown en `tests/unit/standard/markdown.test.ts`:
   - H2 con y sin numeración, sin distinguir mayúsculas;
   - H2 dentro de bloque de código ignorado;
   - tablas con `\|` escapado y separadores `|---|`;
   - detección de ```` ```mermaid ````;
   - casillas `- [ ]`, `- [x]`, `- [X]` fuera de bloques de código;
   - texto de una sección hasta el siguiente H2.
-- [ ] T010 [P] Pruebas del frontmatter en `tests/unit/standard/frontmatter.test.ts`:
+- [X] T010 [P] Pruebas del frontmatter en `tests/unit/standard/frontmatter.test.ts`:
   - fechas quedan como texto;
   - detecta objetos anidados, listas de objetos, anclas, alias y escalares `|`/`>` (1.5);
   - detecta comentarios YAML (hallazgo bajo);
   - YAML inválido devuelve error con línea;
   - archivo sin `---` inicial.
-- [ ] T011 [P] Pruebas de verificaciones de nivel 1 en `tests/unit/standard/level1.test.ts`: **un caso que pasa y uno que falla por cada verificación 1.1–1.11**, incluidas todas las validaciones cruzadas de 1.7 (`fase_desde` futura, `fecha_objetivo` < `fecha_inicio`, `urls` vacía con `nexoru-subdominio`, `repo` ≠ origin, "no es repositorio git", "sin remoto `origin`", Total ≠ `costo_mensual_usd`, mapa inexistente), `fecha_objetivo` opcional en `operacion`/`pausado`, y `—` como 0 en la tabla de costos (contracts/conformance.md)
-- [ ] T012 [P] Pruebas de nivel 2 en `tests/unit/standard/level2.test.ts`: un caso que pasa y uno que falla por cada verificación 2.1–2.10, y las advertencias (spec sin `plan.md`, sin `tasks.md`, `tasks.md` sin casillas)
-- [ ] T013 [P] Pruebas del roadmap y del nivel 3 en `tests/unit/standard/level3.test.ts` y `tests/unit/standard/roadmap.test.ts`:
+- [X] T011 [P] Pruebas de verificaciones de nivel 1 en `tests/unit/standard/level1.test.ts`: **un caso que pasa y uno que falla por cada verificación 1.1–1.11**, incluidas todas las validaciones cruzadas de 1.7 (`fase_desde` futura, `fecha_objetivo` < `fecha_inicio`, `urls` vacía con `nexoru-subdominio`, `repo` ≠ origin, "no es repositorio git", "sin remoto `origin`", Total ≠ `costo_mensual_usd`, mapa inexistente), `fecha_objetivo` opcional en `operacion`/`pausado`, y `—` como 0 en la tabla de costos (contracts/conformance.md)
+- [X] T012 [P] Pruebas de nivel 2 en `tests/unit/standard/level2.test.ts`: un caso que pasa y uno que falla por cada verificación 2.1–2.10, y las advertencias (spec sin `plan.md`, sin `tasks.md`, `tasks.md` sin casillas)
+- [X] T013 [P] Pruebas del roadmap y del nivel 3 en `tests/unit/standard/level3.test.ts` y `tests/unit/standard/roadmap.test.ts`:
   - estado derivado `completa` / `en-curso` / `pendiente` con conteos, y solo si todas las specs de la fase tienen `tasks.md`;
   - `shownState`;
   - un caso que pasa y uno que falla por 3.1 (`on` como texto, lista y mapa) y 3.3–3.8;
   - 3.2 siempre `not_evaluated` con el motivo "Se evaluará con GitHub en la Fase 4".
-- [ ] T014 [P] Pruebas del nivel y los hallazgos en `tests/unit/standard/evaluate.test.ts`:
+- [X] T014 [P] Pruebas del nivel y los hallazgos en `tests/unit/standard/evaluate.test.ts`:
   - nivel acumulativo (falla en 1 ⇒ 0 aunque pase 2);
   - todo lo evaluable del nivel 3 en verde ⇒ `level 3` y `provisional=true`;
   - `failures` = fallidas del nivel siguiente;
@@ -138,7 +138,7 @@ e índice. Ninguna historia empieza sin esta fase.
   - `secret_history`, `repo_visibility` y `env_example_coverage` en `not_evaluated`;
   - en carpeta sin repo, `env_versioned` en `not_evaluated`;
   - ningún `detail` contiene texto de archivos `.env*`.
-- [ ] T015 [P] pgTAP en `supabase/tests/20_portfolio_snapshots.test.sql`:
+- [X] T015 [P] pgTAP en `supabase/tests/20_portfolio_snapshots.test.sql`:
   - RLS activada;
   - `authenticated` sin `insert`/`update`/`delete` directos;
   - `select` solo con AAL2, cuenta activa y rol `owner`;
@@ -149,18 +149,18 @@ e índice. Ninguna historia empieza sin esta fase.
 
 ### Implementación
 
-- [ ] T016 Implementar `assertTestProjectsRoot` en `scripts/env-guard.ts` (T006) y llamarlo en `tests/unit/global-setup.ts` y `playwright.config.ts` antes de exponer la ruta
-- [ ] T017 [P] Definir los tipos y esquemas `zod` del resultado de lectura en `src/lib/portfolio/types.ts`, exactamente como `data-model.md` §2: `PortfolioReading`, `StandardInfo`, `ProjectReading`, `GitInfo`, `Manifest`, `RoadmapPhase`, `RoadmapState` ("completa" | "implementada-sin-validar" | "en-curso" | "bloqueada" | "pendiente"), `ConformanceResult`, `Check` (status "pass" | "fail" | "not_evaluated"), `Finding` (severity "critical" | "high" | "medium" | "low") y `Problem` (reason "missing" | "outside_root" | "secret_file" | "too_large" | "not_regular_file" | "invalid_utf8" | "invalid_yaml" | "git_error" | "unreadable"). Incluye `FORMAT_VERSION = 1`
-- [ ] T018 Implementar `src/lib/portfolio/safe-fs.ts` según contracts/reader.md: catálogo cerrado de rutas, `realpath` dentro de `realpath(root) + sep`, lista de nombres de secretos sobre el nombre pedido y el real, `open(…, "r")` + `fstat` (archivo regular, hasta 1 048 576 bytes) + lectura del mismo descriptor, `TextDecoder("utf-8", { fatal: true })`, CRLF→LF, `lstat` para existencias y `readdir` solo en la raíz, `specs/` y `.github/workflows/`. Devuelve `{ ok: true, text } | { ok: false, problem }` (T007)
-- [ ] T019 Implementar `src/lib/portfolio/git.ts` según contracts/reader.md: `execFile("git", [...PREFIX, ...args])` sin shell, `cwd` real, 5 s, `maxBuffer` 10 MB, entorno mínimo (`PATH`, `HOME`, `GIT_CONFIG_NOSYSTEM=1`, `GIT_OPTIONAL_LOCKS=0`, `GIT_TERMINAL_PROMPT=0`, `LC_ALL=C`), los 6 comandos fijos y `normalizeGithubRemote()`. Devuelve `GitInfo` y la lista de `.env*` versionados; los errores dan datos ausentes con `git_error` (T008)
-- [ ] T020 [P] Implementar `src/lib/standard/markdown.ts`: `h2Sections`, `sectionText`, `tables` (encabezado, filas, celdas con `\|`), `hasMermaidBlock`, `taskCheckboxes` (hechas / total), ignorando bloques de código (T009)
-- [ ] T021 [P] Implementar `src/lib/standard/frontmatter.ts` con `yaml` (`parseDocument`, esquema `core`): extraer el bloque entre `---`, devolver valores planos, violaciones de 1.5 con el campo, presencia de comentarios y error con línea (T010)
-- [ ] T022 [P] Implementar `src/lib/standard/versions.ts`: `SUPPORTED_STANDARD_VERSIONS = ["1.0"]`, `parseChangelogVersion(text)` (primer `## [X.Y.Z]` → `"X.Y"`) y `isNewerThanSupported(version)`
-- [ ] T023 Implementar `src/lib/standard/v1_0/manifest.ts` (campos, tipos, enumerados y formatos de `project-manifest.md`; ausente o de tipo incorrecto ⇒ `null`) y `src/lib/standard/v1_0/level1.ts` (1.1–1.11, incluida 1.7 con FR-031) sobre un `ProjectFiles` en memoria y una fecha de evaluación (T011)
-- [ ] T024 Implementar `src/lib/standard/v1_0/level2.ts` (2.1–2.10 y advertencias) (T012)
-- [ ] T025 Implementar `src/lib/standard/v1_0/roadmap.ts` (tabla, `specs`, `targetDate`, `manualState`, `derived` con conteos y `shownState`) y `src/lib/standard/v1_0/level3.ts` (3.1, 3.2 `not_evaluated`, 3.3–3.8) (T013)
-- [ ] T026 Implementar `src/lib/standard/v1_0/findings.ts` y `src/lib/standard/v1_0/evaluate.ts`: todas las verificaciones, el nivel acumulativo con `provisional`, `failures`, `warnings` y `findings` (contracts/conformance.md, "Cálculo del nivel") (T014)
-- [ ] T027 Migración `supabase/migrations/20261001000000_portfolio_snapshots.sql` según data-model §1:
+- [X] T016 Implementar `assertTestProjectsRoot` en `scripts/env-guard.ts` (T006) y llamarlo en `tests/unit/global-setup.ts` y `playwright.config.ts` antes de exponer la ruta
+- [X] T017 [P] Definir los tipos y esquemas `zod` del resultado de lectura en `src/lib/portfolio/types.ts`, exactamente como `data-model.md` §2: `PortfolioReading`, `StandardInfo`, `ProjectReading`, `GitInfo`, `Manifest`, `RoadmapPhase`, `RoadmapState` ("completa" | "implementada-sin-validar" | "en-curso" | "bloqueada" | "pendiente"), `ConformanceResult`, `Check` (status "pass" | "fail" | "not_evaluated"), `Finding` (severity "critical" | "high" | "medium" | "low") y `Problem` (reason "missing" | "outside_root" | "secret_file" | "too_large" | "not_regular_file" | "invalid_utf8" | "invalid_yaml" | "git_error" | "unreadable"). Incluye `FORMAT_VERSION = 1`
+- [X] T018 Implementar `src/lib/portfolio/safe-fs.ts` según contracts/reader.md: catálogo cerrado de rutas, `realpath` dentro de `realpath(root) + sep`, lista de nombres de secretos sobre el nombre pedido y el real, `open(…, "r")` + `fstat` (archivo regular, hasta 1 048 576 bytes) + lectura del mismo descriptor, `TextDecoder("utf-8", { fatal: true })`, CRLF→LF, `lstat` para existencias y `readdir` solo en la raíz, `specs/` y `.github/workflows/`. Devuelve `{ ok: true, text } | { ok: false, problem }` (T007)
+- [X] T019 Implementar `src/lib/portfolio/git.ts` según contracts/reader.md: `execFile("git", [...PREFIX, ...args])` sin shell, `cwd` real, 5 s, `maxBuffer` 10 MB, entorno mínimo (`PATH`, `HOME`, `GIT_CONFIG_NOSYSTEM=1`, `GIT_OPTIONAL_LOCKS=0`, `GIT_TERMINAL_PROMPT=0`, `LC_ALL=C`), los 6 comandos fijos y `normalizeGithubRemote()`. Devuelve `GitInfo` y la lista de `.env*` versionados; los errores dan datos ausentes con `git_error` (T008)
+- [X] T020 [P] Implementar `src/lib/standard/markdown.ts`: `h2Sections`, `sectionText`, `tables` (encabezado, filas, celdas con `\|`), `hasMermaidBlock`, `taskCheckboxes` (hechas / total), ignorando bloques de código (T009)
+- [X] T021 [P] Implementar `src/lib/standard/frontmatter.ts` con `yaml` (`parseDocument`, esquema `core`): extraer el bloque entre `---`, devolver valores planos, violaciones de 1.5 con el campo, presencia de comentarios y error con línea (T010)
+- [X] T022 [P] Implementar `src/lib/standard/versions.ts`: `SUPPORTED_STANDARD_VERSIONS = ["1.0"]`, `parseChangelogVersion(text)` (primer `## [X.Y.Z]` → `"X.Y"`) y `isNewerThanSupported(version)`
+- [X] T023 Implementar `src/lib/standard/v1_0/manifest.ts` (campos, tipos, enumerados y formatos de `project-manifest.md`; ausente o de tipo incorrecto ⇒ `null`) y `src/lib/standard/v1_0/level1.ts` (1.1–1.11, incluida 1.7 con FR-031) sobre un `ProjectFiles` en memoria y una fecha de evaluación (T011)
+- [X] T024 Implementar `src/lib/standard/v1_0/level2.ts` (2.1–2.10 y advertencias) (T012)
+- [X] T025 Implementar `src/lib/standard/v1_0/roadmap.ts` (tabla, `specs`, `targetDate`, `manualState`, `derived` con conteos y `shownState`) y `src/lib/standard/v1_0/level3.ts` (3.1, 3.2 `not_evaluated`, 3.3–3.8) (T013)
+- [X] T026 Implementar `src/lib/standard/v1_0/findings.ts` y `src/lib/standard/v1_0/evaluate.ts`: todas las verificaciones, el nivel acumulativo con `provisional`, `failures`, `warnings` y `findings` (contracts/conformance.md, "Cálculo del nivel") (T014)
+- [X] T027 Migración `supabase/migrations/20261001000000_portfolio_snapshots.sql` según data-model §1:
   - tabla `public.portfolio_snapshots` (`id uuid pk default gen_random_uuid()`, `read_at timestamptz not null`, `format_version smallint not null`, `payload jsonb not null`, `created_by uuid not null references auth.users(id)`);
   - RLS activada, política restrictiva `portfolio_snapshots_require_aal2_active` y política `portfolio_snapshots_select` (`current_user_role() = 'owner'`);
   - `revoke insert, update, delete` a `authenticated` y `anon`;
@@ -168,7 +168,7 @@ e índice. Ninguna historia empieza sin esta fase.
   - `revoke all … from public, anon` y `grant execute … to authenticated`.
 
   Después, `npx supabase db reset` en pruebas y `npm run db:test` en verde (T015)
-- [ ] T028 Ejecutar `npm test`, `npm run db:test`, `npm run lint` y `npm run typecheck` hasta verde
+- [X] T028 Ejecutar `npm test`, `npm run db:test`, `npm run lint` y `npm run typecheck` hasta verde
 
 **Checkpoint**: lector, git y motor de conformidad probados con entradas reales y en memoria.
 

@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { defineConfig, devices } from "@playwright/test";
-import { assertTestEnv } from "./scripts/env-guard";
+import { assertTestEnv, assertTestProjectsRoot } from "./scripts/env-guard";
 
 // Locally, read the same variables the app uses. In CI they come from the workflow environment.
 try {
@@ -17,6 +17,7 @@ assertTestEnv(process.env.NEXT_PUBLIC_SUPABASE_URL);
 if (!process.env.PROJECTS_ROOT) {
   process.env.PROJECTS_ROOT = execFileSync("npx", ["tsx", "tests/fixtures/build-portfolio.ts"], { encoding: "utf8" });
 }
+assertTestProjectsRoot(process.env.PROJECTS_ROOT);
 
 export default defineConfig({
   testDir: "./tests/e2e",

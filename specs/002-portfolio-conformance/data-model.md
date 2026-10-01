@@ -118,7 +118,8 @@ Finding
 Problem
 ├── path: string | null                            ← relativa al proyecto
 ├── reason: "missing" | "outside_root" | "secret_file" | "too_large"
-│           | "not_regular_file" | "invalid_utf8" | "invalid_yaml" | "git_error" | "unreadable"
+│           | "not_regular_file" | "invalid_utf8" | "invalid_yaml" | "git_error"
+│           | "no_checkboxes" | "unreadable"
 └── detail: string | null
 ```
 

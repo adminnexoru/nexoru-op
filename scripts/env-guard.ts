@@ -1,6 +1,9 @@
 // Guards that keep the TEST and USE environments apart (FR-034, research R13).
 // Tests refuse to touch the use instance; op:* scripts refuse to touch the test instance.
 
+import { tmpdir } from "node:os";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+
 const TEST_API_PORT = "54321";
 const USE_API_PORT = "55321";
 const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
@@ -40,4 +43,23 @@ export function assertOpsEnv(url: string | undefined): void {
         `del entorno de uso (http://127.0.0.1:${USE_API_PORT}). Ojo: 55323 es Studio, no la API.`,
     );
   }
+}
+
+const FIXTURE_PREFIX = "nexoru-op-fixture-";
+
+/**
+ * For tests: PROJECTS_ROOT may only be the fictitious portfolio that the test setup builds in a
+ * temporary folder (FR-028, research R10). Never the owner's real portfolio.
+ */
+export function assertTestProjectsRoot(root: string | undefined): string {
+  if (!root) throw new Error("Falta PROJECTS_ROOT: las pruebas deben generar el portafolio ficticio.");
+  if (!isAbsolute(root)) throw new Error(`PROJECTS_ROOT debe ser una ruta absoluta: ${root}`);
+  const normalized = resolve(root);
+  const tempDir = resolve(tmpdir());
+  if (dirname(normalized) !== tempDir || !basename(normalized).startsWith(FIXTURE_PREFIX)) {
+    throw new Error(
+      `Las pruebas solo pueden leer el portafolio ficticio (${join(tempDir, `${FIXTURE_PREFIX}*`)}), no ${root}.`,
+    );
+  }
+  return root;
 }
