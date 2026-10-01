@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { defineConfig, devices } from "@playwright/test";
 import { assertTestEnv } from "./scripts/env-guard";
 
@@ -11,8 +12,15 @@ try {
 // The E2E suite cleans data: it may only run against the test Supabase instance (FR-034).
 assertTestEnv(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
+// The app reads a fictitious portfolio built in a temporary folder (FR-028). The config is also
+// loaded by every worker: they inherit PROJECTS_ROOT and do not build it again.
+if (!process.env.PROJECTS_ROOT) {
+  process.env.PROJECTS_ROOT = execFileSync("npx", ["tsx", "tests/fixtures/build-portfolio.ts"], { encoding: "utf8" });
+}
+
 export default defineConfig({
   testDir: "./tests/e2e",
+  globalTeardown: "./tests/e2e/global-teardown.ts",
   // Tests share the local Supabase database, so they run one at a time.
   workers: 1,
   fullyParallel: false,
@@ -27,7 +35,9 @@ export default defineConfig({
   webServer: {
     command: "npm run build && npm run start",
     url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
+    // Never reuse a running server: it could be reading another PROJECTS_ROOT.
+    reuseExistingServer: false,
+    env: { PROJECTS_ROOT: process.env.PROJECTS_ROOT },
     timeout: 240_000,
   },
 });

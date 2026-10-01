@@ -42,9 +42,9 @@ contrato; nunca se debilita la prueba.
 
 **Propósito**: dependencia nueva, configuración y portafolio ficticio para las pruebas.
 
-- [ ] T001 Instalar `yaml` 2.x como dependencia directa (`npm install yaml`) y comprobar que no añade dependencias transitivas ni scripts de instalación (`npm ls yaml`, `package.json` y `package-lock.json`)
-- [ ] T002 [P] Añadir `PROJECTS_ROOT` **opcional** al esquema de `src/lib/env.server.ts` (`z.string().optional()`; la validación de ruta absoluta y directorio va en el lector) y documentarlo en `.env.example` ("Carpeta del portafolio. Uso: /home/fili/proyectos. Las pruebas la generan solas; no la pongas en .env.local")
-- [ ] T003 [P] Crear el portafolio ficticio en `tests/fixtures/portfolio/` (todo inventado, organización `example-org`, sin nombres reales), una carpeta por caso:
+- [X] T001 Instalar `yaml` 2.x como dependencia directa (`npm install yaml`) y comprobar que no añade dependencias transitivas ni scripts de instalación (`npm ls yaml`, `package.json` y `package-lock.json`)
+- [X] T002 [P] Añadir `PROJECTS_ROOT` **opcional** al esquema de `src/lib/env.server.ts` (`z.string().optional()`; la validación de ruta absoluta y directorio va en el lector) y documentarlo en `.env.example` ("Carpeta del portafolio. Uso: /home/fili/proyectos. Las pruebas la generan solas; no la pongas en .env.local")
+- [X] T003 [P] Crear el portafolio ficticio en `tests/fixtures/portfolio/` (todo inventado, organización `example-org`, sin nombres reales), una carpeta por caso:
   - `level3-demo`: cumple niveles 1–3 salvo 3.2 → nivel 3 provisional; su `spec.md` contiene la frase ficticia `TEXTO-DE-SPEC-FICTICIO`;
   - `no-manifest`: sin `PROJECT.md`;
   - `bad-yaml`: frontmatter que no se puede interpretar;
@@ -65,7 +65,7 @@ contrato; nunca se debilita la prueba.
   - `nexoru-governance`: solo `CHANGELOG.md` con `## [1.0.0] - 2026-09-28`.
 
   Añadir `tests/fixtures/portfolio/README.md` con la tabla carpeta → caso → resultado esperado (nivel, fallas, advertencias, hallazgos)
-- [ ] T004 Crear `tests/fixtures/build-portfolio.ts`: exporta `buildFixturePortfolio(): Promise<string>`.
+- [X] T004 Crear `tests/fixtures/build-portfolio.ts`: exporta `buildFixturePortfolio(): Promise<string>`.
   - Copia `tests/fixtures/portfolio/` a `mkdtemp(join(tmpdir(), "nexoru-op-fixture-"))`.
   - En las carpetas que lo requieren (T003), hace `git init -b main` y commit con `-c user.name=Fixture -c user.email=fixture@example.test`, añade `origin` `https://github.com/example-org/<carpeta>.git` (salvo `no-origin`) y fija `refs/remotes/origin/HEAD` → `origin/main` con `git symbolic-ref` sobre una referencia creada con `git update-ref` (sin red).
   - En `env-versioned` renombra `env.fixture` → `.env` y lo versiona.
@@ -73,7 +73,7 @@ contrato; nunca se debilita la prueba.
   - Crea con `fs.symlink` los enlaces de `symlink-escape` (hacia `<tmp>/outside/PROJECT.md`, fuera de la raíz) y `secret-link` (hacia un `.env` de la misma carpeta); con `mkfifo` la FIFO; y el archivo de más de 1 MB.
   - Exporta también `removeFixturePortfolio(path)`.
   - Depende de T003.
-- [ ] T005 Conectar el portafolio ficticio a los ejecutores de pruebas:
+- [X] T005 Conectar el portafolio ficticio a los ejecutores de pruebas:
   - **Vitest**: `tests/unit/global-setup.ts` construye el portafolio una vez, lo expone como `process.env.PROJECTS_ROOT` y lo borra al terminar; se registra en `vitest.config.ts` (`globalSetup`).
   - **Playwright** (`playwright.config.ts`): si `process.env.PROJECTS_ROOT` no está definido, construye el portafolio al cargar la configuración (con `execFileSync` de `tsx`, porque la configuración es síncrona) y lo guarda en `process.env.PROJECTS_ROOT`, para que los workers lo hereden sin reconstruirlo. Lo pasa en `webServer.env` y fija `reuseExistingServer: false`, para que un `npm run dev` abierto con otra raíz nunca se use en las E2E. Un `globalTeardown` (`tests/e2e/global-teardown.ts`) borra la carpeta temporal con `removeFixturePortfolio` al terminar.
   - Depende de T004.

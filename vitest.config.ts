@@ -12,5 +12,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/unit/**/*.test.ts"],
+    // Builds the fictitious portfolio in a temporary folder (tests/fixtures/build-portfolio.ts).
+    globalSetup: ["tests/unit/global-setup.ts"],
   },
 });
