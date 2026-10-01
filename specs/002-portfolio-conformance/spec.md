@@ -204,10 +204,11 @@ que aparece sin nivel y con el aviso, y que los demás proyectos se evalúan nor
 - **FR-001**: El sistema DEBE tratar como proyecto cada carpeta directa y no oculta de
   `PROJECTS_ROOT`, salvo `nexoru-governance`, que DEBE mostrarse aparte como "estándar", con su
   versión vigente y sin evaluar su conformidad.
-- **FR-002**: El sistema DEBE leer de cada proyecto solo los archivos que el estándar define:
-  `PROJECT.md`, `docs/mapa-funcional.md`, `CLAUDE.md`, `.specify/memory/constitution.md`, los
-  `spec.md`, `plan.md` y `tasks.md` de `specs/<NNN-nombre>/`, los flujos de
-  `.github/workflows/` y la existencia (no el contenido) de `.env.example`.
+- **FR-002**: El sistema DEBE acceder de cada proyecto solo a los archivos que el estándar define.
+  Lee el contenido de `PROJECT.md`, `docs/mapa-funcional.md`, `CLAUDE.md`, los `tasks.md` de
+  `specs/<NNN-nombre>/` y los flujos de `.github/workflows/`. De `.specify/`,
+  `.specify/memory/constitution.md`, los `spec.md` y `plan.md` de `specs/<NNN-nombre>/` y
+  `.env.example` solo comprueba que existen, sin abrirlos (contracts/reader.md).
 - **FR-003**: El sistema DEBE resolver la ruta real de todo archivo y carpeta antes de leerlo y
   rechazar cualquiera que quede fuera de `PROJECTS_ROOT`.
 - **FR-004**: El sistema NUNCA DEBE abrir archivos `.env*` (incluido `.env.example`), llaves
@@ -335,7 +336,8 @@ que aparece sin nivel y con el aviso, y que los demás proyectos se evalúan nor
 ## Assumptions
 
 - `PROJECTS_ROOT` se configura por variable de entorno en cada entorno: en uso,
-  `/home/fili/proyectos`; en pruebas, un portafolio ficticio dentro del repo.
+  `/home/fili/proyectos`; en pruebas, una copia temporal (`nexoru-op-fixture-*`) de un portafolio
+  ficticio que vive en el repo.
 - Las reglas de conformidad de la versión 1.0 se implementan en el dashboard a partir de
   `nexoru-governance/standard/`; de `nexoru-governance` se lee en tiempo de ejecución solo su
   versión vigente, para el aviso de FR-027.

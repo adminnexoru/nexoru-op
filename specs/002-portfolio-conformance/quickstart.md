@@ -39,7 +39,7 @@ npm run test:e2e            # portafolio y detalle con el portafolio ficticio
 | 1 | Abrir `/` en el entorno de uso | Aparecen `amazon-business-engine`, `conversa-experiencias`, `ganador`, `nexoru-onboarding`, `nexoru-onboarding-line-endings` y `nexoru-op`; `nexoru-governance` aparece aparte como estándar 1.0 |
 | 2 | Comparar cada fila con el `PROJECT.md` del proyecto | Nombre, tipo, cliente, fase, estado, fecha objetivo y siguiente hito coinciden (SC-004) |
 | 3 | Proyectos sin `PROJECT.md` | Nivel 0, "sin PROJECT.md" y datos ausentes, sin valores inventados |
-| 4 | Detalle de `nexoru-op` | Roadmap: Fase 1 `completa` derivada (83/83); Fase 2 manual `en-curso` hasta que tenga `tasks.md`. Nivel 3 (provisional), con 3.2 "no evaluada en esta fase" |
+| 4 | Detalle de `nexoru-op` | Roadmap: Fase 1 `completa` derivada (83/83); Fase 2 `en-curso` derivada (hechas/56). Nivel 3 (provisional), con 3.2 "no evaluada en esta fase" |
 | 5 | Detalle de `amazon-business-engine` | Nivel y fallas coherentes con su `PROJECT.md` (revisión del Dueño) |
 | 6 | Proyecto en otra rama (`nexoru-onboarding`) | Muestra la rama y el aviso "no es la rama principal" |
 | 7 | Editar un `PROJECT.md` (p. ej. el `siguiente_hito` de un proyecto) y pulsar **Actualizar** | El cambio aparece y la hora de lectura se actualiza |

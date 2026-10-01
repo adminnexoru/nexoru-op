@@ -53,12 +53,12 @@ version_estandar: "1.0"
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 tiene spec (`002-portfolio-conformance`) pero todavía no `tasks.md`, y las fases 3 y 4 no tienen spec; por eso las tres llevan estado manual.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) ya tiene `tasks.md`, así que su estado también se deriva. Las fases 3 y 4 no tienen spec y llevan estado manual.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
 | 1 | Acceso seguro del Dueño, bitácora y puesta en marcha local | 001-user-access | — | |
-| 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | 2026-10-18 | en-curso |
+| 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | 2026-10-18 | |
 | 3 | Historial de git por proyecto | — | 2026-10-25 | pendiente |
 | 4 | Datos de GitHub en solo lectura (CI, visibilidad, PRs) | — | 2026-11-08 | pendiente |
 
