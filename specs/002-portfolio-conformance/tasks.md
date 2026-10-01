@@ -184,7 +184,7 @@ ausentes, bloque del estándar, Actualizar y vencimiento a los 10 minutos.
 
 ### Pruebas de US1 (escribir primero, deben fallar)
 
-- [ ] T029 [P] [US1] Pruebas de la lectura completa en `tests/unit/portfolio/read-portfolio.test.ts`, contra el portafolio ficticio:
+- [X] T029 [P] [US1] Pruebas de la lectura completa en `tests/unit/portfolio/read-portfolio.test.ts`, contra el portafolio ficticio:
   - un `ProjectReading` por carpeta no oculta, sin `nexoru-governance`, ordenados por `folder`;
   - `standard` con `found=true` y `version "1.0"`;
   - `no-manifest` con `manifest=null` y nivel 0;
@@ -197,8 +197,8 @@ ausentes, bloque del estándar, Actualizar y vencimiento a los 10 minutos.
   - **SC-007**: hash y `mtime` de todos los archivos del portafolio ficticio (incluido `.git/`) idénticos antes y después;
   - **SC-008**: dos lecturas seguidas dan el mismo resultado salvo `readAt`;
   - **SC-006**: 50 copias del proyecto `level3-demo` se leen en menos de 10 s.
-- [ ] T030 [P] [US1] Pruebas del índice en `tests/unit/portfolio/snapshot.test.ts`: `isStale` (más de 600 000 ms), un `payload` inválido o con `format_version ≠ 1` se trata como vacío, y el esquema acepta el resultado de `readPortfolio` del portafolio ficticio
-- [ ] T031 [P] [US1] E2E en `tests/e2e/us1-portfolio.spec.ts` (sesión del Dueño con los helpers de `tests/e2e/helpers/owner.ts`):
+- [X] T030 [P] [US1] Pruebas del índice en `tests/unit/portfolio/snapshot.test.ts`: `isStale` (más de 600 000 ms), un `payload` inválido o con `format_version ≠ 1` se trata como vacío, y el esquema acepta el resultado de `readPortfolio` del portafolio ficticio
+- [X] T031 [P] [US1] E2E en `tests/e2e/us1-portfolio.spec.ts` (sesión del Dueño con los helpers de `tests/e2e/helpers/owner.ts`):
   - la tabla muestra cada proyecto ficticio con nombre, tipo, cliente, fase, estado, fecha objetivo, siguiente hito, nivel y rama;
   - `no-manifest` muestra nivel 0, "sin PROJECT.md" y "—";
   - el bloque "Estándar" muestra `nexoru-governance` 1.0 sin nivel;
@@ -209,16 +209,16 @@ ausentes, bloque del estándar, Actualizar y vencimiento a los 10 minutos.
 
 ### Implementación de US1
 
-- [ ] T032 [US1] Implementar `src/lib/portfolio/read-project.ts`: arma el `ProjectFiles` de una carpeta con `safe-fs` y `git` (solo rutas del catálogo) y devuelve el `ProjectReading` (manifiesto, roadmap, `evaluate`, `readErrors` con rutas relativas)
-- [ ] T033 [US1] Implementar `src/lib/portfolio/read-portfolio.ts`:
+- [X] T032 [US1] Implementar `src/lib/portfolio/read-project.ts`: arma el `ProjectFiles` de una carpeta con `safe-fs` y `git` (solo rutas del catálogo) y devuelve el `ProjectReading` (manifiesto, roadmap, `evaluate`, `readErrors` con rutas relativas)
+- [X] T033 [US1] Implementar `src/lib/portfolio/read-portfolio.ts`:
   - valida `PROJECTS_ROOT` (absoluta y directorio);
   - lista las carpetas no ocultas y separa `nexoru-governance` (lee su `CHANGELOG.md` con `parseChangelogVersion`);
   - lee los proyectos con concurrencia 8 y un `try/catch` por proyecto;
   - detecta `id` duplicados;
   - ordena por `folder` (T029).
-- [ ] T034 [US1] Implementar `src/lib/portfolio/snapshot.ts` (`import "server-only"`): `loadSnapshot()` con el cliente del usuario (RLS) y validación `zod`; `saveSnapshot(reading)` con `rpc("save_portfolio_snapshot")`; `isStale(readAt, now)` con `STALE_AFTER_MS = 600_000`; y `getPortfolio()`, que lee y guarda si el índice está vacío, es inválido o está vencido (T030)
-- [ ] T035 [US1] Implementar la Server Action `refreshPortfolio()` en `src/lib/portfolio/actions.ts`: sin parámetros; comprueba AAL2 como las actions de `src/lib/auth/actions.ts`; lee, guarda y `revalidatePath("/")`; ante un error, mensaje genérico en español y detalle solo en el log del servidor, sin contenido de archivos (FR-029)
-- [ ] T036 [P] [US1] Componentes en `src/components/portfolio/`:
+- [X] T034 [US1] Implementar `src/lib/portfolio/snapshot.ts` (`import "server-only"`): `loadSnapshot()` con el cliente del usuario (RLS) y validación `zod`; `saveSnapshot(reading)` con `rpc("save_portfolio_snapshot")`; `isStale(readAt, now)` con `STALE_AFTER_MS = 600_000`; y `getPortfolio()`, que lee y guarda si el índice está vacío, es inválido o está vencido (T030). *Hecho: la parte pura (`isStale`, `parseSnapshot`) vive en `src/lib/portfolio/snapshot-format.ts`, y el vencimiento usa la columna `read_at`.*
+- [X] T035 [US1] Implementar la Server Action `refreshPortfolio()` en `src/lib/portfolio/actions.ts`: sin parámetros; comprueba AAL2 como las actions de `src/lib/auth/actions.ts`; lee, guarda y `revalidatePath("/")`; ante un error, mensaje genérico en español y detalle solo en el log del servidor, sin contenido de archivos (FR-029)
+- [X] T036 [P] [US1] Componentes en `src/components/portfolio/`:
   - `level-badge.tsx`: `0`–`3`, `3 (provisional)`, "versión no soportada (X.Y)", "sin versión";
   - `branch-badge.tsx`;
   - `absent.tsx`: "—" con texto accesible "ausente";
@@ -226,8 +226,8 @@ ausentes, bloque del estándar, Actualizar y vencimiento a los 10 minutos.
   - `portfolio-table.tsx`: shadcn `Table`, columnas de contracts/ui.md.
 
   Solo texto; nunca `dangerouslySetInnerHTML`
-- [ ] T037 [US1] Reemplazar `src/app/(app)/page.tsx` por el portafolio (contracts/ui.md, `GET /`): llama a `getPortfolio()`, muestra la última lectura en hora local, las versiones, los avisos generales, la tabla, el bloque "Estándar" y el estado vacío según `root.status`. En `src/app/(app)/layout.tsx`, cambiar "Inicio" por "Portafolio"
-- [ ] T038 [US1] Ejecutar `npm test`, `npm run db:test` (tras `npx supabase db reset`) y `npm run test:e2e` hasta verde
+- [X] T037 [US1] Reemplazar `src/app/(app)/page.tsx` por el portafolio (contracts/ui.md, `GET /`): llama a `getPortfolio()`, muestra la última lectura en hora local, las versiones, los avisos generales, la tabla, el bloque "Estándar" y el estado vacío según `root.status`. En `src/app/(app)/layout.tsx`, cambiar "Inicio" por "Portafolio"
+- [X] T038 [US1] Ejecutar `npm test`, `npm run db:test` (tras `npx supabase db reset`) y `npm run test:e2e` hasta verde
 
 **Checkpoint**: US1 funciona sola; es el MVP.
 
@@ -255,7 +255,7 @@ advertencias, los hallazgos y las verificaciones no evaluadas.
 ### Implementación de US2
 
 - [ ] T040 [US2] Crear `src/app/(app)/projects/[folder]/page.tsx`: busca `folder` por igualdad exacta en el índice (`getPortfolio()`), sin usarlo nunca como ruta, y si no está responde `notFound()`. Muestra las secciones Manifiesto, Repositorio, Conformidad y Errores de lectura de contracts/ui.md
-- [ ] T041 [P] [US2] Componentes `src/components/portfolio/manifest-card.tsx`, `repository-card.tsx`, `conformance-panel.tsx` (nivel, fallas con número y detalle, advertencias, hallazgos con severidad, no evaluadas con motivo, y lista plegable de todas las verificaciones) y `read-errors.tsx`. Enlazar el nombre de cada fila de `portfolio-table.tsx` a `/projects/<folder>`
+- [ ] T041 [P] [US2] Componentes `src/components/portfolio/manifest-card.tsx`, `repository-card.tsx`, `conformance-panel.tsx` (nivel, fallas con número y detalle, advertencias, hallazgos con severidad, no evaluadas con motivo, y lista plegable de todas las verificaciones) y `read-errors.tsx`. Enlazar el nombre de cada fila de `portfolio-table.tsx` a `/projects/<folder>` *(ya hecho en T036)*
 - [ ] T042 [US2] Ejecutar `npm test` y `npm run test:e2e` hasta verde
 
 **Checkpoint**: US1 y US2 funcionan juntas y por separado.

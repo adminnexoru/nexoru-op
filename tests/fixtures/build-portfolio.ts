@@ -9,7 +9,9 @@ import { cp, mkdir, mkdtemp, readdir, readFile, rename, rm, symlink, unlink, wri
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-const SOURCE = resolve(import.meta.dirname, "portfolio");
+// Resolved from the repository root (every test runner starts there); import.meta is not
+// available when Playwright loads this file for the global teardown.
+const SOURCE = resolve(process.cwd(), "tests", "fixtures", "portfolio");
 const NOT_REPOS = new Set(["no-git", "nexoru-governance"]);
 
 export type FixtureOptions = {

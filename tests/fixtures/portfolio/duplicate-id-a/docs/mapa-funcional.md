@@ -1,5 +1,5 @@
 ---
-proyecto: duplicate-id-a
+proyecto: duplicate-id
 tipo_documento: mapa-funcional
 version_estandar: "1.0"
 ---

@@ -1,8 +1,76 @@
-export default function HomePage() {
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { OrAbsent } from "@/components/portfolio/absent";
+import { PortfolioTable } from "@/components/portfolio/portfolio-table";
+import { RefreshButton } from "@/components/portfolio/refresh-button";
+import { getPortfolio } from "@/lib/portfolio/snapshot";
+import type { PortfolioReading } from "@/lib/portfolio/types";
+
+// T037: the portfolio (US1, contracts/ui.md "GET /"). Reads the index; reads PROJECTS_ROOT again
+// first when the index is empty, invalid or older than 10 minutes (FR-012, FR-013).
+
+const ROOT_MESSAGES: Record<Exclude<PortfolioReading["root"]["status"], "ok">, string> = {
+  missing: "No está configurado PROJECTS_ROOT. Añádelo a .env.op.local con la carpeta del portafolio y reinicia la app.",
+  not_absolute: "PROJECTS_ROOT debe ser una ruta absoluta (por ejemplo, /home/usuario/proyectos).",
+  not_directory: "PROJECTS_ROOT no es una carpeta existente.",
+};
+
+const dateTime = new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeStyle: "medium" });
+
+export default async function PortfolioPage() {
+  const portfolio = await getPortfolio();
+  const { root, standard, projects, warnings } = portfolio;
+
   return (
-    <section className="grid gap-2">
-      <h1 className="text-2xl font-semibold">Bienvenido a Nexoru Op</h1>
-      <p className="text-muted-foreground">El sistema de control para operar, automatizar y gobernar Nexoru.</p>
+    <section className="grid gap-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="grid gap-1">
+          <h1 className="text-2xl font-semibold">Portafolio</h1>
+          <p className="text-sm text-muted-foreground">
+            Última lectura:{" "}
+            <time data-testid="read-at" dateTime={portfolio.readAt}>
+              {dateTime.format(new Date(portfolio.readAt))}
+            </time>{" "}
+            · Estándar soportado: {portfolio.supportedStandardVersions.join(", ")}
+          </p>
+        </div>
+        <RefreshButton />
+      </header>
+
+      {root.status !== "ok" ? (
+        <Alert>
+          <AlertTitle>No hay proyectos que mostrar</AlertTitle>
+          <AlertDescription>{ROOT_MESSAGES[root.status]}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {warnings.map((warning) => (
+        <Alert key={warning.detail}>
+          <AlertTitle>Identificador duplicado</AlertTitle>
+          <AlertDescription>{warning.detail}</AlertDescription>
+        </Alert>
+      ))}
+
+      {root.status === "ok" && projects.length === 0 ? (
+        <p className="text-muted-foreground">PROJECTS_ROOT no tiene carpetas de proyecto.</p>
+      ) : null}
+
+      {projects.length > 0 ? <PortfolioTable projects={projects} /> : null}
+
+      <Card data-testid="standard">
+        <CardHeader>
+          <CardTitle>Estándar</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm">
+          {standard.found ? (
+            <p>
+              <span className="font-mono">{standard.folder}</span> · versión <OrAbsent value={standard.version} />
+            </p>
+          ) : (
+            <p className="text-muted-foreground">No se encontró {standard.folder} en el portafolio.</p>
+          )}
+        </CardContent>
+      </Card>
     </section>
   );
 }

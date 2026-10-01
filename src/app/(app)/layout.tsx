@@ -31,7 +31,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             Nexoru Op
           </Link>
           <nav className="flex flex-1 gap-4 text-sm">
-            <Link href="/">Inicio</Link>
+            <Link href="/">Portafolio</Link>
             <Link href="/account">Mi cuenta</Link>
           </nav>
           <span className="hidden text-sm text-muted-foreground sm:inline">
