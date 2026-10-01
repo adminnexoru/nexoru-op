@@ -58,6 +58,8 @@ export async function buildFixturePortfolio(options: FixtureOptions = {}): Promi
   await rename(join(root, "env-versioned", "env.fixture"), join(root, "env-versioned", ".env"));
   const secret = await readFile(join(root, "secret-link", "secret.fixture"), "utf8");
   await unlink(join(root, "secret-link", "secret.fixture"));
+  // docs/ is empty in the repo (git does not keep empty folders): create it before the large file.
+  await mkdir(join(root, "fifo-and-large", "docs"), { recursive: true });
   await writeFile(join(root, "fifo-and-large", "docs", "mapa-funcional.md"), "x".repeat(1_100_000));
 
   for (const entry of await readdir(root, { withFileTypes: true })) {
