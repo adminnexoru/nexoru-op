@@ -15,6 +15,10 @@ PortfolioReading (+)
 ├── ignoredCount: number              ← solo para pruebas y registros; la interfaz no lo muestra (FR-031)
 └── activityByWeek: WeekActivity[12]  ← suma de todos los proyectos (gráfico de actividad)
 
+GitInfo (+, Fase 2 ampliada)
+└── uncommittedChangesReason: string | null   ← motivo cuando hasUncommittedChanges es null
+                                                 ("atributos locales: no se evalúa por seguridad", "error de git")
+
 ProjectReading (+)
 ├── history: GitHistory | null        ← null si no es repositorio
 ├── indicators: Indicators
@@ -58,3 +62,4 @@ Finding.code (+) "operacion_pending_phases" | "construction_roadmap_concluded"  
 | `progress` cuenta cada spec una vez, solo en fases derivadas; `phasesCompleted` usa "fase concluida" (1.1) | FR-011, FR-014 |
 | `roadmapStatus` = `concluido` si hay ≥ 1 fase y todas están concluidas | FR-029 |
 | Porcentajes: entero redondeado (`Math.round`) | FR-015 |
+| `hasUncommittedChanges = null` ⇒ la interfaz muestra "Cambios sin commit: no evaluado (motivo)", nunca "sin cambios" | contracts/git-history.md |

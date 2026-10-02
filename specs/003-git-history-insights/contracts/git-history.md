@@ -19,6 +19,10 @@ git -c core.fsmonitor=false -c core.untrackedCache=false -c core.hooksPath=/dev/
   `hasUncommittedChanges` queda ausente con el motivo de seguridad.
 - **Por qué** (research R11): en una prueba, `git status` ejecutó el filtro `clean` de un
   repositorio. Con este prefijo no se ejecuta nada de ningún repositorio.
+- **Cuando `status` no se ejecuta o falla**: por `info/attributes`, porque git no reconoce
+  `--attr-source`, por tiempo agotado o por cualquier otro error. "Cambios sin commit" se muestra
+  como **"no evaluado"** con su motivo, **nunca como "sin cambios"**. El motivo viaja en
+  `GitInfo.uncommittedChangesReason`.
 
 ## Comandos nuevos (argumentos fijos)
 
