@@ -46,13 +46,20 @@ prefijo fijo:
 
 `git -c core.fsmonitor=false -c core.untrackedCache=false -c core.hooksPath=/dev/null --no-optional-locks`
 
+> **Actualizado en la Fase 3** (`specs/003-git-history-insights/research.md` R11): `git status`
+> ejecutaba los filtros `clean` de un repositorio. El prefijo vigente es el **v2** de
+> `specs/003-git-history-insights/contracts/git-history.md`. Añade `--attr-source` al árbol vacío,
+> `core.attributesFile=/dev/null`, `log.showSignature=false`, `gc.auto=0`, `maintenance.auto=false`,
+> `GIT_PAGER=cat` y `status --ignore-submodules=all`, y omite `status` si existe
+> `.git/info/attributes`.
+
 | Argumentos | Salida usada |
 |---|---|
 | `rev-parse --show-toplevel` | Igual a la ruta real del proyecto ⇒ es repositorio |
 | `remote get-url origin` | Normalizada a `org/nombre` |
 | `branch --show-current` | Rama actual |
 | `symbolic-ref --quiet --short refs/remotes/origin/HEAD` | Rama principal (sin `origin/`); si falla, `main` |
-| `status --porcelain=v1 -z` | Vacía ⇒ sin cambios sin commit |
+| `status --porcelain=v1 -z --ignore-submodules=all` | Vacía ⇒ sin cambios sin commit (desde la Fase 3; ver la nota del prefijo) |
 | `ls-files -z` | Solo nombres; se filtran los de nombre base `^\.env` distinto de `.env.example` |
 
 Ningún otro subcomando ni argumento. Si git no está instalado o un comando falla, el dato queda

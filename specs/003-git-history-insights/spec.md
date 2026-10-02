@@ -310,7 +310,7 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
 - **FR-018**: El estado del proyecto y los demás indicadores con niveles DEBEN usar un semáforo que
   combine color, ícono y texto; ninguno puede depender solo del color.
 - **FR-019**: Los colores del semáforo DEBEN tener contraste suficiente para leerse sobre el fondo
-  (nivel AA de las pautas de accesibilidad web) en modo claro.
+  (nivel AA de las pautas de accesibilidad web) en el tema adoptado (research R6).
 - **FR-020**: El semáforo DEBE verse igual en el tablero, el detalle y los gráficos.
 - **FR-032**: El semáforo de actividad DEBE mostrarse **neutro** (gris, con un ícono y un texto
   propios, p. ej. "Sin seguimiento") cuando la `fase` del proyecto es `pausado`, `operacion` o
