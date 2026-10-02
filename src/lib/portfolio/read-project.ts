@@ -2,7 +2,8 @@
 // evaluates it with its (supported) version of the standard. Only catalog paths are requested.
 import type { FileContent, ProjectFiles, SpecFolder } from "@/lib/standard/project-files";
 import { evaluateProject } from "@/lib/standard/evaluate";
-import { readGitInfo, type GitReading } from "./git";
+import { readGitHistoryRaw, readGitInfo, readRepoPaths, type GitReading } from "./git";
+import { buildHistory } from "./history";
 import type { SafeRoot } from "./safe-fs";
 import type { Problem, ProjectReading } from "./types";
 
@@ -45,9 +46,18 @@ function readErrors(files: ProjectFiles, git: GitReading): Problem[] {
   ];
 }
 
-export async function readProject(root: SafeRoot, folder: string, evaluationDate: string): Promise<ProjectReading> {
+/** 1-based line of the closing `---` of the frontmatter, or null. */
+function frontmatterEndLine(text: string | null): number | null {
+  if (!text?.startsWith("---")) return null;
+  const index = text.split("\n").findIndex((line, i) => i > 0 && line.trimEnd() === "---");
+  return index === -1 ? null : index + 1;
+}
+
+export async function readProject(root: SafeRoot, folder: string, evaluationDate: string, now: Date): Promise<ProjectReading> {
   const projectReal = await root.projectPath(folder);
-  const [project, map, mapExists, claude, specifyDir, constitution, specsDir, specNames, workflowNames, envExample, git] =
+  // One rev-parse per project, shared by the git data and the history (fewer git processes).
+  const repoPaths = projectReal ? await readRepoPaths(projectReal) : null;
+  const [project, map, mapExists, claude, specifyDir, constitution, specsDir, specNames, workflowNames, envExample, git, rawHistory] =
     await Promise.all([
       root.readFile(folder, "PROJECT.md"),
       root.readFile(folder, "docs/mapa-funcional.md"),
@@ -59,7 +69,8 @@ export async function readProject(root: SafeRoot, folder: string, evaluationDate
       root.listDir(folder, "specs"),
       root.listDir(folder, ".github/workflows"),
       root.exists(folder, ".env.example"),
-      projectReal ? readGitInfo(projectReal, root) : Promise.resolve(NO_GIT),
+      projectReal ? readGitInfo(projectReal, root, repoPaths) : Promise.resolve(NO_GIT),
+      projectReal && repoPaths ? readGitHistoryRaw(projectReal, root, repoPaths).catch(() => null) : Promise.resolve(null),
     ]);
 
   const files: ProjectFiles = {
@@ -80,7 +91,18 @@ export async function readProject(root: SafeRoot, folder: string, evaluationDate
     versionedEnvFiles: git.versionedEnvFiles,
   };
 
-  return { folder, git: git.info, ...evaluateProject(files, evaluationDate), readErrors: readErrors(files, git) };
+  const evaluation = evaluateProject(files, evaluationDate);
+  const history =
+    git.info.isRepo && rawHistory
+      ? buildHistory(
+          { ...rawHistory, detachedHead: git.info.branch === null },
+          evaluation.manifest,
+          frontmatterEndLine(project.ok ? project.text : null),
+          now,
+        )
+      : null;
+
+  return { folder, git: git.info, history, ...evaluation, readErrors: readErrors(files, git) };
 }
 
 /** Reading of a project that could not be read at all (FR-008): absent data and the reason. */
@@ -104,6 +126,7 @@ export function unreadableProject(folder: string, evaluationDate: string): Proje
   return {
     folder,
     git: NO_GIT.info,
+    history: null,
     ...evaluateProject(files, evaluationDate),
     readErrors: [{ path: null, reason: "unreadable", detail: "No se pudo leer la carpeta del proyecto" }],
   };

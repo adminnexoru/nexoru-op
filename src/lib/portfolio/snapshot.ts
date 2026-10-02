@@ -3,7 +3,7 @@ import { getServerEnv } from "@/lib/env.server";
 import { createClient } from "@/lib/supabase/server";
 import { readPortfolio } from "./read-portfolio";
 import { isStale, parseSnapshot } from "./snapshot-format";
-import type { PortfolioReading } from "./types";
+import { FORMAT_VERSION, type PortfolioReading } from "./types";
 
 // T034: the regenerable index in portfolio_snapshots (research R8, R9). Read with the owner's
 // session (RLS); written only through save_portfolio_snapshot.
@@ -22,7 +22,11 @@ export async function loadSnapshot(): Promise<{ reading: PortfolioReading; readA
 
 export async function saveSnapshot(reading: PortfolioReading): Promise<void> {
   const supabase = await createClient();
-  const { error } = await supabase.rpc("save_portfolio_snapshot", { p_payload: reading, p_read_at: reading.readAt });
+  const { error } = await supabase.rpc("save_portfolio_snapshot", {
+    p_payload: reading,
+    p_read_at: reading.readAt,
+    p_format_version: FORMAT_VERSION,
+  });
   if (error) throw new Error(`saving the portfolio index failed: ${error.code}`);
 }
 

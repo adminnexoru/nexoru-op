@@ -100,7 +100,7 @@ ampliar el portafolio ficticio.
 
 ### Pruebas primero (deben fallar)
 
-- [ ] T007 [P] Pruebas de `src/lib/portfolio/ignore.ts` en `tests/unit/portfolio/ignore.test.ts`:
+- [X] T007 [P] Pruebas de `src/lib/portfolio/ignore.ts` en `tests/unit/portfolio/ignore.test.ts`:
   - ignora las líneas vacías y los comentarios `#`;
   - descarta los nombres con `/`, `\`, `*` o `?`, o que empiecen con `.`;
   - devuelve un `Set` de nombres exactos;
@@ -118,8 +118,8 @@ ampliar el portafolio ficticio.
   - `statInsideRoot(absolutePath)`: `realpath` dentro de `realpath(root) + sep`, luego `lstat`, y devuelve `{ mtimeMs, size } | null`; nunca abre el archivo.
 
   Hasta verde T008.
-- [ ] T010 [P] Implementar `src/lib/portfolio/ignore.ts` (`parseNexoruIgnore(text): Set<string>`) (T007).
-- [ ] T011 Ampliar `src/lib/portfolio/types.ts` según `data-model.md`:
+- [X] T010 [P] Implementar `src/lib/portfolio/ignore.ts` (`parseNexoruIgnore(text): Set<string>`) (T007).
+- [X] T011 *(Hecho. `indicators` y `roadmapStatus` se añaden en US2 y US5, junto con su cálculo. Se añadió la migración `20261002000000_snapshot_format_version.sql`, porque la función guardaba siempre el formato 1 y el índice se releía en cada visita.)* Ampliar `src/lib/portfolio/types.ts` según `data-model.md`:
   - `FORMAT_VERSION = 2`;
   - `GitHistory`, con `activityLight: "verde" | "ambar" | "rojo" | "neutro" | null` y `compareRef: "origin/HEAD" | "main" | null`;
   - `WeekActivity`;
@@ -131,7 +131,7 @@ ampliar el portafolio ficticio.
   - `supportedStandardVersions` según el soporte vigente.
 
   Ajustar `tests/unit/portfolio/snapshot.test.ts` para el formato 2.
-- [ ] T012 Crear el componente de semáforo en `src/components/status/traffic-light.tsx`, como componente de servidor:
+- [X] T012 Crear el componente de semáforo en `src/components/status/traffic-light.tsx`, como componente de servidor:
   - props `kind: "declared" | "activity"`, `level: "verde" | "ambar" | "rojo" | "neutro"`, `label` y `detail?`;
   - forma circular para `declared` y cuadrada redondeada para `activity`;
   - ícono de `lucide-react` según `contracts/indicators-ui.md`;
@@ -139,7 +139,7 @@ ampliar el portafolio ficticio.
   - clases de CSS, sin `style`.
 
   Crear también `src/app/tokens.css` con los tonos del semáforo de research R6 (`#4ade80`, `#f5b942`, `#ff7a7a`, `#a6adbb` y sus fondos al 12 %) y las clases `.traffic-light--…`, importado desde `src/app/globals.css`. La identidad completa llega en US3.
-- [ ] T013 Ejecutar `npm test`, `npm run lint` y `npm run typecheck` hasta verde.
+- [X] T013 Ejecutar `npm test`, `npm run lint` y `npm run typecheck` hasta verde.
 
 **Checkpoint**: lector ampliado, tipos y semáforo base listos.
 
@@ -154,7 +154,7 @@ remoto y días en la fase, sin red ni escrituras.
 
 ### Pruebas de US1 (escribir primero, deben fallar)
 
-- [ ] T014 [P] [US1] Pruebas puras de `src/lib/portfolio/history.ts` en `tests/unit/portfolio/history.test.ts`:
+- [X] T014 [P] [US1] Pruebas puras de `src/lib/portfolio/history.ts` en `tests/unit/portfolio/history.test.ts`:
   - **Semanas**: agrupación de lunes a domingo en hora local, 12 semanas, la actual incluida y 0 en las vacías.
   - **Días sin actividad**: días completos.
   - **Semáforo**: verde con 0 y 5 días, ámbar con 6 y 15, rojo con 16, y **neutro** con `fase` ∈ {`pausado`, `operacion`, `retirado`} conservando los días.
@@ -162,7 +162,7 @@ remoto y días en la fase, sin red ni escrituras.
   - **Comparación con `fase_desde`**: coincide y no coincide.
   - **Adelanto/atraso**: interpreta `"2\t3"`.
   - **Casos límite**: repo sin commits (último commit, días y actividad ausentes con "sin commits"); HEAD separado (adelanto/atraso desde el commit actual, con la marca "HEAD separado"); commit con fecha en el futuro (se muestra tal cual, con aviso); `fase` cambiada en disco sin commit (aviso "cambio de fase sin commit").
-- [ ] T015 [P] [US1] Pruebas de integración en `tests/unit/portfolio/git-history.test.ts` contra `history-demo` (usando `now` del constructor):
+- [X] T015 [P] [US1] Pruebas de integración en `tests/unit/portfolio/git-history.test.ts` contra `history-demo` (usando `now` del constructor):
   - último commit hace 5 días;
   - 3 semanas con commits;
   - `ahead=2` y `behind=3` contra `origin/HEAD`;
@@ -175,7 +175,7 @@ remoto y días en la fase, sin red ni escrituras.
   Además:
   - una lectura completa no cambia ningún archivo de `.git` (huella de la Fase 2);
   - cada comando de historial lleva exactamente los argumentos de `contracts/git-history.md`: se verifica con un espía sobre `execFile` o con una lista exportada de comandos.
-- [ ] T016 [P] [US1] E2E en `tests/e2e/us1-history.spec.ts`:
+- [X] T016 [P] [US1] E2E en `tests/e2e/us1-history.spec.ts`:
   - la fila de `history-demo` muestra el semáforo "Actividad" con "5 días" y su ícono;
   - el detalle muestra las 12 semanas (gráfico pequeño y "Ver datos"), "2 adelante, 3 atrás", "referencia local de hace 40 días", los días en la fase y el aviso de que no coincide con `fase_desde`;
   - `no-git` muestra los datos de git como ausentes;
@@ -183,14 +183,14 @@ remoto y días en la fase, sin red ni escrituras.
 
 ### Implementación de US1
 
-- [ ] T017 [US1] En `src/lib/portfolio/git.ts`, añadir los comandos de historial de `contracts/git-history.md` (argumentos fijos, prefijo v2): `for-each-ref … refs/heads`, `log --branches --since=13.weeks.ago --format=%ct`, `rev-list --left-right --count HEAD...refs/remotes/origin/HEAD` (y si falla, `…refs/heads/main`), `rev-parse --git-path FETCH_HEAD`, `rev-parse --git-common-dir` y `log … -p --no-ext-diff --no-textconv --max-count=500 -- PROJECT.md`. La antigüedad del remoto se obtiene con `statInsideRoot` de las dos rutas de `FETCH_HEAD`, tomando la más reciente.
-- [ ] T018 [US1] Implementar `src/lib/portfolio/history.ts`: funciones puras para semanas, días, semáforo de actividad, cambio de fase desde el diff y adelanto/atraso; construye `GitHistory` a partir de las salidas de git, `fase`, `fase_desde` y `now` (T014, T015).
-- [ ] T019 [US1] Conectar el historial en `src/lib/portfolio/read-project.ts`: `history` en el `ProjectReading`. En `src/lib/portfolio/read-portfolio.ts`, añadir `activityByWeek` (suma del portafolio) y propagar `now`.
-- [ ] T020 [P] [US1] Componentes:
+- [X] T017 [US1] *(Hecho con un ajuste de rendimiento: un único `rev-parse` por proyecto para la raíz, `info/attributes`, `FETCH_HEAD` y la carpeta común, y el último commit tomado del log de actividad salvo que esté vacío; ver contracts/git-history.md.)* En `src/lib/portfolio/git.ts`, añadir los comandos de historial de `contracts/git-history.md` (argumentos fijos, prefijo v2): `for-each-ref … refs/heads`, `log --branches --since=13.weeks.ago --format=%ct`, `rev-list --left-right --count HEAD...refs/remotes/origin/HEAD` (y si falla, `…refs/heads/main`), `rev-parse --git-path FETCH_HEAD`, `rev-parse --git-common-dir` y `log … -p --no-ext-diff --no-textconv --max-count=500 -- PROJECT.md`. La antigüedad del remoto se obtiene con `statInsideRoot` de las dos rutas de `FETCH_HEAD`, tomando la más reciente.
+- [X] T018 [US1] Implementar `src/lib/portfolio/history.ts`: funciones puras para semanas, días, semáforo de actividad, cambio de fase desde el diff y adelanto/atraso; construye `GitHistory` a partir de las salidas de git, `fase`, `fase_desde` y `now` (T014, T015).
+- [X] T019 [US1] Conectar el historial en `src/lib/portfolio/read-project.ts`: `history` en el `ProjectReading`. En `src/lib/portfolio/read-portfolio.ts`, añadir `activityByWeek` (suma del portafolio) y propagar `now`.
+- [X] T020 [P] [US1] Componentes:
   - `src/components/portfolio/history-card.tsx`: último commit, días con semáforo, adelanto/atraso con su `compareRef`, antigüedad del remoto con sus límites ("desconocida: esta copia nunca ha hecho fetch"), días en la fase contra `fase_desde` y cambios sin commit;
   - `src/components/charts/weekly-chart.tsx`: SVG de columnas generado en el servidor, con `role="img"`, `<title>`, `<desc>` y tabla "Ver datos".
-- [ ] T021 [US1] Añadir la columna "Actividad" en `src/components/portfolio/portfolio-table.tsx` y la tarjeta de historial en `src/app/(app)/projects/[folder]/page.tsx`.
-- [ ] T022 [US1] Ejecutar `npm test` y `npm run test:e2e` hasta verde, sin violaciones de CSP.
+- [X] T021 [US1] Añadir la columna "Actividad" en `src/components/portfolio/portfolio-table.tsx` y la tarjeta de historial en `src/app/(app)/projects/[folder]/page.tsx`.
+- [X] T022 [US1] Ejecutar `npm test` y `npm run test:e2e` hasta verde, sin violaciones de CSP.
 
 **Checkpoint**: US1 funciona sola; es el MVP de la fase.
 

@@ -59,7 +59,8 @@ Todo se calcula en cada lectura del portafolio y se guarda en el índice regener
 
 **Storage**:
 
-- Sin tablas ni migraciones nuevas.
+- Sin tablas nuevas. Una migración pequeña: `save_portfolio_snapshot` recibe la versión del formato
+  del índice desde el código (hallado al implementar US1; data-model.md).
 - El `payload` del índice cambia de formato (`FORMAT_VERSION` 1 → 2) y se regenera solo.
 
 **Testing**:

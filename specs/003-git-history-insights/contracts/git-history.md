@@ -14,8 +14,8 @@ git -c core.fsmonitor=false -c core.untrackedCache=false -c core.hooksPath=/dev/
 - **Entorno**: `PATH`, `HOME`, `GIT_CONFIG_NOSYSTEM=1`, `GIT_OPTIONAL_LOCKS=0`,
   `GIT_TERMINAL_PROMPT=0`, `GIT_PAGER=cat`, `LC_ALL=C`.
 - **`status`**: `status --porcelain=v1 -z --ignore-submodules=all`.
-- **Antes de `status`**: `rev-parse --path-format=absolute --git-path info/attributes` y `lstat` con
-  el lector seguro. Si ese archivo existe y no está vacío, no se ejecuta `status`:
+- **Antes de `status`**: `lstat`, con el lector seguro, de la ruta de `info/attributes` que da el
+  `rev-parse` único. Si ese archivo existe y no está vacío, no se ejecuta `status`:
   `hasUncommittedChanges` queda ausente con el motivo de seguridad.
 - **Por qué** (research R11): en una prueba, `git status` ejecutó el filtro `clean` de un
   repositorio. Con este prefijo no se ejecuta nada de ningún repositorio.
@@ -28,14 +28,12 @@ git -c core.fsmonitor=false -c core.untrackedCache=false -c core.hooksPath=/dev/
 
 | Argumentos | Salida usada |
 |---|---|
-| `for-each-ref --sort=-committerdate --count=1 --format=%(committerdate:unix) refs/heads` | Fecha del último commit de las ramas locales |
+| `rev-parse --path-format=absolute --show-toplevel --git-path info/attributes --git-path FETCH_HEAD --git-common-dir` | **Una sola llamada por proyecto** (cambio de la implementación de US1): raíz del repo, ruta de `info/attributes`, ruta de `FETCH_HEAD` del worktree y carpeta común. Reemplaza el `rev-parse --show-toplevel` de la Fase 2 y las dos consultas de rutas que estaban por separado |
+| `for-each-ref --sort=-committerdate --count=1 --format=%(committerdate:unix) refs/heads` | Fecha del último commit de las ramas locales. **Solo si el log de actividad está vacío**; si no, el último commit es el más reciente del log |
 | `log --branches --since=13.weeks.ago --format=%ct` | Una marca de tiempo por commit; se agrupan por semana |
 | `rev-list --left-right --count HEAD...refs/remotes/origin/HEAD` | `adelante\tatrás` contra la principal remota local |
 | `rev-list --left-right --count HEAD...refs/heads/main` | Solo si el anterior falla porque no existe `origin/HEAD` |
-| `rev-parse --path-format=absolute --git-path FETCH_HEAD` | Ruta de `FETCH_HEAD` del worktree o repo |
-| `rev-parse --path-format=absolute --git-common-dir` | Carpeta común (para `<común>/FETCH_HEAD`) |
 | `log --format=%x00%H%x09%ct -p --unified=0 --no-color --no-ext-diff --no-textconv --max-count=500 -- PROJECT.md` | Líneas `+fase:` / `-fase:` por commit |
-| `rev-parse --path-format=absolute --git-path info/attributes` | Ruta para comprobar si hay atributos locales (antes de `status`) |
 
 Prohibido: `fetch`, `pull`, `push`, `gc`, `checkout`, `config` y cualquier comando que escriba o
 use la red. `--no-ext-diff --no-textconv` impiden que `log -p` ejecute programas configurados en el

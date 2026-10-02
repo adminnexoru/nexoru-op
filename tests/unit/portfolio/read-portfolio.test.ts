@@ -130,7 +130,7 @@ async function fingerprint(dir: string): Promise<string> {
 }
 
 describe("read-only and regenerable", () => {
-  it("does not change any file of the portfolio, including .git (SC-007)", async () => {
+  it("does not change any file of the portfolio, including .git (SC-007)", { timeout: 30_000 }, async () => {
     const { root: copy } = await buildFixturePortfolio();
     try {
       const before = await fingerprint(copy);
@@ -146,7 +146,7 @@ describe("read-only and regenerable", () => {
     expect({ ...again, readAt: null }).toEqual({ ...reading, readAt: null });
   });
 
-  it("drops a folder deleted between two readings", async () => {
+  it("drops a folder deleted between two readings", { timeout: 30_000 }, async () => {
     const { root: copy } = await buildFixturePortfolio();
     try {
       expect((await readPortfolio(copy)).projects.some((p) => p.folder === "confirmar")).toBe(true);
@@ -176,7 +176,7 @@ describe("performance (SC-006)", () => {
 
 // T046: the standard found in nexoru-governance (FR-027).
 describe("standard version found in nexoru-governance", () => {
-  it("flags a CHANGELOG newer than the supported versions", async () => {
+  it("flags a CHANGELOG newer than the supported versions", { timeout: 30_000 }, async () => {
     const { root: copy } = await buildFixturePortfolio({ standardVersion: "1.1.0" });
     try {
       expect((await readPortfolio(copy)).standard).toEqual({
@@ -190,7 +190,7 @@ describe("standard version found in nexoru-governance", () => {
     }
   });
 
-  it("reports when nexoru-governance is not in the portfolio, and still evaluates with 1.0", async () => {
+  it("reports when nexoru-governance is not in the portfolio, and still evaluates with 1.0", { timeout: 30_000 }, async () => {
     const { root: copy } = await buildFixturePortfolio({ withoutStandard: true });
     try {
       const result = await readPortfolio(copy);

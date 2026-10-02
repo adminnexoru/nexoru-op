@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConformancePanel } from "@/components/portfolio/conformance-panel";
+import { HistoryCard } from "@/components/portfolio/history-card";
 import { ManifestCard } from "@/components/portfolio/manifest-card";
 import { ReadErrors } from "@/components/portfolio/read-errors";
 import { RoadmapTable } from "@/components/portfolio/roadmap-table";
@@ -39,6 +40,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[fold
         <ManifestCard project={project} />
         <RepositoryCard git={project.git} />
       </div>
+      <HistoryCard project={project} />
       <ReadErrors errors={project.readErrors} />
     </section>
   );

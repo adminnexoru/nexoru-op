@@ -10,6 +10,7 @@
 import { execFile } from "node:child_process";
 import { basename } from "node:path";
 import { promisify } from "node:util";
+import { parseAheadBehind } from "./history";
 import type { SafeRoot } from "./safe-fs";
 import type { GitInfo, Problem } from "./types";
 
@@ -100,14 +101,41 @@ const NOT_A_REPO: GitInfo = {
   originRepo: null,
 };
 
+/** One fixed `rev-parse` for the four paths a reading needs (fewer git processes). */
+export const REPO_PATHS_COMMAND = [
+  "rev-parse",
+  "--path-format=absolute",
+  "--show-toplevel",
+  "--git-path",
+  "info/attributes",
+  "--git-path",
+  "FETCH_HEAD",
+  "--git-common-dir",
+] as const;
+
+export interface RepoPaths {
+  toplevel: string;
+  infoAttributes: string;
+  fetchHead: string;
+  commonDir: string;
+}
+
+/** Paths of the repository whose root is exactly `projectRealPath`, or null (not a repo root). */
+export async function readRepoPaths(projectRealPath: string): Promise<RepoPaths | null> {
+  const out = await git(projectRealPath, [...REPO_PATHS_COMMAND]);
+  if (!out.ok) return null;
+  const [toplevel, infoAttributes, fetchHead, commonDir] = out.stdout.split("\n").map((line) => line.trim());
+  // A folder without its own .git must not be evaluated with a parent repository.
+  if (toplevel !== projectRealPath || !infoAttributes || !fetchHead || !commonDir) return null;
+  return { toplevel, infoAttributes, fetchHead, commonDir };
+}
+
 /**
  * `git status` only when no .git/info/attributes could make it run a filter; otherwise, or on
  * any error, the value is unknown and carries its reason (never "no changes").
  */
-async function uncommittedChanges(projectRealPath: string, root: SafeRoot) {
-  const attributesPath = await git(projectRealPath, ["rev-parse", "--path-format=absolute", "--git-path", "info/attributes"]);
-  if (!attributesPath.ok) return { value: null, reason: UNCOMMITTED_REASON.gitError };
-  const attributes = await root.statInsideRoot(attributesPath.stdout.trim());
+async function uncommittedChanges(projectRealPath: string, root: SafeRoot, paths: RepoPaths) {
+  const attributes = await root.statInsideRoot(paths.infoAttributes);
   if (attributes && attributes.size > 0) return { value: null, reason: UNCOMMITTED_REASON.localAttributes };
   const status = await git(projectRealPath, ["status", "--porcelain=v1", "-z", "--ignore-submodules=all"]);
   if (!status.ok) return { value: null, reason: UNCOMMITTED_REASON.gitError };
@@ -115,18 +143,19 @@ async function uncommittedChanges(projectRealPath: string, root: SafeRoot) {
 }
 
 /** Reads the git data of a project folder, given its real path inside PROJECTS_ROOT. */
-export async function readGitInfo(projectRealPath: string, root: SafeRoot): Promise<GitReading> {
-  const toplevel = await git(projectRealPath, ["rev-parse", "--show-toplevel"]);
-  // A folder without its own .git must not be evaluated with a parent repository.
-  if (!toplevel.ok || toplevel.stdout.trim() !== projectRealPath) {
-    return { info: NOT_A_REPO, versionedEnvFiles: null, problems: [] };
-  }
+export async function readGitInfo(
+  projectRealPath: string,
+  root: SafeRoot,
+  knownPaths?: RepoPaths | null,
+): Promise<GitReading> {
+  const paths = knownPaths === undefined ? await readRepoPaths(projectRealPath) : knownPaths;
+  if (!paths) return { info: NOT_A_REPO, versionedEnvFiles: null, problems: [] };
 
   const [origin, branch, originHead, status, files] = await Promise.all([
     git(projectRealPath, ["remote", "get-url", "origin"]),
     git(projectRealPath, ["branch", "--show-current"]),
     git(projectRealPath, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"]),
-    uncommittedChanges(projectRealPath, root),
+    uncommittedChanges(projectRealPath, root, paths),
     git(projectRealPath, ["ls-files", "-z"]),
   ]);
 
@@ -155,6 +184,86 @@ export async function readGitInfo(projectRealPath: string, root: SafeRoot): Prom
           .filter((path) => path && /^\.env/.test(basename(path)) && basename(path) !== ".env.example")
           .sort()
       : null,
+    problems,
+  };
+}
+
+/** T017: fixed history commands (contracts/git-history.md). Every one runs with PREFIX. */
+export const HISTORY_COMMANDS = {
+  lastCommit: ["for-each-ref", "--sort=-committerdate", "--count=1", "--format=%(committerdate:unix)", "refs/heads"],
+  activity: ["log", "--branches", "--since=13.weeks.ago", "--format=%ct"],
+  aheadBehindRemote: ["rev-list", "--left-right", "--count", "HEAD...refs/remotes/origin/HEAD"],
+  aheadBehindMain: ["rev-list", "--left-right", "--count", "HEAD...refs/heads/main"],
+  phaseLog: [
+    "log",
+    "--format=%x00%H%x09%ct",
+    "-p",
+    "--unified=0",
+    "--no-color",
+    "--no-ext-diff",
+    "--no-textconv",
+    "--max-count=500",
+    "--",
+    "PROJECT.md",
+  ],
+} as const;
+
+export interface GitHistoryRaw {
+  lastCommitUnix: number | null;
+  commitTimesUnix: number[];
+  aheadBehind: { ahead: number; behind: number; ref: "origin/HEAD" | "main" } | null;
+  /** Most recent modification time of FETCH_HEAD (worktree or common dir); never opened. */
+  fetchHeadMtimeMs: number | null;
+  phaseLog: string | null;
+  problems: Problem[];
+}
+
+/** Raw outputs of the history commands for a repository root (paths from readRepoPaths). */
+export async function readGitHistoryRaw(projectRealPath: string, root: SafeRoot, paths: RepoPaths): Promise<GitHistoryRaw> {
+  const run = (args: readonly string[]) => git(projectRealPath, [...args]);
+  const [activity, remote, phaseLog] = await Promise.all([
+    run(HISTORY_COMMANDS.activity),
+    run(HISTORY_COMMANDS.aheadBehindRemote),
+    run(HISTORY_COMMANDS.phaseLog),
+  ]);
+  const problems: Problem[] = [];
+  // A repository without commits makes `log` fail: that is "no activity", not an error.
+  const commitTimesUnix = activity.ok
+    ? activity.stdout
+        .split("\n")
+        .filter(Boolean)
+        .map(Number)
+        .filter((n) => Number.isFinite(n))
+    : [];
+  // The last commit is in the activity log when it is recent; otherwise ask the references.
+  let lastText = commitTimesUnix.length > 0 ? String(Math.max(...commitTimesUnix)) : "";
+  if (lastText === "") {
+    const last = await run(HISTORY_COMMANDS.lastCommit);
+    lastText = last.ok ? last.stdout.trim() : "";
+  }
+
+  let aheadBehind: GitHistoryRaw["aheadBehind"] = null;
+  const remoteCounts = remote.ok ? parseAheadBehind(remote.stdout) : null;
+  if (remoteCounts) aheadBehind = { ...remoteCounts, ref: "origin/HEAD" };
+  else {
+    // No origin/HEAD (e.g. a clone that never fetched it): compare against the local main.
+    const main = await run(HISTORY_COMMANDS.aheadBehindMain);
+    const mainCounts = main.ok ? parseAheadBehind(main.stdout) : null;
+    if (mainCounts) aheadBehind = { ...mainCounts, ref: "main" };
+  }
+
+  const candidates = [paths.fetchHead, `${paths.commonDir}/FETCH_HEAD`];
+  const stats = await Promise.all(candidates.map((path) => root.statInsideRoot(path)));
+  const mtimes = stats.flatMap((info) => (info ? [info.mtimeMs] : []));
+
+  if (!phaseLog.ok && lastText !== "") problems.push({ path: "PROJECT.md", reason: "git_error", detail: "git log de PROJECT.md" });
+
+  return {
+    lastCommitUnix: lastText !== "" && Number.isFinite(Number(lastText)) ? Number(lastText) : null,
+    commitTimesUnix,
+    aheadBehind,
+    fetchHeadMtimeMs: mtimes.length > 0 ? Math.max(...mtimes) : null,
+    phaseLog: phaseLog.ok ? phaseLog.stdout : null,
     problems,
   };
 }

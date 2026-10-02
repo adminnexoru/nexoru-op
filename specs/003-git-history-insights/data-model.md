@@ -7,6 +7,12 @@ Amplía el resultado de lectura de la Fase 2 (`specs/002-portfolio-conformance/d
 `FORMAT_VERSION` pasa de **1 a 2**: un índice con formato 1 se trata como vacío y se vuelve a leer
 (regla de la Fase 2).
 
+**Migración `20261002000000_snapshot_format_version.sql`** (hallada al implementar US1): la función
+de la Fase 2 guardaba siempre `format_version = 1`. Con el formato 2, todo índice guardado parecía
+viejo y **cada visita releía el portafolio**. Ahora `save_portfolio_snapshot(p_payload, p_read_at,
+p_format_version)` recibe la versión desde el código (`FORMAT_VERSION`) y rechaza valores menores
+que 1; la función de dos argumentos se elimina. pgTAP lo prueba (90 pruebas).
+
 ## Cambios en `PortfolioReading`
 
 ```text

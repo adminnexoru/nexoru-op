@@ -3,7 +3,7 @@
 import { z } from "zod";
 
 /** Version of the payload format stored in portfolio_snapshots.format_version. */
-export const FORMAT_VERSION = 1;
+export const FORMAT_VERSION = 2;
 
 export const ROADMAP_STATES = ["completa", "implementada-sin-validar", "en-curso", "bloqueada", "pendiente"] as const;
 export const roadmapStateSchema = z.enum(ROADMAP_STATES);
@@ -92,6 +92,8 @@ export const findingSchema = z.object({
     "yaml_comments",
     "secret_history",
     "repo_visibility",
+    "operacion_pending_phases",
+    "construction_roadmap_concluded",
   ]),
   status: z.enum(["found", "not_found", "not_evaluated"]),
   detail: z.string().nullable(),
@@ -110,9 +112,41 @@ export const conformanceResultSchema = z.object({
 });
 export type ConformanceResult = z.infer<typeof conformanceResultSchema>;
 
+export const weekActivitySchema = z.object({
+  /** Monday of the week, AAAA-MM-DD in local time. */
+  weekStart: z.string(),
+  commits: z.number(),
+});
+export type WeekActivity = z.infer<typeof weekActivitySchema>;
+
+export const ACTIVITY_LEVELS = ["verde", "ambar", "rojo", "neutro"] as const;
+export const activityLevelSchema = z.enum(ACTIVITY_LEVELS);
+export type ActivityLevel = z.infer<typeof activityLevelSchema>;
+
+/** T011: git history of a project (phase 3, data-model.md). */
+export const gitHistorySchema = z.object({
+  lastCommitAt: z.iso.datetime({ offset: true }).nullable(),
+  daysWithoutActivity: z.number().nullable(),
+  activityLight: activityLevelSchema.nullable(),
+  weekly: z.array(weekActivitySchema),
+  compareRef: z.enum(["origin/HEAD", "main"]).nullable(),
+  ahead: z.number().nullable(),
+  behind: z.number().nullable(),
+  remoteRefsUpdatedAt: z.iso.datetime({ offset: true }).nullable(),
+  remoteRefsAgeDays: z.number().nullable(),
+  phaseChangedAt: z.iso.datetime({ offset: true }).nullable(),
+  daysInPhase: z.number().nullable(),
+  phaseMatchesFaseDesde: z.boolean().nullable(),
+  /** Spanish notes: "HEAD separado", "fecha de commit en el futuro", "cambio de fase sin commit", "sin commits". */
+  notes: z.array(z.string()),
+  problems: z.array(problemSchema),
+});
+export type GitHistory = z.infer<typeof gitHistorySchema>;
+
 export const projectReadingSchema = z.object({
   folder: z.string(),
   git: gitInfoSchema,
+  history: gitHistorySchema.nullable(),
   manifest: manifestSchema.nullable(),
   manifestProblem: problemSchema.nullable(),
   roadmap: z.array(roadmapPhaseSchema).nullable(),
@@ -145,5 +179,9 @@ export const portfolioReadingSchema = z.object({
   standard: standardInfoSchema,
   projects: z.array(projectReadingSchema),
   warnings: z.array(portfolioWarningSchema),
+  /** Sum of every project, last 12 weeks (chart of US4). */
+  activityByWeek: z.array(weekActivitySchema),
+  /** Folders skipped by .nexoruignore; never shown (FR-031). */
+  ignoredCount: z.number(),
 });
 export type PortfolioReading = z.infer<typeof portfolioReadingSchema>;

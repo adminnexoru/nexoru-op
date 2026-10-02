@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ProjectReading } from "@/lib/portfolio/types";
-import { OrAbsent } from "./absent";
+import { TrafficLight } from "@/components/status/traffic-light";
+import { Absent, OrAbsent } from "./absent";
 import { BranchBadge } from "./branch-badge";
 import { LevelBadge } from "./level-badge";
 
@@ -24,6 +25,7 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
           <TableHead>Fecha objetivo</TableHead>
           <TableHead>Siguiente hito</TableHead>
           <TableHead>Nivel</TableHead>
+          <TableHead>Actividad</TableHead>
           <TableHead>Rama</TableHead>
         </TableRow>
       </TableHeader>
@@ -46,6 +48,13 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
               <TableCell><OrAbsent value={manifest?.fecha_objetivo} /></TableCell>
               <TableCell className="max-w-64 whitespace-normal"><OrAbsent value={manifest?.siguiente_hito} /></TableCell>
               <TableCell><LevelBadge project={project} /></TableCell>
+              <TableCell>
+                {project.history?.activityLight ? (
+                  <TrafficLight kind="activity" level={project.history.activityLight} detail={`${project.history.daysWithoutActivity} días`} />
+                ) : (
+                  <Absent />
+                )}
+              </TableCell>
               <TableCell><BranchBadge git={project.git} /></TableCell>
             </TableRow>
           );
