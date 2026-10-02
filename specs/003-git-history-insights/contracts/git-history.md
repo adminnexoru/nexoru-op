@@ -60,3 +60,8 @@ repositorio.
   desconocida si la copia nunca hizo `fetch`; no refleja un `push` sin `fetch`; corresponde a
   cualquier remoto.
 - El historial de `fase` se corta si `PROJECT.md` se renombró, y mira como máximo 500 commits.
+- El historial no ve nada anterior a la creación de `PROJECT.md`. Si el último "cambio" de `fase`
+  es la **creación del campo**, esa fecha es solo una fecha mínima (FR-006, opción A):
+  `phaseCheck = "no_verificable"` si `fase_desde` es anterior (días desde `fase_desde`), y
+  `"contradice"` si es posterior (aviso explicado). Solo un cambio de un valor a otro se compara
+  de verdad (`"coincide"` o `"no_coincide"`).

@@ -92,12 +92,12 @@ describe("phase change from the history of PROJECT.md", () => {
       record(daysAgo(20), hunk(6, ["-fase: especificacion", "+fase: construccion"])),
       record(daysAgo(100), `diff --git a/PROJECT.md b/PROJECT.md\n--- /dev/null\n+++ b/PROJECT.md\n@@ -0,0 +1,3 @@\n+---\n+fase: especificacion\n+---\n`),
     ].join("");
-    expect(latestPhaseChange(log, 24)).toEqual({ value: "construccion", at: daysAgo(20) });
+    expect(latestPhaseChange(log, 24)).toEqual({ value: "construccion", at: daysAgo(20), kind: "changed" });
   });
 
   it("takes the commit that introduced the field when it never changed", () => {
     const log = record(daysAgo(100), `diff --git a/PROJECT.md b/PROJECT.md\n--- /dev/null\n+++ b/PROJECT.md\n@@ -0,0 +1,3 @@\n+---\n+fase: idea\n+---\n`);
-    expect(latestPhaseChange(log, 24)).toEqual({ value: "idea", at: daysAgo(100) });
+    expect(latestPhaseChange(log, 24)).toEqual({ value: "idea", at: daysAgo(100), kind: "introduced" });
   });
 
   it("ignores a commit that rewrites the same value and fase: lines outside the frontmatter", () => {
@@ -106,7 +106,7 @@ describe("phase change from the history of PROJECT.md", () => {
       record(daysAgo(4), hunk(40, ["-fase: pruebas", "+fase: piloto"])),
       record(daysAgo(20), hunk(6, ["-fase: idea", "+fase: construccion"])),
     ].join("");
-    expect(latestPhaseChange(log, 24)).toEqual({ value: "construccion", at: daysAgo(20) });
+    expect(latestPhaseChange(log, 24)).toEqual({ value: "construccion", at: daysAgo(20), kind: "changed" });
   });
 
   it("is null without history", () => {
@@ -166,5 +166,53 @@ describe("buildHistory", () => {
   it("is neutral in operacion and keeps the days; without FETCH_HEAD the age is unknown", () => {
     const history = buildHistory(input({ fetchHeadMtimeMs: null }), { fase: "operacion", fase_desde: null }, 24, NOW);
     expect(history).toMatchObject({ activityLight: "neutro", daysWithoutActivity: 5, remoteRefsUpdatedAt: null, remoteRefsAgeDays: null });
+  });
+});
+
+// FR-006 (option A, 2026-10-01): the commit that CREATED the field is only a lower bound.
+describe("days in the phase when the history starts with the creation of PROJECT.md", () => {
+  const created = (days: number, fase = "construccion") =>
+    `\0${"c".repeat(40)}\t${unix(daysAgo(days))}\n\ndiff --git a/PROJECT.md b/PROJECT.md\n--- /dev/null\n+++ b/PROJECT.md\n@@ -0,0 +1,3 @@\n+---\n+fase: ${fase}\n+---\n`;
+  const changed = (days: number) =>
+    `\0${"d".repeat(40)}\t${unix(daysAgo(days))}\n\n@@ -6 +6 @@\n-fase: especificacion\n+fase: construccion\n`;
+  const iso = (days: number) => daysAgo(days).toLocaleDateString("en-CA");
+
+  it("marks a phase change from another value as 'changed'", () => {
+    expect(latestPhaseChange(changed(20), 24)).toMatchObject({ value: "construccion", kind: "changed" });
+    expect(latestPhaseChange(created(20), 24)).toMatchObject({ value: "construccion", kind: "introduced" });
+  });
+
+  it("cannot verify a fase_desde earlier than the creation: days come from fase_desde, without warning", () => {
+    const history = buildHistory(input({ phaseLog: created(3) }), { fase: "construccion", fase_desde: iso(30) }, 24, NOW);
+    expect(history).toMatchObject({
+      phaseCheck: "no_verificable",
+      phaseMatchesFaseDesde: null,
+      daysInPhase: 30,
+      daysInPhaseSource: "fase_desde",
+    });
+    expect(history.phaseCheckDetail).toBe(
+      `No verificable: PROJECT.md registra la fase desde el ${iso(3)} (cuando se creó el campo) y fase_desde (${iso(30)}) es anterior; el historial no puede confirmarlo.`,
+    );
+  });
+
+  it("treats the same day as a match", () => {
+    const history = buildHistory(input({ phaseLog: created(3) }), { fase: "construccion", fase_desde: iso(3) }, 24, NOW);
+    expect(history).toMatchObject({ phaseCheck: "coincide", phaseMatchesFaseDesde: true, daysInPhase: 3, daysInPhaseSource: "historial" });
+  });
+
+  it("explains the contradiction when fase_desde is later than the creation and the phase never changed", () => {
+    const history = buildHistory(input({ phaseLog: created(20) }), { fase: "construccion", fase_desde: iso(5) }, 24, NOW);
+    expect(history).toMatchObject({ phaseCheck: "contradice", phaseMatchesFaseDesde: false, daysInPhase: 20, daysInPhaseSource: "historial" });
+    expect(history.phaseCheckDetail).toBe(
+      `Contradicción: fase_desde dice ${iso(5)}, pero PROJECT.md ya registraba fase: construccion desde el ${iso(20)} y la fase no cambió después. fase_desde debería ser el ${iso(20)} o una fecha anterior.`,
+    );
+  });
+
+  it("compares for real when the history shows a change from another value", () => {
+    const history = buildHistory(input({ phaseLog: changed(20) }), { fase: "construccion", fase_desde: iso(14) }, 24, NOW);
+    expect(history).toMatchObject({ phaseCheck: "no_coincide", phaseMatchesFaseDesde: false, daysInPhase: 20, daysInPhaseSource: "historial" });
+    expect(history.phaseCheckDetail).toBe(
+      `No coincide con fase_desde (${iso(14)}): el historial muestra el cambio a construccion el ${iso(20)}.`,
+    );
   });
 });

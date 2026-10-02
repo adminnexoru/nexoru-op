@@ -43,6 +43,9 @@ GitHistory
 ├── phaseChangedAt: string | null     ← commit más reciente que dejó `fase` en su valor actual
 ├── daysInPhase: number | null
 ├── phaseMatchesFaseDesde: boolean | null
+├── phaseCheck: "coincide" | "no_coincide" | "no_verificable" | "contradice" | null
+├── phaseCheckDetail: string | null           ← explicación en español
+├── daysInPhaseSource: "historial" | "fase_desde" | null
 └── problems: Problem[]               ← reason "git_error" con el comando que falló
 
 WeekActivity
@@ -63,7 +66,7 @@ Finding.code (+) "operacion_pending_phases" | "construction_roadmap_concluded"  
 | `activityLight`: `neutro` si `fase` ∈ {`pausado`, `operacion`, `retirado`}; si no, `verde` ≤ 5 días, `ambar` 6–15, `rojo` > 15 | FR-001, FR-032 |
 | `daysWithoutActivity` = días completos (hora local) entre `lastCommitAt` y `readAt` | FR-001 |
 | Semanas: lunes a domingo; `weekly[11]` es la semana en curso | FR-002 |
-| `phaseMatchesFaseDesde` = fecha local de `phaseChangedAt` == `fase_desde` | FR-006 |
+| `phaseCheck`: `coincide` (mismo día); `no_coincide` (cambio real en otra fecha); `no_verificable` (creación del campo y `fase_desde` anterior: `daysInPhase` desde `fase_desde`, `daysInPhaseSource = "fase_desde"`); `contradice` (creación del campo y `fase_desde` posterior). `phaseCheckDetail` explica en texto claro los tres últimos. `phaseMatchesFaseDesde` se conserva: `true` si coincide, `false` si no coincide o contradice, `null` en el resto | FR-006 (opción A) |
 | `conformity.applicable` = verificaciones que no son `3.2`; las "Depende de X" cuentan como no cumplidas | FR-009 |
 | `progress` cuenta cada spec una vez, solo en fases derivadas; `phasesCompleted` usa "fase concluida" (1.1) | FR-011, FR-014 |
 | `roadmapStatus` = `concluido` si hay ≥ 1 fase y todas están concluidas | FR-029 |

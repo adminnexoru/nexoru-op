@@ -89,9 +89,17 @@ de último commit, semanas, días sin actividad, adelanto/atraso y días en la f
 5. **Given** un `PROJECT.md` cuyo campo `fase` cambió a `construccion` en un commit del
    2026-09-26, con `fase_desde: 2026-09-26`, **When** el Dueño abre el detalle, **Then** ve los días
    en la fase contados desde ese commit y que coincide con `fase_desde`.
-6. **Given** que el historial dice que la fase cambió el 2026-09-20 pero `fase_desde` dice
-   2026-09-26, **When** el Dueño abre el detalle, **Then** ve las dos fechas y el aviso de que no
-   coinciden.
+6. **Given** que el historial dice que la fase **cambió** de otro valor a la actual el 2026-09-20
+   pero `fase_desde` dice 2026-09-26, **When** el Dueño abre el detalle, **Then** ve las dos fechas
+   y el aviso de que no coinciden, con lo que muestra el historial.
+9. **Given** un `PROJECT.md` creado el 2026-09-28 con `fase: construccion` y `fase_desde:
+   2026-09-01`, sin cambios de fase después, **When** el Dueño abre el detalle, **Then** ve
+   "no verificable" sin aviso, y los días en la fase contados desde `fase_desde` como dato
+   declarado.
+10. **Given** un `PROJECT.md` creado el 2026-09-10 con `fase: construccion` y `fase_desde:
+    2026-09-25`, sin cambios de fase después, **When** el Dueño abre el detalle, **Then** ve un aviso
+    que explica la contradicción: el archivo ya registraba `construccion` desde el 2026-09-10, y
+    `fase_desde` debería ser esa fecha o una anterior.
 7. **Given** una carpeta que no es repositorio git, **When** el Dueño la ve, **Then** todos los
    datos de git aparecen como ausentes, con el motivo.
 8. **Given** repos con 6, 15 y 16 días sin actividad, **When** el Dueño abre el portafolio,
@@ -251,8 +259,18 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
   su antigüedad (cuándo se actualizó por última vez en esta máquina), porque nunca la actualiza.
 - **FR-005**: El sistema DEBE seguir mostrando la rama actual y los cambios sin commit (Fase 2).
 - **FR-006**: El sistema DEBE derivar del historial de `PROJECT.md` la fecha del último commit que
-  cambió el valor del campo `fase`, mostrar los días en la fase desde esa fecha y compararla con
-  `fase_desde`, avisando si no coinciden.
+  dejó el campo `fase` en su valor actual y distinguir dos casos (decisión del Dueño, opción A,
+  2026-10-01):
+  - **Cambio real** (de otro valor al actual): los días en la fase se cuentan desde ese commit y se
+    comparan con `fase_desde`; si no coinciden, se avisa con un texto que dice qué muestra el
+    historial.
+  - **Creación del campo** (casi siempre, cuando se creó `PROJECT.md` al adoptar el estándar): el
+    historial solo da una fecha mínima. Si `fase_desde` es anterior, se muestra "no verificable",
+    sin aviso, y los días se cuentan desde `fase_desde`, indicando que es el dato declarado. Si
+    `fase_desde` es posterior y la fase no cambió después, es una **contradicción** y se explica en
+    texto claro: qué dice `fase_desde`, desde cuándo el archivo ya registraba esa fase y qué fecha
+    sería coherente.
+  - El mismo día cuenta como coincidencia.
 - **FR-007**: El sistema NO DEBE ejecutar `git fetch`, `pull` ni ningún comando que contacte la red
   o escriba en `.git`. Toda consulta de git es de solo lectura, sin shell y con argumentos fijos o
   validados (principio XIII).

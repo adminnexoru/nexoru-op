@@ -47,19 +47,28 @@ export function HistoryCard({ project }: { project: ProjectReading }) {
               </dd>
 
               <dt className="text-muted-foreground">Días en la fase</dt>
-              <dd>
-                {history.daysInPhase !== null && history.phaseChangedAt ? (
-                  <>
-                    {history.daysInPhase} días en {manifest?.fase ?? "la fase actual"}, desde el commit del{" "}
-                    {date.format(new Date(history.phaseChangedAt))}
-                    {history.phaseMatchesFaseDesde === true ? " · coincide con fase_desde" : null}
-                    {history.phaseMatchesFaseDesde === false ? (
-                      <span className="text-destructive"> · no coincide con fase_desde ({manifest?.fase_desde})</span>
-                    ) : null}
-                  </>
+              <dd className="grid gap-1">
+                {history.daysInPhase !== null ? (
+                  <span>
+                    {history.daysInPhase} días en {manifest?.fase ?? "la fase actual"}
+                    {history.daysInPhaseSource === "fase_desde"
+                      ? " (contados desde fase_desde, el dato declarado)"
+                      : history.phaseChangedAt
+                        ? `, desde el commit del ${date.format(new Date(history.phaseChangedAt))}`
+                        : null}
+                    {history.phaseCheck === "coincide" ? " · coincide con fase_desde" : null}
+                  </span>
                 ) : (
-                  <>sin historial de la fase{manifest?.fase_desde ? ` · fase_desde: ${manifest.fase_desde}` : ""}</>
+                  <span>sin historial de la fase{manifest?.fase_desde ? ` · fase_desde: ${manifest.fase_desde}` : ""}</span>
                 )}
+                {history.phaseCheckDetail ? (
+                  <span
+                    data-testid="phase-check"
+                    className={history.phaseCheck === "no_verificable" ? "text-muted-foreground" : "text-destructive"}
+                  >
+                    {history.phaseCheckDetail}
+                  </span>
+                ) : null}
               </dd>
             </dl>
 

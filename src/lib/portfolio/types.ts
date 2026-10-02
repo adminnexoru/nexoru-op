@@ -137,6 +137,15 @@ export const gitHistorySchema = z.object({
   phaseChangedAt: z.iso.datetime({ offset: true }).nullable(),
   daysInPhase: z.number().nullable(),
   phaseMatchesFaseDesde: z.boolean().nullable(),
+  /**
+   * FR-006 (option A): "changed" history is compared; a history that starts when the field was
+   * created only gives a lower bound ("no_verificable", or "contradice" if fase_desde is later).
+   */
+  phaseCheck: z.enum(["coincide", "no_coincide", "no_verificable", "contradice"]).nullable(),
+  /** Spanish explanation of phaseCheck (null when it matches or there is no history). */
+  phaseCheckDetail: z.string().nullable(),
+  /** Where daysInPhase comes from: the git history or the declared fase_desde. */
+  daysInPhaseSource: z.enum(["historial", "fase_desde"]).nullable(),
   /** Spanish notes: "HEAD separado", "fecha de commit en el futuro", "cambio de fase sin commit", "sin commits". */
   notes: z.array(z.string()),
   problems: z.array(problemSchema),

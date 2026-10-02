@@ -35,7 +35,8 @@ test("the detail shows the history of history-demo", async () => {
   await expect(history).toContainText("2 adelante, 3 atrás respecto a origin/HEAD");
   await expect(history).toContainText("referencia local de hace 40 días");
   await expect(history).toContainText("20 días en construccion");
-  await expect(history).toContainText("no coincide con fase_desde");
+  await expect(page.getByTestId("phase-check")).toContainText("No coincide con fase_desde");
+  await expect(page.getByTestId("phase-check")).toContainText("el historial muestra el cambio a construccion");
   const chart = page.getByRole("img", { name: /Actividad de git por semana/ });
   await expect(chart).toBeVisible();
   await page.getByText("Ver datos").first().click();

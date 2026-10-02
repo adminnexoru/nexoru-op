@@ -59,11 +59,18 @@ export function parseAheadBehind(output: string): { ahead: number; behind: numbe
 const FASE_LINE = /^([+-])fase:\s*(\S+)\s*$/;
 const HUNK = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
 
+export interface PhaseChange {
+  value: string;
+  at: Date;
+  /** "changed": from another value; "introduced": the field appeared (usually PROJECT.md was created). */
+  kind: "changed" | "introduced";
+}
+
 /**
  * Most recent commit that left `fase` (in the frontmatter) at its value: the one that introduced
  * it or changed it from another value. `log` is the output of the phaseLog command (newest first).
  */
-export function latestPhaseChange(log: string | null, frontmatterEndLine: number | null): { value: string; at: Date } | null {
+export function latestPhaseChange(log: string | null, frontmatterEndLine: number | null): PhaseChange | null {
   if (!log) return null;
   const limit = frontmatterEndLine ?? DEFAULT_FRONTMATTER_END;
   for (const record of log.split("\0")) {
@@ -90,9 +97,49 @@ export function latestPhaseChange(log: string | null, frontmatterEndLine: number
       if (fase[1] === "+" && newLine <= limit) added = fase[2];
       if (fase[1] === "-" && oldLine <= limit) removed = fase[2];
     }
-    if (added !== null && added !== removed) return { value: added, at: new Date(Number(header[1]) * 1000) };
+    if (added !== null && added !== removed) {
+      return { value: added, at: new Date(Number(header[1]) * 1000), kind: removed === null ? "introduced" : "changed" };
+    }
   }
   return null;
+}
+
+type PhaseCheck = Pick<GitHistory, "daysInPhase" | "daysInPhaseSource" | "phaseCheck" | "phaseCheckDetail" | "phaseMatchesFaseDesde">;
+
+/**
+ * FR-006, option A: a real change is compared with fase_desde; a history that starts when the
+ * field was created is only a lower bound and cannot contradict an earlier fase_desde.
+ */
+function checkPhase(change: PhaseChange | null, fase: string | null, faseDesde: string | null, now: Date): PhaseCheck {
+  if (!change) return { daysInPhase: null, daysInPhaseSource: null, phaseCheck: null, phaseCheckDetail: null, phaseMatchesFaseDesde: null };
+  const changedOn = localDateString(change.at);
+  const fromHistory = { daysInPhase: daysBetween(change.at, now), daysInPhaseSource: "historial" as const };
+  if (faseDesde === null) return { ...fromHistory, phaseCheck: null, phaseCheckDetail: null, phaseMatchesFaseDesde: null };
+  if (faseDesde === changedOn) return { ...fromHistory, phaseCheck: "coincide", phaseCheckDetail: null, phaseMatchesFaseDesde: true };
+
+  if (change.kind === "changed") {
+    return {
+      ...fromHistory,
+      phaseCheck: "no_coincide",
+      phaseCheckDetail: `No coincide con fase_desde (${faseDesde}): el historial muestra el cambio a ${change.value} el ${changedOn}.`,
+      phaseMatchesFaseDesde: false,
+    };
+  }
+  if (faseDesde < changedOn) {
+    return {
+      daysInPhase: daysBetween(new Date(`${faseDesde}T00:00:00`), now),
+      daysInPhaseSource: "fase_desde",
+      phaseCheck: "no_verificable",
+      phaseCheckDetail: `No verificable: PROJECT.md registra la fase desde el ${changedOn} (cuando se creó el campo) y fase_desde (${faseDesde}) es anterior; el historial no puede confirmarlo.`,
+      phaseMatchesFaseDesde: null,
+    };
+  }
+  return {
+    ...fromHistory,
+    phaseCheck: "contradice",
+    phaseCheckDetail: `Contradicción: fase_desde dice ${faseDesde}, pero PROJECT.md ya registraba fase: ${fase ?? change.value} desde el ${changedOn} y la fase no cambió después. fase_desde debería ser el ${changedOn} o una fecha anterior.`,
+    phaseMatchesFaseDesde: false,
+  };
 }
 
 export interface HistoryInput {
@@ -143,8 +190,7 @@ export function buildHistory(
     remoteRefsUpdatedAt: fetched?.toISOString() ?? null,
     remoteRefsAgeDays: fetched ? daysBetween(fetched, now) : null,
     phaseChangedAt: change?.at.toISOString() ?? null,
-    daysInPhase: change ? daysBetween(change.at, now) : null,
-    phaseMatchesFaseDesde: change && manifest?.fase_desde ? localDateString(change.at) === manifest.fase_desde : null,
+    ...checkPhase(change, fase, manifest?.fase_desde ?? null, now),
     notes,
     problems: input.problems,
   };
