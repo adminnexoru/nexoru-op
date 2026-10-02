@@ -42,8 +42,8 @@ test("shows every project with the data of its PROJECT.md", async () => {
   await expect(demo).toContainText("3 (provisional)");
   await expect(demo).toContainText("main");
 
-  // 18 project folders plus the header row (duplicate ids are both listed).
-  await expect(page.getByTestId("portfolio-table").getByRole("row")).toHaveCount(19);
+  // 24 project folders plus the header row (duplicate ids are both listed; ignored-copy until US5).
+  await expect(page.getByTestId("portfolio-table").getByRole("row")).toHaveCount(25);
 });
 
 test("a project without PROJECT.md is listed by folder, level 0 and absent data", async () => {

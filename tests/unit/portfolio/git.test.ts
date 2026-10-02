@@ -7,51 +7,63 @@ import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { normalizeGithubRemote, readGitInfo } from "@/lib/portfolio/git";
+import { openRoot, type SafeRoot } from "@/lib/portfolio/safe-fs";
 
 const root = process.env.PROJECTS_ROOT!;
 const project = (folder: string) => realpath(join(root, folder));
 
+async function safeRootOf(path: string): Promise<SafeRoot> {
+  const opened = await openRoot(path);
+  if (opened.status !== "ok") throw new Error(`root not usable: ${path}`);
+  return opened.root;
+}
+let fixtureRoot: SafeRoot;
+beforeAll(async () => {
+  fixtureRoot = await safeRootOf(root);
+});
+
 describe("readGitInfo", () => {
   it("reads branch, main branch, origin and a clean tree", async () => {
-    const { info, versionedEnvFiles } = await readGitInfo(await project("level3-demo"));
+    const { info, versionedEnvFiles } = await readGitInfo(await project("level3-demo"), fixtureRoot);
     expect(info).toEqual({
       isRepo: true,
       branch: "main",
       mainBranch: "main",
       onMainBranch: true,
       hasUncommittedChanges: false,
+      uncommittedChangesReason: null,
       originRepo: "example-org/level3-demo",
     });
     expect(versionedEnvFiles).toEqual([]);
   });
 
   it("does not take a parent repository for a folder without .git", async () => {
-    const { info, versionedEnvFiles } = await readGitInfo(await project("no-git"));
+    const { info, versionedEnvFiles } = await readGitInfo(await project("no-git"), fixtureRoot);
     expect(info.isRepo).toBe(false);
     expect(info.branch).toBeNull();
     expect(info.originRepo).toBeNull();
     expect(versionedEnvFiles).toBeNull();
 
     // A subfolder of a repository is not the repository root either.
-    expect((await readGitInfo(await project("level3-demo/docs"))).info.isRepo).toBe(false);
+    expect((await readGitInfo(await project("level3-demo/docs"), fixtureRoot)).info.isRepo).toBe(false);
   });
 
   it("reports a repository without origin and falls back to main as main branch", async () => {
-    const { info } = await readGitInfo(await project("no-origin"));
+    const { info } = await readGitInfo(await project("no-origin"), fixtureRoot);
     expect(info.isRepo).toBe(true);
     expect(info.originRepo).toBeNull();
     expect(info.mainBranch).toBe("main");
   });
 
   it("flags a feature branch with uncommitted changes", async () => {
-    const { info } = await readGitInfo(await project("feature-branch"));
+    const { info } = await readGitInfo(await project("feature-branch"), fixtureRoot);
     expect(info.branch).toBe("feature/x");
     expect(info.onMainBranch).toBe(false);
     expect(info.hasUncommittedChanges).toBe(true);
   });
 
   it("lists versioned .env files by name only, excluding .env.example", async () => {
-    const { versionedEnvFiles } = await readGitInfo(await project("env-versioned"));
+    const { versionedEnvFiles } = await readGitInfo(await project("env-versioned"), fixtureRoot);
     expect(versionedEnvFiles).toEqual([".env"]);
   });
 });
@@ -89,7 +101,7 @@ describe("readGitInfo never runs repository code nor writes to the repository", 
     await expect(stat(witness)).resolves.toBeTruthy();
     await rm(witness);
 
-    await readGitInfo(await realpath(repo));
+    await readGitInfo(await realpath(repo), await safeRootOf(await realpath(tmpdir())));
     await expect(stat(witness)).rejects.toThrow();
   });
 
@@ -99,7 +111,7 @@ describe("readGitInfo never runs repository code nor writes to the repository", 
     await writeFile(join(repo, "README.md"), "ficticio\n");
     const before = await stat(index);
     const hashBefore = createHash("sha256").update(await readFile(index)).digest("hex");
-    await readGitInfo(await realpath(repo));
+    await readGitInfo(await realpath(repo), await safeRootOf(await realpath(tmpdir())));
     const after = await stat(index);
     expect(after.mtimeMs).toBe(before.mtimeMs);
     expect(createHash("sha256").update(await readFile(index)).digest("hex")).toBe(hashBefore);

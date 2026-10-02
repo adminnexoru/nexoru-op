@@ -32,6 +32,7 @@ export function baseFiles(): ProjectFiles {
       mainBranch: "main",
       onMainBranch: true,
       hasUncommittedChanges: false,
+      uncommittedChangesReason: null,
       originRepo: "example-org/level3-demo",
     },
     versionedEnvFiles: [],

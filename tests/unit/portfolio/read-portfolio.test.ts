@@ -18,7 +18,7 @@ const project = (folder: string): ProjectReading => {
 };
 
 beforeAll(async () => {
-  root = await buildFixturePortfolio();
+  ({ root } = await buildFixturePortfolio());
   reading = await readPortfolio(root);
 });
 
@@ -29,7 +29,8 @@ describe("portfolio", () => {
     const folders = reading.projects.map((p) => p.folder);
     expect(folders).not.toContain("nexoru-governance");
     expect(folders).toContain("level3-demo");
-    expect(folders).toHaveLength(18);
+    // 18 projects of phase 2 + 6 of phase 3 (ignored-copy is listed until US5 honors .nexoruignore).
+    expect(folders).toHaveLength(24);
     expect([...folders].sort()).toEqual(folders);
     expect(reading.root).toEqual({ status: "ok" });
     expect(reading.supportedStandardVersions).toEqual(["1.0"]);
@@ -130,7 +131,7 @@ async function fingerprint(dir: string): Promise<string> {
 
 describe("read-only and regenerable", () => {
   it("does not change any file of the portfolio, including .git (SC-007)", async () => {
-    const copy = await buildFixturePortfolio();
+    const { root: copy } = await buildFixturePortfolio();
     try {
       const before = await fingerprint(copy);
       await readPortfolio(copy);
@@ -146,7 +147,7 @@ describe("read-only and regenerable", () => {
   });
 
   it("drops a folder deleted between two readings", async () => {
-    const copy = await buildFixturePortfolio();
+    const { root: copy } = await buildFixturePortfolio();
     try {
       expect((await readPortfolio(copy)).projects.some((p) => p.folder === "confirmar")).toBe(true);
       await rm(join(copy, "confirmar"), { recursive: true });
@@ -176,7 +177,7 @@ describe("performance (SC-006)", () => {
 // T046: the standard found in nexoru-governance (FR-027).
 describe("standard version found in nexoru-governance", () => {
   it("flags a CHANGELOG newer than the supported versions", async () => {
-    const copy = await buildFixturePortfolio({ standardVersion: "1.1.0" });
+    const { root: copy } = await buildFixturePortfolio({ standardVersion: "1.1.0" });
     try {
       expect((await readPortfolio(copy)).standard).toEqual({
         folder: "nexoru-governance",
@@ -190,7 +191,7 @@ describe("standard version found in nexoru-governance", () => {
   });
 
   it("reports when nexoru-governance is not in the portfolio, and still evaluates with 1.0", async () => {
-    const copy = await buildFixturePortfolio({ withoutStandard: true });
+    const { root: copy } = await buildFixturePortfolio({ withoutStandard: true });
     try {
       const result = await readPortfolio(copy);
       expect(result.standard.found).toBe(false);

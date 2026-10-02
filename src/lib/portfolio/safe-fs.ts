@@ -123,12 +123,23 @@ export class SafeRoot {
     assertCatalog(folder, path, READ_CATALOG);
     if (isSecretName(basename(path))) return problem(path, "secret_file");
 
-    const resolved = await this.resolveInside(folder, path);
-    if ("reason" in resolved) return problem(path, resolved.reason);
-    if (isSecretName(basename(resolved.real))) return problem(path, "secret_file");
+    return this.readResolved(path, join(this.realPath, folder, path));
+  }
+
+  /** Reads `absolute` (shown as `path` in problems) with the rules of contracts/reader.md. */
+  private async readResolved(path: string, absolute: string): Promise<FileContent> {
+    let real: string;
+    try {
+      real = await realpath(absolute);
+    } catch (error) {
+      if (errorCode(error) === "ENOENT" || errorCode(error) === "ENOTDIR") return problem(path, "missing");
+      throw error;
+    }
+    if (!real.startsWith(this.realPath + sep)) return problem(path, "outside_root");
+    if (isSecretName(basename(real))) return problem(path, "secret_file");
 
     // O_NONBLOCK: opening a FIFO for reading would otherwise wait for a writer forever.
-    const handle = await open(resolved.real, constants.O_RDONLY | constants.O_NONBLOCK).catch((error: unknown) => {
+    const handle = await open(real, constants.O_RDONLY | constants.O_NONBLOCK).catch((error: unknown) => {
       if (errorCode(error) === "ENOENT") return null;
       throw error;
     });
@@ -164,6 +175,28 @@ export class SafeRoot {
     }
     const resolved = await this.resolveInside(folder, path);
     return "real" in resolved;
+  }
+
+  /** T009: the only file read from the root of the portfolio (standard 1.1, project-standard.md §8). */
+  async readRootFile(name: ".nexoruignore"): Promise<FileContent> {
+    if (name !== ".nexoruignore") throw new CatalogError(".", String(name));
+    return this.readResolved(name, join(this.realPath, name));
+  }
+
+  /**
+   * T009: modification time and size of a path given by git (e.g. FETCH_HEAD, info/attributes),
+   * only if its real path stays inside PROJECTS_ROOT. Never opens the file.
+   */
+  async statInsideRoot(absolutePath: string): Promise<{ mtimeMs: number; size: number } | null> {
+    if (!isAbsolute(absolutePath)) return null;
+    try {
+      const real = await realpath(absolutePath);
+      if (!real.startsWith(this.realPath + sep)) return null;
+      const info = await lstat(real);
+      return { mtimeMs: info.mtimeMs, size: info.size };
+    } catch {
+      return null;
+    }
   }
 
   /** Entries of `specs/` (NNN-name folders) or `.github/workflows/` (YAML files), sorted. */

@@ -7,7 +7,15 @@ import type { SafeRoot } from "./safe-fs";
 import type { Problem, ProjectReading } from "./types";
 
 const NO_GIT: GitReading = {
-  info: { isRepo: false, branch: null, mainBranch: null, onMainBranch: null, hasUncommittedChanges: null, originRepo: null },
+  info: {
+    isRepo: false,
+    branch: null,
+    mainBranch: null,
+    onMainBranch: null,
+    hasUncommittedChanges: null,
+    uncommittedChangesReason: null,
+    originRepo: null,
+  },
   versionedEnvFiles: null,
   problems: [],
 };
@@ -51,7 +59,7 @@ export async function readProject(root: SafeRoot, folder: string, evaluationDate
       root.listDir(folder, "specs"),
       root.listDir(folder, ".github/workflows"),
       root.exists(folder, ".env.example"),
-      projectReal ? readGitInfo(projectReal) : Promise.resolve(NO_GIT),
+      projectReal ? readGitInfo(projectReal, root) : Promise.resolve(NO_GIT),
     ]);
 
   const files: ProjectFiles = {

@@ -9,7 +9,7 @@ let root: string;
 let reading: PortfolioReading;
 
 beforeAll(async () => {
-  root = await buildFixturePortfolio();
+  ({ root } = await buildFixturePortfolio());
   reading = await readPortfolio(root);
 });
 

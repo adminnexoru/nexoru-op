@@ -44,7 +44,7 @@ contrato; nunca se debilita la prueba.
 **Propósito**: cerrar el hueco encontrado en `git status` (research R11) antes de añadir comandos, y
 ampliar el portafolio ficticio.
 
-- [ ] T001 Prueba del repo hostil en `tests/unit/portfolio/git-hardening.test.ts`. Crea su propio repo en una carpeta temporal `nexoru-op-fixture-hostile-*`:
+- [X] T001 Prueba del repo hostil en `tests/unit/portfolio/git-hardening.test.ts`. Crea su propio repo en una carpeta temporal `nexoru-op-fixture-hostile-*`:
   - `core.fsmonitor` apuntando a un script que deja la marca `MARK-fsmonitor` fuera del repo;
   - `.gitattributes` con `* filter=evil diff=evil`;
   - `filter.evil.clean` (marca `MARK-clean`);
@@ -63,7 +63,7 @@ ampliar el portafolio ficticio.
   - Si `status` falla (por ejemplo, un repo con el índice dañado o git sin soporte de `--attr-source`, simulado), `hasUncommittedChanges` es `null` con `uncommittedChangesReason` = "error de git", **nunca `false`**.
   - Prueba pura en `tests/unit/portfolio/branch-warnings.test.ts`: `branchWarnings` y la tarjeta de repositorio muestran "Cambios sin commit: no evaluado (motivo)" cuando `hasUncommittedChanges` es `null` en un repo, y nunca un texto de "sin cambios".
   - Debe fallar con el código actual.
-- [ ] T002 *(Se hace después de T008 y T009, que se adelantan a esta fase: necesita `statInsideRoot`.)* Corregir `src/lib/portfolio/git.ts` (código de la Fase 2) con el prefijo endurecido v2 de `contracts/git-history.md`:
+- [X] T002 *(Se hace después de T008 y T009, que se adelantan a esta fase: necesita `statInsideRoot`.)* Corregir `src/lib/portfolio/git.ts` (código de la Fase 2) con el prefijo endurecido v2 de `contracts/git-history.md`:
   - añadir `-c core.attributesFile=/dev/null -c log.showSignature=false -c gc.auto=0 -c maintenance.auto=false` y `--attr-source=4b825dc642cb6eb9a060e54bf8d69288fbee4904`;
   - añadir `GIT_PAGER=cat` al entorno;
   - `status --porcelain=v1 -z --ignore-submodules=all`;
@@ -72,8 +72,8 @@ ampliar el portafolio ficticio.
   - `src/components/portfolio/branch-badge.tsx` y `repository-card.tsx` muestran "Cambios sin commit: no evaluado (motivo)" en ese caso.
 
   Mantener `GIT_OPTIONAL_LOCKS=0`, `--no-optional-locks` y `core.fsmonitor=false`. Hasta verde T001 y las pruebas de git de la Fase 2 (`tests/unit/portfolio/git.test.ts`).
-- [ ] T003 Ampliar `tests/fixtures/build-portfolio.ts` para que devuelva `{ root, now }` (la fecha base usada en los commits). Los usos existentes que esperan un `string` se adaptan: `global-setup.ts`, `playwright.config.ts`, la CLI y las pruebas de la Fase 2.
-- [ ] T004 [P] Nuevos proyectos ficticios en `tests/fixtures/portfolio/`, todos con datos inventados (`example-org`), y filas añadidas a su `README.md`:
+- [X] T003 Ampliar `tests/fixtures/build-portfolio.ts` para que devuelva `{ root, now }` (la fecha base usada en los commits). Los usos existentes que esperan un `string` se adaptan: `global-setup.ts`, `playwright.config.ts`, la CLI y las pruebas de la Fase 2.
+- [X] T004 [P] Nuevos proyectos ficticios en `tests/fixtures/portfolio/`, todos con datos inventados (`example-org`), y filas añadidas a su `README.md`:
   - `history-demo` (1.0): repo con commits de fechas controladas por el constructor.
   - `standard-1-1-retirado`: `version_estandar: "1.1"`, `fase: retirado`, sin `fecha_objetivo` y roadmap concluido. Esperado: sin fallas.
   - `standard-1-1-operacion`: 1.1, `fase: operacion` y una fase `pendiente`. Esperado: hallazgo medio `operacion_pending_phases` y semáforo de actividad neutro.
@@ -81,7 +81,7 @@ ampliar el portafolio ficticio.
   - `ignored-copy`: carpeta que listará `.nexoruignore`.
   - `git-info-attributes`: proyecto válido (1.0) cuyo repo tendrá un `.git/info/attributes` no vacío (lo crea el constructor). Esperado: "Cambios sin commit: no evaluado".
   - `.nexoruignore` en la raíz del portafolio ficticio: comentario, línea vacía, `ignored-copy`, `no/valido`, `*` y `carpeta-inexistente`.
-- [ ] T005 En `tests/fixtures/build-portfolio.ts`, construir `history-demo` con `GIT_AUTHOR_DATE` y `GIT_COMMITTER_DATE` relativos a `now`:
+- [X] T005 En `tests/fixtures/build-portfolio.ts`, construir `history-demo` con `GIT_AUTHOR_DATE` y `GIT_COMMITTER_DATE` relativos a `now`:
   - **Commits en `main`**:
     - un commit inicial con `fase: especificacion` hace 60 días;
     - commits en 3 semanas distintas de las últimas 12;
@@ -90,7 +90,7 @@ ampliar el portafolio ficticio.
   - **Rama remota**: `refs/remotes/origin/main` apunta a un commit con 3 commits que `main` no tiene, creados en una rama temporal que luego se borra.
   - **Rama actual**: `feature/history` con 2 commits propios sobre `main`.
   - **`FETCH_HEAD`**: archivo creado con `fs.utimes` a hace 40 días.
-- [ ] T006 Actualizar las pruebas de la Fase 2 que dependen del número de carpetas del portafolio ficticio: `tests/unit/portfolio/read-portfolio.test.ts` (sin `ignored-copy`) y `tests/e2e/us1-portfolio.spec.ts` (filas de la tabla). `ignored-copy` no debe aparecer.
+- [X] T006 Actualizar las pruebas de la Fase 2 que dependen del número de carpetas del portafolio ficticio: `tests/unit/portfolio/read-portfolio.test.ts` (sin `ignored-copy`) y `tests/e2e/us1-portfolio.spec.ts` (filas de la tabla). `ignored-copy` no debe aparecer.
 
 **Checkpoint**: el hueco de `git status` está cerrado y probado; `npm test` en verde.
 
@@ -105,7 +105,7 @@ ampliar el portafolio ficticio.
   - descarta los nombres con `/`, `\`, `*` o `?`, o que empiecen con `.`;
   - devuelve un `Set` de nombres exactos;
   - si el archivo no existe, el conjunto queda vacío.
-- [ ] T008 [P] Pruebas del lector ampliado en `tests/unit/portfolio/safe-fs.test.ts`:
+- [X] T008 [P] Pruebas del lector ampliado en `tests/unit/portfolio/safe-fs.test.ts`:
   - `readRootFile(".nexoruignore")` lee el archivo de la raíz con las mismas reglas que el resto;
   - cualquier otro nombre de la raíz lanza `CatalogError`;
   - `statInsideRoot(rutaAbsoluta)` devuelve la fecha de modificación y el tamaño **sin abrir** el archivo (espía sobre `open`);
@@ -113,7 +113,7 @@ ampliar el portafolio ficticio.
 
 ### Implementación
 
-- [ ] T009 En `src/lib/portfolio/safe-fs.ts`, añadir:
+- [X] T009 En `src/lib/portfolio/safe-fs.ts`, añadir:
   - `readRootFile(name: ".nexoruignore")`;
   - `statInsideRoot(absolutePath)`: `realpath` dentro de `realpath(root) + sep`, luego `lstat`, y devuelve `{ mtimeMs, size } | null`; nunca abre el archivo.
 

@@ -26,7 +26,7 @@ let rootPath: string;
 let root: SafeRoot;
 
 beforeAll(async () => {
-  rootPath = await buildFixturePortfolio();
+  ({ root: rootPath } = await buildFixturePortfolio());
   const opened = await openRoot(rootPath);
   if (opened.status !== "ok") throw new Error(`fixture root not usable: ${opened.status}`);
   root = opened.root;
@@ -163,5 +163,35 @@ describe("listing", () => {
     await writeFile(join(rootPath, "level3-demo", ".github", "workflows", "README.md"), "x");
     expect(await root.listDir("level3-demo", ".github/workflows")).toEqual(["ci.yml"]);
     expect(await root.listDir("no-manifest", ".github/workflows")).toEqual([]);
+  });
+});
+
+// T008 (Fase 3): root file of the portfolio and metadata-only checks of paths given by git.
+describe("root file and stat inside the root", () => {
+  it("reads .nexoruignore from the root with the same rules", async () => {
+    await writeFile(join(rootPath, ".nexoruignore"), "# comentario\r\nignored-copy\r\n");
+    expect(await root.readRootFile(".nexoruignore")).toEqual({ ok: true, text: "# comentario\nignored-copy\n" });
+  });
+
+  it("rejects any other root file before touching the disk", async () => {
+    vi.clearAllMocks();
+    await expect(root.readRootFile("CLAUDE.md" as never)).rejects.toBeInstanceOf(CatalogError);
+    expect(diskCalls()).toBe(0);
+  });
+
+  it("returns mtime and size of a path inside the root without opening it", async () => {
+    vi.clearAllMocks();
+    const target = join(rootPath, "level3-demo", "PROJECT.md");
+    const info = await root.statInsideRoot(target);
+    expect(info?.size).toBeGreaterThan(0);
+    expect(typeof info?.mtimeMs).toBe("number");
+    expect(vi.mocked(fsp.open)).not.toHaveBeenCalled();
+  });
+
+  it("returns null for a missing path or a path outside the root", async () => {
+    expect(await root.statInsideRoot(join(rootPath, "level3-demo", "no-existe"))).toBeNull();
+    expect(await root.statInsideRoot(`${rootPath}-outside/PROJECT.md`)).toBeNull();
+    expect(await root.statInsideRoot(join(rootPath, "symlink-escape", "PROJECT.md"))).toBeNull();
+    expect(await root.statInsideRoot("relative/path")).toBeNull();
   });
 });

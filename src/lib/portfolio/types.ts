@@ -33,6 +33,8 @@ export const gitInfoSchema = z.object({
   mainBranch: z.string().nullable(),
   onMainBranch: z.boolean().nullable(),
   hasUncommittedChanges: z.boolean().nullable(),
+  /** Why hasUncommittedChanges is null in a repository (phase 3, contracts/git-history.md). */
+  uncommittedChangesReason: z.string().nullable(),
   originRepo: z.string().nullable(),
 });
 export type GitInfo = z.infer<typeof gitInfoSchema>;
