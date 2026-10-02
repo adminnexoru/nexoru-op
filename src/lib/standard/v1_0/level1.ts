@@ -3,7 +3,8 @@ import type { Check, Manifest } from "@/lib/portfolio/types";
 import type { FrontmatterViolation } from "../frontmatter";
 import { firstLineContaining, h2Headings, sectionText, tables } from "../markdown";
 import { describeProblem, dependsOn, fail, fromIssues, pass, type Context } from "./context";
-import { DEPLOYMENTS_WITH_URLS, ENUMS, FIELDS, hasValidType, isRequired, isValidDate, KIND_LABEL } from "./manifest";
+import type { StandardRules } from "../rules";
+import { DEPLOYMENTS_WITH_URLS, enums, FIELDS, hasValidType, isRequired, isValidDate, KIND_LABEL } from "./manifest";
 
 export const PROJECT_SECTIONS = [
   "Resumen ejecutivo",
@@ -44,12 +45,12 @@ export function costTotal(rows: string[][]): number | null {
   return value === "—" || value === "" ? 0 : Number(value);
 }
 
-function fieldIssues(data: Record<string, unknown>): string[] {
+function fieldIssues(data: Record<string, unknown>, rules: StandardRules): string[] {
   const issues: string[] = [];
   for (const [field, kind] of Object.entries(FIELDS) as [keyof Manifest, (typeof FIELDS)[keyof Manifest]][]) {
     const value = data[field];
     if (value === undefined || value === null || value === "") {
-      if (isRequired(field, data)) issues.push(`Falta el campo \`${field}\``);
+      if (isRequired(field, data, rules)) issues.push(`Falta el campo \`${field}\``);
     } else if (!hasValidType(value, kind)) {
       issues.push(`\`${field}\` debe ser ${KIND_LABEL[kind]}`);
     }
@@ -57,9 +58,9 @@ function fieldIssues(data: Record<string, unknown>): string[] {
   return issues;
 }
 
-function formatIssues(manifest: Manifest): string[] {
+function formatIssues(manifest: Manifest, rules: StandardRules): string[] {
   const issues: string[] = [];
-  for (const [field, allowed] of Object.entries(ENUMS) as [keyof Manifest, readonly string[]][]) {
+  for (const [field, allowed] of Object.entries(enums(rules)) as [keyof Manifest, readonly string[]][]) {
     const value = manifest[field];
     if (typeof value === "string" && !allowed.includes(value)) issues.push(`\`${field}: ${value}\` no es un valor permitido`);
   }
@@ -150,8 +151,8 @@ export function level1(ctx: Context): Check[] {
   } else checks.push(fail("1.2", "PROJECT.md no empieza con un bloque YAML entre ---"));
 
   if (ctx.data && ctx.manifest && ctx.fm?.status === "ok") {
-    checks.push(fromIssues("1.3", fieldIssues(ctx.data)));
-    checks.push(fromIssues("1.4", formatIssues(ctx.manifest)));
+    checks.push(fromIssues("1.3", fieldIssues(ctx.data, ctx.rules)));
+    checks.push(fromIssues("1.4", formatIssues(ctx.manifest, ctx.rules)));
     checks.push(fromIssues("1.5", ctx.fm.violations.map((v) => `\`${v.key}\` ${VIOLATION_LABEL[v.kind]}`)));
     checks.push(fromIssues("1.6", dateIssues(ctx.manifest)));
     checks.push(fromIssues("1.7", crossIssues(ctx, ctx.manifest)));

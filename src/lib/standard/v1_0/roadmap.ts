@@ -59,6 +59,17 @@ export function parseRoadmap(body: string, folders: SpecFolder[]): ParsedRoadmap
   return { found: true, phases };
 }
 
+/** standard/roadmap.md 1.1: a phase is concluded if its derived state is `completa` or, without derived state, its manual state is `completa`. */
+export function phaseConcluded(phase: RoadmapPhase): boolean {
+  return phase.derived ? phase.derived.state === "completa" : phase.manualState === "completa";
+}
+
+/** The roadmap is concluded if it has at least one phase and every phase is concluded. */
+export function roadmapStatus(roadmap: ParsedRoadmap | null): "activo" | "concluido" | null {
+  if (!roadmap?.found) return null;
+  return roadmap.phases.length > 0 && roadmap.phases.every(phaseConcluded) ? "concluido" : "activo";
+}
+
 /** The roadmap as stored in the index (without the raw manual cell). */
 export function toRoadmapPhases(roadmap: ParsedRoadmap): RoadmapPhase[] | null {
   if (!roadmap.found) return null;

@@ -35,7 +35,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[fold
         <p className="font-mono text-sm text-muted-foreground">{project.folder}</p>
       </header>
       <ConformancePanel project={project} />
-      <RoadmapTable roadmap={project.roadmap} />
+      <RoadmapTable roadmap={project.roadmap} status={project.roadmapStatus} />
       <div className="grid gap-6 md:grid-cols-2">
         <ManifestCard project={project} />
         <RepositoryCard git={project.git} />

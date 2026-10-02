@@ -206,19 +206,19 @@ no aparece en ninguna parte.
 
 ### Pruebas de US5 (escribir primero, deben fallar)
 
-- [ ] T023 [P] [US5] Pruebas en `tests/unit/standard/rules-1-1.test.ts`:
+- [X] T023 [P] [US5] Pruebas en `tests/unit/standard/rules-1-1.test.ts`:
   - un proyecto 1.1 con `fase: retirado` sin `fecha_objetivo` pasa 1.3 y 1.4, y el mismo proyecto declarando 1.0 falla 1.4 (`retirado` no permitido en 1.0);
   - `roadmapStatus`: concluido si hay al menos una fase y todas están concluidas (derivada `completa` o manual `completa`), activo en otro caso, `null` sin roadmap;
   - los hallazgos `operacion_pending_phases` y `construction_roadmap_concluded` (severidad `medium`) solo para 1.1 y no para 1.0;
   - `especificacion` con el roadmap concluido también genera `construction_roadmap_concluded`.
-- [ ] T024 [P] [US5] Pruebas en `tests/unit/portfolio/read-portfolio.test.ts`:
+- [X] T024 [P] [US5] Pruebas en `tests/unit/portfolio/read-portfolio.test.ts`:
   - `ignored-copy` no aparece en `projects` y `ignoredCount` = 1;
   - las entradas inválidas y la carpeta inexistente de `.nexoruignore` no tienen efecto;
   - con `nexoru-governance` listado en `.nexoruignore`, `standard.found` sigue siendo `true`;
   - `supportedStandardVersions = ["1.0", "1.1"]`;
   - con el `CHANGELOG.md` en 1.1.0, `newerThanSupported = false`;
   - en 1.2.0 sí es `true`.
-- [ ] T025 [P] [US5] E2E en `tests/e2e/us5-standard-1-1.spec.ts`:
+- [X] T025 [P] [US5] E2E en `tests/e2e/us5-standard-1-1.spec.ts`:
   - el portafolio no muestra `ignored-copy`;
   - muestra "Estándar soportado: 1.0, 1.1";
   - la fila de `standard-1-1-construccion` dice roadmap "concluido";
@@ -226,13 +226,13 @@ no aparece en ninguna parte.
 
 ### Implementación de US5
 
-- [ ] T026 [US5] Crear `src/lib/standard/rules.ts`: `StandardRules = { version, fases, phasesWithoutTarget, closureFindings }` para 1.0 (sin `retirado`; `operacion` y `pausado` sin fecha objetivo; sin hallazgos de cierre) y 1.1 (con `retirado` en las dos listas; con hallazgos de cierre). Generalizar `src/lib/standard/v1_0/manifest.ts`, `level1.ts`, `findings.ts` y `evaluate.ts` para recibir las reglas, sin duplicar el motor. Despachar por versión en `src/lib/standard/evaluate.ts`. `SUPPORTED_STANDARD_VERSIONS = ["1.0", "1.1"]` en `src/lib/standard/versions.ts`.
-- [ ] T027 [US5] Añadir `roadmapStatus` (función `roadmapConcluded` en `src/lib/standard/v1_0/roadmap.ts`) y los dos hallazgos en `src/lib/standard/v1_0/findings.ts` (solo si `closureFindings`) (T023).
-- [ ] T028 [US5] Leer `.nexoruignore` en `src/lib/portfolio/read-portfolio.ts` con `readRootFile` y `parseNexoruIgnore`, y omitir esas carpetas antes de leerlas. `nexoru-governance` se lee siempre como estándar (T024).
-- [ ] T029 [US5] Interfaz:
+- [X] T026 [US5] Crear `src/lib/standard/rules.ts`: `StandardRules = { version, fases, phasesWithoutTarget, closureFindings }` para 1.0 (sin `retirado`; `operacion` y `pausado` sin fecha objetivo; sin hallazgos de cierre) y 1.1 (con `retirado` en las dos listas; con hallazgos de cierre). Generalizar `src/lib/standard/v1_0/manifest.ts`, `level1.ts`, `findings.ts` y `evaluate.ts` para recibir las reglas, sin duplicar el motor. Despachar por versión en `src/lib/standard/evaluate.ts`. `SUPPORTED_STANDARD_VERSIONS = ["1.0", "1.1"]` en `src/lib/standard/versions.ts`.
+- [X] T027 [US5] Añadir `roadmapStatus` (función `roadmapConcluded` en `src/lib/standard/v1_0/roadmap.ts`) y los dos hallazgos en `src/lib/standard/v1_0/findings.ts` (solo si `closureFindings`) (T023).
+- [X] T028 [US5] Leer `.nexoruignore` en `src/lib/portfolio/read-portfolio.ts` con `readRootFile` y `parseNexoruIgnore`, y omitir esas carpetas antes de leerlas. `nexoru-governance` se lee siempre como estándar (T024).
+- [X] T029 [US5] Interfaz:
   - columna "Roadmap" (activo o concluido) en `src/components/portfolio/portfolio-table.tsx` y en el detalle;
   - etiquetas de los dos hallazgos nuevos en `src/components/portfolio/labels.ts`.
-- [ ] T030 [US5] Ejecutar `npm test` y `npm run test:e2e` hasta verde.
+- [X] T030 [US5] Ejecutar `npm test` y `npm run test:e2e` hasta verde.
 
 ---
 

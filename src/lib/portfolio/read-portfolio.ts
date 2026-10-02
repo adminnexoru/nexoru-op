@@ -4,6 +4,7 @@ import { isNewerThanSupported, parseChangelogVersion, SUPPORTED_STANDARD_VERSION
 import { readProject, unreadableProject } from "./read-project";
 import { openRoot, STANDARD_FOLDER, type SafeRoot } from "./safe-fs";
 import { weeklyActivity } from "./history";
+import { parseNexoruIgnore } from "./ignore";
 import type { PortfolioReading, PortfolioWarning, ProjectReading, StandardInfo, WeekActivity } from "./types";
 
 const CONCURRENCY = 8;
@@ -72,9 +73,13 @@ export async function readPortfolio(projectsRoot: string | undefined, now = new 
 
   const { root } = opened;
   const folders = await root.listFolders();
+  // FR-031: folders in PROJECTS_ROOT/.nexoruignore are not read, evaluated nor shown.
+  const ignoreFile = await root.readRootFile(".nexoruignore");
+  const ignored = parseNexoruIgnore(ignoreFile.ok ? ignoreFile.text : null);
+  const projectFolders = folders.filter((folder) => folder !== STANDARD_FOLDER && !ignored.has(folder));
   const date = localDate(now);
   const projects = await mapLimit(
-    folders.filter((folder) => folder !== STANDARD_FOLDER),
+    projectFolders,
     CONCURRENCY,
     (folder) =>
       readProject(root, folder, date, now).catch((error: unknown) => {
@@ -90,6 +95,6 @@ export async function readPortfolio(projectsRoot: string | undefined, now = new 
     projects,
     warnings: duplicateIds(projects),
     activityByWeek: sumWeeks(projects, now),
-    ignoredCount: 0,
+    ignoredCount: folders.filter((folder) => folder !== STANDARD_FOLDER && ignored.has(folder)).length,
   };
 }

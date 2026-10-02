@@ -6,6 +6,7 @@ import type { ConformanceResult } from "@/lib/portfolio/types";
 import { parseFrontmatter } from "./frontmatter";
 import type { ProjectFiles } from "./project-files";
 import { evaluateProject as evaluateV1_0, type ProjectEvaluation } from "./v1_0/evaluate";
+import { RULES, type StandardRules } from "./rules";
 import { isSupportedVersion } from "./versions";
 
 function notEvaluated(evaluation: "unsupported_version" | "no_version"): ConformanceResult {
@@ -13,11 +14,13 @@ function notEvaluated(evaluation: "unsupported_version" | "no_version"): Conform
 }
 
 export function evaluateProject(files: ProjectFiles, evaluationDate: string): ProjectEvaluation {
-  const result = evaluateV1_0(files, evaluationDate);
   const fm = files.project.ok ? parseFrontmatter(files.project.text) : null;
+  const declared = fm?.status === "ok" ? fm.data.version_estandar : undefined;
+  const rules: StandardRules =
+    typeof declared === "string" && isSupportedVersion(declared) ? RULES[declared as StandardRules["version"]] : RULES["1.0"];
+  const result = evaluateV1_0(files, evaluationDate, rules);
   if (fm?.status !== "ok") return result;
 
-  const declared = fm.data.version_estandar;
   if (declared === undefined || declared === null || declared === "") return { ...result, conformance: notEvaluated("no_version") };
   if (typeof declared !== "string" || !isSupportedVersion(declared)) {
     return {

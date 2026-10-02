@@ -16,11 +16,18 @@ function PhaseState({ phase }: { phase: RoadmapPhase }) {
   );
 }
 
-export function RoadmapTable({ roadmap }: { roadmap: RoadmapPhase[] | null }) {
+export function RoadmapTable({ roadmap, status }: { roadmap: RoadmapPhase[] | null; status: "activo" | "concluido" | null }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Roadmap</CardTitle>
+        <CardTitle className="flex flex-wrap items-center gap-2">
+          Roadmap
+          {status ? (
+            <Badge variant="outline" data-testid="roadmap-status">
+              Roadmap {status}
+            </Badge>
+          ) : null}
+        </CardTitle>
       </CardHeader>
       <CardContent className="text-sm">
         {roadmap ? (

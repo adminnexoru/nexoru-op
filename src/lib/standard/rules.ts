@@ -1,0 +1,24 @@
+// T026: differences between the supported versions of the standard (research R7). One engine
+// (src/lib/standard/v1_0) receives these rules instead of a copy of the engine per version.
+
+export interface StandardRules {
+  version: "1.0" | "1.1";
+  /** Allowed values of `fase` (project-manifest.md). */
+  fases: readonly string[];
+  /** Phases where `fecha_objetivo` is not mandatory. */
+  phasesWithoutTarget: readonly string[];
+  /** Closure and reactivation findings of conformance.md 1.1. */
+  closureFindings: boolean;
+}
+
+const BASE_FASES = ["idea", "especificacion", "construccion", "pruebas", "piloto", "migracion", "operacion", "pausado"];
+
+export const RULES: Record<StandardRules["version"], StandardRules> = {
+  "1.0": { version: "1.0", fases: BASE_FASES, phasesWithoutTarget: ["operacion", "pausado"], closureFindings: false },
+  "1.1": {
+    version: "1.1",
+    fases: [...BASE_FASES, "retirado"],
+    phasesWithoutTarget: ["operacion", "pausado", "retirado"],
+    closureFindings: true,
+  },
+};

@@ -159,6 +159,8 @@ export const projectReadingSchema = z.object({
   manifest: manifestSchema.nullable(),
   manifestProblem: problemSchema.nullable(),
   roadmap: z.array(roadmapPhaseSchema).nullable(),
+  /** FR-029: activo or concluido (standard/roadmap.md 1.1); null without roadmap. */
+  roadmapStatus: z.enum(["activo", "concluido"]).nullable(),
   conformance: conformanceResultSchema,
   readErrors: z.array(problemSchema),
 });

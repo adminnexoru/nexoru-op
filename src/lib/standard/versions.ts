@@ -1,6 +1,6 @@
 // T022: versions of the Estándar de Proyecto Nexoru this dashboard can evaluate (constitution XIV).
 
-export const SUPPORTED_STANDARD_VERSIONS = ["1.0"] as const;
+export const SUPPORTED_STANDARD_VERSIONS = ["1.0", "1.1"] as const;
 
 export function isSupportedVersion(version: string): boolean {
   return (SUPPORTED_STANDARD_VERSIONS as readonly string[]).includes(version);

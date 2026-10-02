@@ -26,6 +26,7 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
           <TableHead>Siguiente hito</TableHead>
           <TableHead>Nivel</TableHead>
           <TableHead>Actividad</TableHead>
+          <TableHead>Roadmap</TableHead>
           <TableHead>Rama</TableHead>
         </TableRow>
       </TableHeader>
@@ -54,6 +55,9 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
                 ) : (
                   <Absent />
                 )}
+              </TableCell>
+              <TableCell>
+                <OrAbsent value={project.roadmapStatus} />
               </TableCell>
               <TableCell><BranchBadge git={project.git} /></TableCell>
             </TableRow>

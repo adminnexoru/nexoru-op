@@ -7,9 +7,9 @@ import { findings } from "./findings";
 import { level1 } from "./level1";
 import { level2, specWarnings } from "./level2";
 import { level3 } from "./level3";
-import { toRoadmapPhases } from "./roadmap";
+import { RULES, type StandardRules } from "../rules";
+import { roadmapStatus, toRoadmapPhases } from "./roadmap";
 
-export const STANDARD_VERSION = "1.0";
 
 /** Checks that are pending only because this phase cannot evaluate them (FR-023). */
 const DEFERRED_TO_LATER_PHASE = new Set(["3.2"]);
@@ -18,6 +18,8 @@ export interface ProjectEvaluation {
   manifest: Manifest | null;
   manifestProblem: Problem | null;
   roadmap: RoadmapPhase[] | null;
+  /** FR-029: activo or concluido (standard/roadmap.md 1.1), for every project with a roadmap. */
+  roadmapStatus: "activo" | "concluido" | null;
   conformance: ConformanceResult;
 }
 
@@ -40,8 +42,8 @@ export function computeLevel(checks: Check[]): Pick<ConformanceResult, "level" |
   return { level, provisional, failures: checks.filter((c) => c.level === next && c.status === "fail") };
 }
 
-export function evaluateProject(files: ProjectFiles, evaluationDate: string): ProjectEvaluation {
-  const ctx = buildContext(files, evaluationDate);
+export function evaluateProject(files: ProjectFiles, evaluationDate: string, rules: StandardRules = RULES["1.0"]): ProjectEvaluation {
+  const ctx = buildContext(files, evaluationDate, rules);
   const checks = [...level1(ctx), ...level2(ctx), ...level3(ctx)];
 
   let manifestProblem: Problem | null = null;
@@ -56,8 +58,9 @@ export function evaluateProject(files: ProjectFiles, evaluationDate: string): Pr
     manifest: ctx.manifest,
     manifestProblem,
     roadmap: ctx.roadmap ? toRoadmapPhases(ctx.roadmap) : null,
+    roadmapStatus: roadmapStatus(ctx.roadmap),
     conformance: {
-      standardVersion: STANDARD_VERSION,
+      standardVersion: rules.version,
       evaluation: "evaluated",
       ...computeLevel(checks),
       checks,

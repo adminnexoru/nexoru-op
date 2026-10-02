@@ -1,5 +1,6 @@
 // T023: fields of the PROJECT.md manifest (standard/project-manifest.md v1.0).
 import type { Manifest } from "@/lib/portfolio/types";
+import type { StandardRules } from "../rules";
 
 type Kind = "text" | "date" | "number" | "list";
 
@@ -24,15 +25,17 @@ export const FIELDS: Record<keyof Manifest, Kind> = {
   version_estandar: "text",
 };
 
-export const ENUMS: Partial<Record<keyof Manifest, readonly string[]>> = {
-  tipo: ["producto-cliente", "producto-nexoru", "interno"],
-  fase: ["idea", "especificacion", "construccion", "pruebas", "piloto", "migracion", "operacion", "pausado"],
-  estado: ["verde", "ambar", "rojo"],
-  despliegue: ["nexoru-subdominio", "dominio-cliente", "local", "ninguno"],
-};
+/** Enumerated fields; `fase` depends on the version of the standard. */
+export function enums(rules: StandardRules): Partial<Record<keyof Manifest, readonly string[]>> {
+  return {
+    tipo: ["producto-cliente", "producto-nexoru", "interno"],
+    fase: rules.fases,
+    estado: ["verde", "ambar", "rojo"],
+    despliegue: ["nexoru-subdominio", "dominio-cliente", "local", "ninguno"],
+  };
+}
 
 export const DEPLOYMENTS_WITH_URLS = ["nexoru-subdominio", "dominio-cliente"];
-const PHASES_WITHOUT_TARGET = ["operacion", "pausado"];
 
 export function hasValidType(value: unknown, kind: Kind): boolean {
   switch (kind) {
@@ -56,9 +59,9 @@ export function readManifest(data: Record<string, unknown>): Manifest {
 }
 
 /** Whether a field is mandatory for this manifest (project-manifest.md, "Campos"). */
-export function isRequired(field: keyof Manifest, data: Record<string, unknown>): boolean {
+export function isRequired(field: keyof Manifest, data: Record<string, unknown>, rules: StandardRules): boolean {
   if (field === "urls") return DEPLOYMENTS_WITH_URLS.includes(String(data.despliegue));
-  if (field === "fecha_objetivo") return !PHASES_WITHOUT_TARGET.includes(String(data.fase));
+  if (field === "fecha_objetivo") return !rules.phasesWithoutTarget.includes(String(data.fase));
   return true;
 }
 
