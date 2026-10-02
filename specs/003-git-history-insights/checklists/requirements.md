@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,6 +31,6 @@
 
 ## Notes
 
-- Quedan 3 marcadores [NEEDS CLARIFICATION] (FR-002, FR-009, FR-014), pendientes de respuesta del Dueño.
+- Los 3 marcadores [NEEDS CLARIFICATION] (FR-002, FR-009, FR-014) se resolvieron con el Dueño el 2026-10-01 (sección Clarifications).
 - Las menciones a git, `.env*` y a las rutas del estándar no son detalles de implementación: son el
   dominio del producto (los archivos que el estándar define) y límites de seguridad de la constitución.

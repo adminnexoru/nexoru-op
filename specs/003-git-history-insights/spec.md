@@ -30,6 +30,35 @@ en el plan con una propuesta de qué historias mover."
 (`specs/002-portfolio-conformance/`), cuyo lector seguro, motor de conformidad e índice se reutilizan;
 backlog B-010.
 
+## Clarifications
+
+### Session 2026-10-01 (spec inicial)
+
+- Q: ¿De qué ramas sale la actividad de git y el último commit? → A: De todas las ramas locales,
+  sin contar dos veces un mismo commit.
+- Q: ¿Qué verificaciones cuentan como "aplicables" en la Conformidad? → A: Todas las del estándar
+  salvo las que no se pueden evaluar en esta fase (hoy 3.2); las que dependen de otra que falló
+  ("Depende de X") cuentan como no cumplidas.
+- Q: ¿Cómo cuentan en el Avance las fases con `Estado manual`? → A: No cuentan en el porcentaje
+  (solo tareas de fases derivadas), el detalle indica cuántas fases manuales no se incluyeron, y al
+  lado se muestra "fases completas: x de y", que sí incluye las manuales.
+
+### Session 2026-10-01 (clarify)
+
+- Q: ¿Los "días sin actividad" se muestran con un semáforo según umbrales, o solo como número? →
+  A: Con semáforo: verde hasta 5 días, ámbar de 6 a 15 días y rojo más de 15 días; el número se
+  muestra siempre al lado.
+
+### Session 2026-10-01 (ajustes del Dueño antes del plan)
+
+- El dashboard soporta el Estándar de Proyecto Nexoru **1.1.0** (`nexoru-governance`, commit
+  `4dfee5b`): estado del roadmap (activo o concluido), los dos hallazgos nuevos de cierre y
+  reactivación, la regla de correspondencia de la tabla de costos y `.nexoruignore` (US5).
+- El semáforo de actividad se muestra **neutro** (gris, con ícono y texto) en las fases `pausado`,
+  `operacion` y `retirado`, conservando el número de días.
+- Los dos semáforos (estado declarado y actividad de git) se distinguen visualmente y llevan siempre
+  su etiqueta.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ver la actividad de git de cada proyecto (Priority: P1)
@@ -49,7 +78,7 @@ de último commit, semanas, días sin actividad, adelanto/atraso y días en la f
 **Acceptance Scenarios**:
 
 1. **Given** un repo cuyo último commit fue hace 5 días, **When** el Dueño abre el portafolio,
-   **Then** ve la fecha de ese commit y "5 días sin actividad".
+   **Then** ve la fecha de ese commit y "5 días sin actividad" con el semáforo verde.
 2. **Given** un repo con commits en 3 de las últimas 12 semanas, **When** el Dueño abre el
    detalle, **Then** ve las 12 semanas con su número de commits y 0 en las semanas sin commits.
 3. **Given** una rama actual con 2 commits que la principal no tiene y 3 que no tiene ella,
@@ -65,6 +94,40 @@ de último commit, semanas, días sin actividad, adelanto/atraso y días en la f
    coinciden.
 7. **Given** una carpeta que no es repositorio git, **When** el Dueño la ve, **Then** todos los
    datos de git aparecen como ausentes, con el motivo.
+8. **Given** repos con 6, 15 y 16 días sin actividad, **When** el Dueño abre el portafolio,
+   **Then** ve el semáforo ámbar, ámbar y rojo, respectivamente, cada uno con su número.
+
+---
+
+### User Story 5 - Soporte del estándar 1.1 (Priority: P1)
+
+El dashboard evalúa los proyectos que declaran `version_estandar: "1.1"` con las reglas de la 1.1 y
+sigue evaluando con la 1.0 a los que declaran "1.0". Muestra si el roadmap de cada proyecto está
+**activo** o **concluido**, reporta los dos hallazgos nuevos de cierre y reactivación, y omite por
+completo las carpetas listadas en `PROJECTS_ROOT/.nexoruignore`.
+
+**Why this priority**: el estándar ya se publicó (1.1.0, 2026-10-01). Mientras el dashboard no lo
+soporte, avisa que el estándar local es más nuevo y no evalúa a los proyectos que se actualicen
+(principio XIV). Además, `.nexoruignore` saca del tablero el worktree `nexoru-onboarding-line-endings`.
+
+**Independent Test**: con proyectos ficticios que declaran 1.1, un `.nexoruignore` y roadmaps
+activos y concluidos, comprobar el nivel, el estado del roadmap, los hallazgos y las carpetas
+omitidas.
+
+**Acceptance Scenarios**:
+
+1. **Given** un proyecto con `version_estandar: "1.1"` y `fase: retirado` sin `fecha_objetivo`,
+   **When** el Dueño lo ve, **Then** se evalúa con la 1.1 y esos valores no generan fallas.
+2. **Given** un roadmap cuyas fases están todas concluidas, **When** el Dueño lo ve, **Then** el
+   roadmap aparece como "concluido"; si alguna fase no lo está, como "activo".
+3. **Given** un proyecto 1.1 en `fase: operacion` con una fase pendiente, **When** el Dueño lo ve,
+   **Then** aparece el hallazgo medio "`operacion` con fases pendientes en el roadmap".
+4. **Given** un proyecto 1.1 en `fase: construccion` con el roadmap concluido, **When** el Dueño lo
+   ve, **Then** aparece el hallazgo medio "`construccion` con el roadmap concluido".
+5. **Given** un `.nexoruignore` que lista `copia-temporal`, **When** el Dueño abre el portafolio,
+   **Then** esa carpeta no aparece en ninguna parte (ni tabla, ni gráficos, ni avisos).
+6. **Given** que `nexoru-governance` está en la versión 1.1.0, **When** el Dueño abre el portafolio,
+   **Then** ya no ve el aviso de "estándar local más nuevo".
 
 ---
 
@@ -86,8 +149,9 @@ los porcentajes y su detalle coinciden con el cálculo a mano.
    ve, **Then** su Conformidad es 93 % y el detalle nombra las 2 que faltan.
 2. **Given** un roadmap con 30 de 40 tareas marcadas en sus specs vinculadas, **When** el Dueño lo
    ve, **Then** su Avance es 75 %, con "30 de 40 tareas".
-3. **Given** un roadmap con fases de `Estado manual`, **When** el Dueño ve el Avance, **Then** se
-   aplica la regla de FR-014 y el detalle explica cómo cuentan esas fases.
+3. **Given** un roadmap con 2 fases derivadas (30 de 40 tareas) y 2 fases manuales, una
+   `completa`, **When** el Dueño ve el Avance, **Then** ve 75 % ("30 de 40 tareas; 2 fases con
+   estado manual no incluidas") y "fases completas: 1 de 4" si ninguna derivada está completa.
 4. **Given** un proyecto sin `PROJECT.md`, con una versión del estándar no soportada o sin roadmap,
    **When** el Dueño lo ve, **Then** el porcentaje que no se puede calcular aparece como ausente,
    con el motivo; nunca como 0 %.
@@ -114,6 +178,10 @@ comprobar en la interfaz que ningún semáforo depende solo del color.
    gráfico, **Then** el semáforo muestra el mismo color, el mismo ícono y el texto "Ámbar".
 3. **Given** que el Dueño ve la pantalla en escala de grises, **When** compara semáforos, **Then**
    los distingue por su ícono y su texto.
+4. **Given** un proyecto en `fase: operacion` con 40 días sin actividad, **When** el Dueño lo ve,
+   **Then** el semáforo de actividad es neutro (gris, ícono y texto propios) y muestra "40 días".
+5. **Given** una fila del tablero, **When** el Dueño ve los dos semáforos, **Then** cada uno lleva su
+   etiqueta ("Estado declarado", "Actividad") y tienen formas distintas, de modo que no se confunden.
 
 ---
 
@@ -153,8 +221,14 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
 - **Fechas de commit en el futuro** (reloj mal configurado): se muestran tal cual, con aviso.
 - **Proyectos con muchos commits** (decenas de miles): el cálculo se limita a lo necesario (las
   últimas 12 semanas y el último commit) y no supera los límites de tiempo de la lectura.
-- **Worktrees** (como `nexoru-onboarding-line-endings`): se leen como cualquier repositorio; su
-  historial es el del repositorio compartido.
+- **Worktrees** (como `nexoru-onboarding-line-endings`): si no están en `.nexoruignore`, se leen
+  como cualquier repositorio; su historial es el del repositorio compartido.
+- **`.nexoruignore`** con líneas vacías, comentarios `#`, carpetas que no existen o nombres con `/`:
+  las vacías y los comentarios se ignoran; una carpeta inexistente no tiene efecto; un nombre con
+  `/` o comodines no es válido y se ignora.
+- **`.nexoruignore` que lista `nexoru-governance`**: el estándar se sigue leyendo para conocer su
+  versión (no es un proyecto).
+- **Roadmap sin fases**: no está concluido (la definición exige al menos una fase).
 - **Gráficos sin datos** (portafolio vacío): mensaje "sin datos" en lugar de un gráfico vacío.
 
 ## Requirements *(mandatory)*
@@ -164,11 +238,13 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
 **Historial de git (US1)**
 
 - **FR-001**: El sistema DEBE mostrar por proyecto la fecha del último commit y los días sin
-  actividad (días completos desde ese commit hasta la fecha de lectura).
+  actividad (días completos desde ese commit hasta la fecha de lectura), con el semáforo de
+  actividad: **verde** hasta 5 días, **ámbar** de 6 a 15 días y **rojo** más de 15 días, y el número
+  siempre al lado. Sin commits o sin repositorio, el dato y el semáforo aparecen como ausentes.
 - **FR-002**: El sistema DEBE mostrar el número de commits por semana de las últimas 12 semanas
-  (semanas de lunes a domingo, la actual incluida), con 0 en las semanas sin commits.
-  [NEEDS CLARIFICATION: ¿la actividad y el último commit cuentan los commits de todas las ramas
-  locales, solo de la rama principal o solo de la rama actual?]
+  (semanas de lunes a domingo, la actual incluida), con 0 en las semanas sin commits. La actividad
+  y el último commit (FR-001) cuentan los commits de **todas las ramas locales**, cada commit una
+  sola vez.
 - **FR-003**: El sistema DEBE mostrar cuántos commits adelanta y atrasa la rama actual respecto a
   la rama principal, usando solo referencias locales.
 - **FR-004**: Cuando el dato use una referencia local de una rama remota, el sistema DEBE mostrar
@@ -183,14 +259,33 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
 - **FR-008**: Si un dato de git no se puede obtener, DEBE mostrarse como ausente con el motivo
   (FR-009 de la Fase 2).
 
+**Estándar 1.1 (US5)**
+
+- **FR-028**: El sistema DEBE soportar las versiones del estándar **1.0 y 1.1** y evaluar cada
+  proyecto con las reglas de la versión que declara. En 1.1: `retirado` es un valor permitido de
+  `fase` y `fecha_objetivo` no es obligatoria en `retirado`; la tabla de costos usa la
+  correspondencia por nombre normalizado (como ya hace con la 1.0).
+- **FR-029**: El sistema DEBE mostrar, en el tablero y en el detalle, si el roadmap de cada proyecto
+  está **activo** o **concluido**, con las definiciones de `standard/roadmap.md` 1.1: una fase está
+  concluida si su estado derivado es `completa` o, sin estado derivado, su `Estado manual` es
+  `completa`; el roadmap está concluido si tiene al menos una fase y todas están concluidas. Sin
+  roadmap, el dato aparece como ausente.
+- **FR-030**: Para los proyectos evaluados con la 1.1, el sistema DEBE reportar los dos hallazgos
+  medios de `conformance.md` 1.1: `fase: operacion` con fases pendientes en el roadmap, y
+  `fase: construccion` o `especificacion` con el roadmap concluido. No cambian el nivel. A los
+  proyectos que declaran 1.0 no se les aplican (principio XIV).
+- **FR-031**: El sistema DEBE leer `PROJECTS_ROOT/.nexoruignore` si existe (una carpeta por línea,
+  nombre exacto, sin rutas ni comodines; líneas vacías y comentarios `#` ignorados) y omitir esas
+  carpetas por completo: no se leen, no se evalúan ni se muestran, ni siquiera como nivel 0. Sin el
+  archivo, se evalúan todas las carpetas.
+
 **Indicadores (US2)**
 
 - **FR-009**: El sistema DEBE calcular la **Conformidad** de cada proyecto evaluado como el
   porcentaje de verificaciones cumplidas sobre las aplicables, según `conformance.md` de la versión
-  del estándar aplicada, y mostrar cuáles faltan.
-  [NEEDS CLARIFICATION: ¿qué verificaciones cuentan como "aplicables": todas las del estándar salvo
-  las que no se pueden evaluar en esta fase (3.2), o también se excluyen las que dependen de otra
-  que falló ("Depende de X")?]
+  del estándar aplicada, y mostrar cuáles faltan. Son **aplicables** todas las verificaciones del
+  estándar salvo las que no se pueden evaluar en esta fase (hoy 3.2); una verificación que depende
+  de otra que falló ("Depende de X") cuenta como no cumplida.
 - **FR-010**: La Conformidad NO DEBE calcularse para proyectos no evaluados (versión no soportada o
   sin versión); se muestra como ausente con el motivo.
 - **FR-011**: El sistema DEBE calcular el **Avance** de cada proyecto a partir de las casillas de
@@ -199,9 +294,10 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
   ninguna fase tiene specs con `tasks.md`.
 - **FR-013**: Los dos porcentajes DEBEN llevar siempre su nombre ("Conformidad", "Avance") y su
   base ("25 de 27 verificaciones", "30 de 40 tareas") en el tablero y en el detalle.
-- **FR-014**: Regla de Avance para fases con `Estado manual`.
-  [NEEDS CLARIFICATION: ¿cómo cuentan en el Avance las fases sin estado derivado (con `Estado
-  manual`)?]
+- **FR-014**: Las fases sin estado derivado (con `Estado manual`) **no cuentan** en el porcentaje
+  de Avance, que usa solo las tareas de las fases derivadas; el detalle indica cuántas fases
+  manuales no se incluyeron. Junto al Avance se muestra "fases completas: x de y", que cuenta todas
+  las fases del roadmap (derivadas y manuales) cuyo estado mostrado es `completa`.
 - **FR-015**: Los porcentajes se redondean a entero y se calculan en cada lectura del portafolio;
   nunca se capturan a mano (principio XI).
 
@@ -216,6 +312,12 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
 - **FR-019**: Los colores del semáforo DEBEN tener contraste suficiente para leerse sobre el fondo
   (nivel AA de las pautas de accesibilidad web) en modo claro.
 - **FR-020**: El semáforo DEBE verse igual en el tablero, el detalle y los gráficos.
+- **FR-032**: El semáforo de actividad DEBE mostrarse **neutro** (gris, con un ícono y un texto
+  propios, p. ej. "Sin seguimiento") cuando la `fase` del proyecto es `pausado`, `operacion` o
+  `retirado`, y conservar el número de días sin actividad.
+- **FR-033**: El semáforo del estado declarado y el de actividad DEBEN distinguirse visualmente
+  (forma o ícono distintos además del color) y llevar siempre su etiqueta ("Estado declarado",
+  "Actividad") en el tablero, el detalle y los gráficos.
 - **FR-021**: `conversa-experiencias` no se modifica; esta identidad solo cambia `nexoru-op`.
 
 **Gráficos (US4)**
@@ -242,17 +344,21 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
   fecha del último cambio de fase según el historial, días en la fase y si coincide con
   `fase_desde`.
 - **Indicadores**: Conformidad (porcentaje, cumplidas, aplicables, lista de las que faltan) y
-  Avance (porcentaje, tareas marcadas, total y cómo cuentan las fases manuales); cada uno puede estar
-  ausente con su motivo.
-- **Semáforo**: nivel (por ejemplo verde, ámbar, rojo), color, ícono y texto.
+  Avance (porcentaje, tareas marcadas, total, fases manuales no incluidas y fases completas x de y);
+  cada uno puede estar ausente con su motivo.
+- **Semáforo**: tipo (estado declarado o actividad), nivel (verde, ámbar, rojo o neutro), color,
+  forma, ícono, texto y etiqueta. El de actividad usa los umbrales de FR-001 y es neutro en
+  `pausado`, `operacion` y `retirado`.
+- **Estado del roadmap**: activo o concluido, según las definiciones del estándar 1.1.
+- **Lista de exclusión del portafolio**: las carpetas de `.nexoruignore`.
 - **Documento de diseño**: decisiones visuales con su origen.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: El Dueño identifica en menos de 30 segundos qué proyectos llevan más de 14 días sin
-  actividad.
+- **SC-001**: El Dueño identifica en menos de 30 segundos qué proyectos llevan más de 15 días sin
+  actividad (semáforo rojo).
 - **SC-002**: En el portafolio ficticio, el 100 % de los datos de git, Conformidad y Avance coinciden
   con el valor calculado a mano.
 - **SC-003**: Ningún semáforo ni gráfico depende solo del color: en escala de grises el Dueño
@@ -274,3 +380,6 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
   hacer el diseño; cambios posteriores en `nexoru-onboarding` no se propagan solos.
 - El historial de `fase` usa solo commits; los cambios sin commit de `PROJECT.md` no cuentan.
 - Sin conexión a GitHub en esta fase (Fase 4).
+- El estándar 1.1.0 es el publicado en `nexoru-governance` el 2026-10-01 (commit `4dfee5b`). Las
+  reglas de la 1.1 se implementan como una versión nueva del motor; la 1.0 se conserva para los
+  proyectos que la siguen declarando.
