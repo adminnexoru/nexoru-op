@@ -18,7 +18,7 @@ stack:
 servicios:
   - have-i-been-pwned
 costo_mensual_usd: 0
-siguiente_hito: "Integrar la Fase 2 en main (PR de 002-portfolio-conformance) y especificar la Fase 3: historial de git"
+siguiente_hito: "Fase 3: especificar, planificar y construir el historial de git, los indicadores de conformidad y avance, la identidad visual y los gráficos (003-git-history-insights)"
 mapa_funcional: docs/mapa-funcional.md
 version_estandar: "1.0"
 ---
@@ -53,13 +53,13 @@ version_estandar: "1.0"
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) se deriva de su `tasks.md`; se validó con el portafolio real el 2026-10-01 y queda pendiente su integración en `main` (T055–T056). Las fases 3 y 4 no tienen spec y llevan estado manual.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 tiene spec (`003-git-history-insights`) pero todavía no `tasks.md`, y la Fase 4 no tiene spec; por eso las dos llevan estado manual.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
 | 1 | Acceso seguro del Dueño, bitácora y puesta en marcha local | 001-user-access | — | |
-| 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | 2026-10-18 | |
-| 3 | Historial de git por proyecto | — | 2026-10-25 | pendiente |
+| 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | — | |
+| 3 | Historial de git, indicadores de conformidad y avance, identidad visual y gráficos | 003-git-history-insights | 2026-10-25 | en-curso |
 | 4 | Datos de GitHub en solo lectura (CI, visibilidad, PRs) | — | 2026-11-08 | pendiente |
 
 ## Decisiones clave
@@ -108,8 +108,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 
 ## Pendientes conocidos
 
-- T055 y T056 de `specs/002-portfolio-conformance/tasks.md`: PR de `002-portfolio-conformance` hacia `main` y merge.
-- Backlog en `specs/backlog.md`: B-001 a B-011. En particular, B-008 (validar los procedimientos manuales de recuperación), B-009 (`op:backup` / `op:restore`, opcional), B-010 (adoptar el look and feel de `nexoru-onboarding`, para la siguiente iteración) y B-011 (soportar `.nexoruignore`).
+- Backlog en `specs/backlog.md`: B-001 a B-011. En particular, B-008 (validar los procedimientos manuales de recuperación), B-009 (`op:backup` / `op:restore`, opcional), B-010 (adoptar el look and feel de `nexoru-onboarding`; entra en la Fase 3) y B-011 (soportar `.nexoruignore`).
 - Para la sesión de portafolio: aclaración del estándar 1.0.1 (correspondencia fila–servicio) y propuesta de `.nexoruignore`.
 
 ## Evidencia de validación
@@ -122,14 +121,15 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | Todo escucha solo en `127.0.0.1` (FR-033) | `ss -ltn`: app (3000, 3200) y las dos instancias de Supabase (5432x, 5532x) solo en `127.0.0.1`; desde la IP de red y desde otro dispositivo no responden (2026-09-28) |
 | Bitácora inmutable y consultable desde Studio (FR-028, FR-038) | La consulta del quickstart devuelve los eventos del entorno de uso; un `update` falla con `audit_events is append-only` (2026-09-28) |
 | CSP con nonce | La app de uso responde con `script-src 'self' 'nonce-…' 'strict-dynamic'`, sin `'unsafe-eval'`; las E2E fallan ante cualquier violación de CSP y no hubo ninguna |
-| Fase 2: lector seguro, git, conformidad v1.0, portafolio, detalle, roadmap y versiones | En local, rama `002-portfolio-conformance`, 2026-10-01: Vitest 281/281 (una prueba por verificación de conformidad, enlaces fuera de la raíz, `.env`, FIFO, archivo > 1 MB, `core.fsmonitor` malicioso), pgTAP 88/88 y Playwright 38/38, con un portafolio ficticio |
+| Fase 2: lector seguro, git, conformidad v1.0, portafolio, detalle, roadmap y versiones | CI en verde en el PR #2 y, tras el merge, en `main` (ejecución 36940235574, commit `46a673d`, 2026-10-01). En local, rama `002-portfolio-conformance`, 2026-10-01: Vitest 281/281 (una prueba por verificación de conformidad, enlaces fuera de la raíz, `.env`, FIFO, archivo > 1 MB, `core.fsmonitor` malicioso), pgTAP 88/88 y Playwright 38/38, con un portafolio ficticio |
 | Solo lectura sobre el portafolio real (SC-007) | Entorno de uso, 2026-10-01: antes y después de pulsar Actualizar, fechas de modificación y tamaño de 5206 archivos de `/home/fili/proyectos` idénticos y `git status` de los 7 repos sin cambios |
 | Validación con el portafolio real (quickstart Fase 2, escenarios 1–13) | Validada por el Dueño el 2026-10-01 en el entorno de uso: 6 proyectos y el estándar aparte; niveles: `amazon-business-engine` 3 (provisional), `nexoru-op` 3 (provisional) y 0 los cuatro sin `PROJECT.md`; ramas y avisos correctos; Actualizar, vencimiento a 10 min y acceso sin sesión (redirige a `/login`) comprobados; sin discrepancias con los `PROJECT.md` |
 | Lectura de 50 proyectos (SC-006) | Prueba unitaria: 50 copias de un proyecto ficticio con repo git se leen en menos de 10 s |
 
 ## Siguiente hito
 
-Integrar la Fase 2 en main (PR de 002-portfolio-conformance) y especificar la Fase 3: historial de git.
+Fase 3: especificar, planificar y construir el historial de git, los indicadores de conformidad y avance, la identidad visual y los gráficos (003-git-history-insights).
 
-1. **Cierre de la Fase 2:** PR con CI en verde y merge (T055–T056). Fecha objetivo de la fase: 2026-10-18.
-2. **Fase 3 (fecha objetivo 2026-10-25):** nueva spec con `/speckit-specify` para el historial de git de cada proyecto (fechas y autores, solo lectura). En esa iteración se decide también la adopción del look and feel de `nexoru-onboarding` (backlog B-010).
+1. **Spec:** `specs/003-git-history-insights/spec.md`, con `/speckit-clarify` y aprobación del Dueño.
+2. **Plan, tareas y análisis:** `/speckit-plan` (incluye si el alcance pone en riesgo la fecha y qué historias mover), `/speckit-tasks` y `/speckit-analyze` sin hallazgos críticos, y aprobación del `tasks.md`.
+3. **Construcción y cierre:** implementación con pruebas, validación con el portafolio real, PR con CI en verde y merge. Fecha objetivo de la fase: 2026-10-25.
