@@ -33,6 +33,7 @@ proyecto que declara la 1.1 y un `.nexoruignore`. Las pruebas usan una fecha de 
 | 7 | Escala de grises | Con el filtro de escala de grises del navegador, los semáforos se distinguen por forma, ícono y texto (SC-003) |
 | 8 | Solo lectura (SC-006) | Huella de 5206+ archivos y `git status` idénticos antes y después de Actualizar (método de la Fase 2) |
 | 9 | Tiempo (SC-005) | Actualizar termina en menos de 2 s con el portafolio real |
+| 9b | Inactivos (SC-001) | Con el tablero abierto, el Dueño identifica en menos de 30 s los proyectos con semáforo de actividad rojo (> 15 días) |
 | 10 | Identidad | El tablero se parece a la app de `nexoru-onboarding` (revisión del Dueño contra `docs/identidad-visual.md`) |
 
 Referencias: [contracts/git-history.md](contracts/git-history.md),

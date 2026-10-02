@@ -63,7 +63,7 @@ ampliar el portafolio ficticio.
   - Si `status` falla (por ejemplo, un repo con el índice dañado o git sin soporte de `--attr-source`, simulado), `hasUncommittedChanges` es `null` con `uncommittedChangesReason` = "error de git", **nunca `false`**.
   - Prueba pura en `tests/unit/portfolio/branch-warnings.test.ts`: `branchWarnings` y la tarjeta de repositorio muestran "Cambios sin commit: no evaluado (motivo)" cuando `hasUncommittedChanges` es `null` en un repo, y nunca un texto de "sin cambios".
   - Debe fallar con el código actual.
-- [ ] T002 Corregir `src/lib/portfolio/git.ts` (código de la Fase 2) con el prefijo endurecido v2 de `contracts/git-history.md`:
+- [ ] T002 *(Se hace después de T008 y T009, que se adelantan a esta fase: necesita `statInsideRoot`.)* Corregir `src/lib/portfolio/git.ts` (código de la Fase 2) con el prefijo endurecido v2 de `contracts/git-history.md`:
   - añadir `-c core.attributesFile=/dev/null -c log.showSignature=false -c gc.auto=0 -c maintenance.auto=false` y `--attr-source=4b825dc642cb6eb9a060e54bf8d69288fbee4904`;
   - añadir `GIT_PAGER=cat` al entorno;
   - `status --porcelain=v1 -z --ignore-submodules=all`;
@@ -161,6 +161,7 @@ remoto y días en la fase, sin red ni escrituras.
   - **Cambio de fase**: el commit más reciente que dejó `fase` en su valor actual, incluido el caso en que se introdujo y no hubo cambios; ignora líneas `fase:` fuera del frontmatter; sin historial devuelve `null`.
   - **Comparación con `fase_desde`**: coincide y no coincide.
   - **Adelanto/atraso**: interpreta `"2\t3"`.
+  - **Casos límite**: repo sin commits (último commit, días y actividad ausentes con "sin commits"); HEAD separado (adelanto/atraso desde el commit actual, con la marca "HEAD separado"); commit con fecha en el futuro (se muestra tal cual, con aviso); `fase` cambiada en disco sin commit (aviso "cambio de fase sin commit").
 - [ ] T015 [P] [US1] Pruebas de integración en `tests/unit/portfolio/git-history.test.ts` contra `history-demo` (usando `now` del constructor):
   - último commit hace 5 días;
   - 3 semanas con commits;
@@ -365,6 +366,7 @@ CSP.
 
 - **Fase 1**:
   - T001 antes que T002, para que la prueba falle primero;
+  - T008 y T009 (lector ampliado) se adelantan a la Fase 1 y van antes de T002, que necesita `statInsideRoot`;
   - T003 antes que T004 y T005;
   - T006 después de T004.
 - **Fase 2**: depende de la Fase 1. T007 y T008 van primero; T009 depende de T008.
