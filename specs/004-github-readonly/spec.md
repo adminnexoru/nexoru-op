@@ -74,6 +74,19 @@ workflows), que el Dueño publica desde la sesión de `nexoru-governance` antes 
 - Al cierre hay una tarea [MANUAL]: declarar `visibilidad` en `amazon-business-engine` y
   `nexoru-op` y subirlos a `version_estandar: "1.2"`, desde la sesión de cada proyecto.
 
+### Session 2026-10-03 (clarify)
+
+- Q: ¿Cómo se evalúan la verificación 3.2 y el hallazgo de visibilidad en los proyectos que siguen
+  declarando el estándar 1.0 o 1.1? → A: Cada versión con sus propias reglas. En 1.0 y 1.1, 3.2
+  toma la última ejecución terminada de cualquier workflow de CI en la rama principal y el hallazgo
+  de visibilidad solo detecta un `producto-cliente` público; en 1.2, el campo `visibilidad` y la
+  regla de todos los workflows. Además, un proyecto que declara una versión anterior a la más
+  reciente soportada muestra un aviso informativo, sin hallazgo ni cambio de nivel: "hay una
+  versión más nueva del estándar (1.2) con reglas más estrictas de CI y visibilidad".
+- Q: En un proyecto 1.2 `producto-cliente` que declara `visibilidad: publico` y cuyo repo es
+  público, ¿el hallazgo se acepta? → A: No. Sigue siendo hallazgo alto: para `producto-cliente`, la
+  regla de `repo-visibility.md` manda sobre lo declarado; "aceptado" solo aplica a los demás tipos.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - CI de la rama principal y verificación 3.2 (Priority: P1)
@@ -130,7 +143,8 @@ comprobar la visibilidad y el hallazgo de cada uno.
 **Acceptance Scenarios**:
 
 1. **Given** un proyecto `tipo: producto-cliente` con repo público, **When** se actualiza, **Then**
-   aparece el hallazgo alto "la visibilidad del repo contradice repo-visibility.md".
+   aparece el hallazgo alto "la visibilidad del repo contradice repo-visibility.md", aunque declare
+   `visibilidad: publico` (nunca se muestra como aceptado).
 2. **Given** un proyecto 1.2 con `visibilidad: publico` y repo público en GitHub, **When** se
    actualiza, **Then** el hallazgo de visibilidad aparece como "aceptado: declarado en PROJECT.md"
    y no cuenta como pendiente.
@@ -141,6 +155,9 @@ comprobar la visibilidad y el hallazgo de cada uno.
    coincide con GitHub (público)".
 5. **Given** un repo privado consultado sin token, **When** se actualiza, **Then** la visibilidad
    dice "no disponible: requiere token" y el hallazgo queda "no evaluado".
+6. **Given** un proyecto 1.1 `producto-nexoru` con repo público y sin el campo `visibilidad`,
+   **When** se actualiza, **Then** no hay hallazgo de visibilidad y aparece el aviso informativo
+   "hay una versión más nueva del estándar (1.2) con reglas más estrictas de CI y visibilidad".
 
 ---
 
@@ -262,7 +279,8 @@ token no tiene permiso y la consulta sin token.
   rama principal, en el detalle y, resumido, en el tablero.
 - **FR-014**: El sistema DEBE evaluar la verificación 3.2 con el dato de GitHub: la ejecución más
   reciente ya terminada en la rama principal de **cada** workflow que cumple 3.1 (se dispara con
-  `push` y `pull_request`) terminó con éxito (regla del estándar 1.2.0; ver FR-026 para 1.0 y 1.1). Con 3.2 evaluada, el nivel 3 deja de ser
+  `push` y `pull_request`) terminó con éxito (regla del estándar 1.2.0). En proyectos 1.0 y 1.1, 3.2 se evalúa con su propio texto: la última
+  ejecución ya terminada de cualquier workflow de CI en la rama principal terminó con éxito. Con 3.2 evaluada, el nivel 3 deja de ser
   provisional; si falla, el proyecto queda en nivel 2 con la falla y su detalle.
 - **FR-015**: Si el dato de CI no está disponible, 3.2 queda "no evaluada" con el motivo y el nivel
   3 sigue provisional, como en la Fase 3.
@@ -275,10 +293,12 @@ token no tiene permiso y la consulta sin token.
 
 - **FR-018**: El sistema DEBE mostrar si cada repo es público o privado.
 - **FR-019**: El sistema DEBE evaluar el hallazgo alto de visibilidad del estándar: un repo
-  `producto-cliente` público contradice `repo-visibility.md`.
+  `producto-cliente` público contradice `repo-visibility.md`. En proyectos 1.0 y 1.1 esa es la
+  única regla de visibilidad; FR-020 aplica solo a proyectos 1.2.
 - **FR-020**: En proyectos 1.2, el sistema DEBE comparar el campo `visibilidad` (`publico` o
   `privado`) del frontmatter con la visibilidad en GitHub: sin el campo, hallazgo alto "requiere
-  decisión del Dueño"; declarado y coincide, hallazgo **aceptado** (no cuenta como pendiente);
+  decisión del Dueño"; declarado y coincide, hallazgo **aceptado** (no cuenta como pendiente),
+  salvo en `producto-cliente` con repo público, donde manda FR-019 y el hallazgo sigue alto;
   declarado y no coincide, hallazgo alto por discrepancia. El texto de "Decisiones clave" NO se
   interpreta.
 
@@ -303,7 +323,12 @@ token no tiene permiso y la consulta sin token.
   1.2 tomadas del estándar 1.2.0 publicado en `nexoru-governance` (campo `visibilidad` en el
   manifiesto y regla de 3.2 con varios workflows). La implementación de las reglas 1.2 empieza
   cuando 1.2.0 esté publicado; si su texto difiere de esta spec, manda el estándar y la spec se
-  corrige.
+  corrige. Cada proyecto se evalúa con las reglas de la versión que declara.
+- **FR-028**: Un proyecto que declara una versión soportada anterior a la más reciente (hoy 1.0 o
+  1.1) DEBE mostrar, en el detalle y como indicación en el tablero, el aviso informativo "hay una
+  versión más nueva del estándar (1.2) con reglas más estrictas de CI y visibilidad". El aviso no
+  es hallazgo, no cambia el nivel ni la Conformidad, y el número de versión sale de la versión
+  soportada más reciente, no de un texto fijo.
 
 **Documentación**
 
