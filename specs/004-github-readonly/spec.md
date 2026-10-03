@@ -86,6 +86,14 @@ workflows), que el Dueño publica desde la sesión de `nexoru-governance` antes 
 - Q: En un proyecto 1.2 `producto-cliente` que declara `visibilidad: publico` y cuyo repo es
   público, ¿el hallazgo se acepta? → A: No. Sigue siendo hallazgo alto: para `producto-cliente`, la
   regla de `repo-visibility.md` manda sobre lo declarado; "aceptado" solo aplica a los demás tipos.
+- Q: Si una actualización no consigue datos nuevos de GitHub pero hay datos guardados de una
+  consulta anterior, ¿3.2 se evalúa con ellos? → A: Sí, con su fecha a la vista ("CI de hace X"),
+  mientras tengan menos de 7 días; con 7 días o más, 3.2 queda "no evaluada: datos de GitHub de
+  más de 7 días".
+- Q: Al pulsar Actualizar, ¿la página espera a GitHub o lo muestra en una acción aparte? → A: Un solo
+  botón Actualizar: lee lo local y consulta GitHub a la vez, con un tiempo máximo de 8 segundos
+  para GitHub; lo que no responda a tiempo queda con los datos guardados o "no disponible: tiempo
+  agotado".
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -117,11 +125,15 @@ nivel, la Conformidad con base 29 y el aviso de cambio de base.
    tablero o en el detalle, **Then** junto al porcentaje aparece "la base cambió de 28 a 29 por la
    activación de 3.2".
 4. **Given** un proyecto para el que GitHub no respondió (sin red, error, límite agotado o repo
-   privado sin token), **When** se actualiza, **Then** 3.2 queda "no evaluada" con el motivo, el
+   privado sin token) y sin datos guardados de menos de 7 días, **When** se actualiza, **Then** 3.2
+   queda "no evaluada" con el motivo, el
    nivel 3 sigue provisional, la Conformidad mantiene la base 28 y los datos locales se muestran
    igual.
 5. **Given** un proyecto cuyo remoto no es de GitHub o que no tiene remoto, **When** se muestra,
    **Then** los datos de GitHub dicen "no aplica" y 3.2 queda "no evaluada" con ese motivo.
+6. **Given** un proyecto con datos de CI guardados hace 2 días y una actualización en la que GitHub
+   no responde, **When** se actualiza, **Then** 3.2 se evalúa con el dato guardado, se muestra "CI
+   de hace 2 días" y el nivel no cambia por la falta de red.
 
 ---
 
@@ -207,11 +219,12 @@ token no tiene permiso y la consulta sin token.
 ### Edge Cases
 
 - **Límite de consultas agotado**: lo que falte queda "no disponible: límite de consultas de GitHub
-  agotado; se restablece a las HH:MM"; se conservan los datos anteriores con su fecha si los hay.
+  agotado; se restablece a las HH:MM"; se conservan los datos anteriores con su fecha si los hay,
+  y 3.2 se evalúa con ellos mientras tengan menos de 7 días (FR-015).
 - **Sin red o GitHub caído**: "no disponible: sin conexión con GitHub" o "no disponible: error de
   GitHub"; la lectura local termina igual.
-- **GitHub lento**: las consultas tienen un tiempo máximo; lo que no responde a tiempo queda "no
-  disponible: tiempo agotado".
+- **GitHub lento**: las consultas a GitHub tienen un tiempo máximo de 8 segundos en total; lo que no
+  responde a tiempo queda con los datos guardados (FR-015) o "no disponible: tiempo agotado".
 - **Repo no encontrado o sin acceso**: GitHub responde igual para un repo privado sin permiso y uno
   que no existe; se muestra "no disponible: el repo no existe o el token no tiene acceso".
 - **Token inválido o vencido**: "no disponible: el token de GitHub no es válido"; nunca se muestra
@@ -253,8 +266,9 @@ token no tiene permiso y la consulta sin token.
   comprobar que no aparece en el HTML, en los datos del índice ni en la salida de los logs.
 - **FR-004**: Sin token, el sistema DEBE consultar los repos públicos con el límite anónimo; los
   privados quedan "no disponible: requiere token".
-- **FR-005**: Las consultas a GitHub se hacen **solo** al pulsar Actualizar. La relectura automática
-  del índice (más de 10 minutos) no consulta GitHub.
+- **FR-005**: Las consultas a GitHub se hacen **solo** al pulsar Actualizar, que es un solo botón:
+  lee lo local y consulta GitHub a la vez y muestra el resultado cuando ambos terminan. La relectura
+  automática del índice (más de 10 minutos) no consulta GitHub.
 - **FR-006**: Los datos de GitHub se guardan en el índice regenerable con la fecha de la consulta, y
   el dashboard muestra su antigüedad ("datos de GitHub de hace X").
 - **FR-007**: El sistema DEBE usar peticiones condicionales para no gastar límite cuando los datos no
@@ -264,7 +278,8 @@ token no tiene permiso y la consulta sin token.
   fecha.
 - **FR-009**: Sin red, con error, con el límite agotado o con tiempo agotado, cada dato afectado
   queda "no disponible" con su motivo. La lectura local NUNCA DEBE bloquearse ni fallar por GitHub:
-  Actualizar termina en un tiempo acotado aunque GitHub no responda.
+  las consultas a GitHub tienen un tiempo máximo de 8 segundos en total, de modo que Actualizar
+  termina aunque GitHub no responda.
 - **FR-010**: Para un remoto que no es de GitHub, o sin remoto, los datos de GitHub dicen "no
   aplica".
 - **FR-011**: La política de seguridad de contenido (CSP) NO DEBE cambiar: el navegador nunca se
@@ -282,8 +297,10 @@ token no tiene permiso y la consulta sin token.
   `push` y `pull_request`) terminó con éxito (regla del estándar 1.2.0). En proyectos 1.0 y 1.1, 3.2 se evalúa con su propio texto: la última
   ejecución ya terminada de cualquier workflow de CI en la rama principal terminó con éxito. Con 3.2 evaluada, el nivel 3 deja de ser
   provisional; si falla, el proyecto queda en nivel 2 con la falla y su detalle.
-- **FR-015**: Si el dato de CI no está disponible, 3.2 queda "no evaluada" con el motivo y el nivel
-  3 sigue provisional, como en la Fase 3.
+- **FR-015**: Si la consulta actual no trae el dato de CI pero hay uno guardado de una consulta
+  anterior con menos de 7 días, 3.2 se evalúa con ese dato y se muestra su antigüedad ("CI de hace
+  X"). Sin dato guardado, o con uno de 7 días o más, 3.2 queda "no evaluada" con el motivo (p. ej.
+  "datos de GitHub de más de 7 días") y el nivel 3 sigue provisional, como en la Fase 3.
 - **FR-016**: La Conformidad DEBE contar 3.2 como aplicable solo cuando se evaluó: base 29 con 3.2
   evaluada, base 28 si no.
 - **FR-017**: Cuando la base de un proyecto es 29, el dashboard DEBE mostrar junto a su Conformidad,
@@ -387,7 +404,7 @@ token no tiene permiso y la consulta sin token.
 - El estado de la CI de un PR es el combinado de las comprobaciones de su último commit.
 - Las alertas de secretos de GitHub complementan, no sustituyen, el hallazgo crítico de `.env*`
   versionados que ya evalúa la Fase 2.
-- Los tiempos de espera y el tiempo máximo de Actualizar se fijan en el plan, dentro de SC-005.
+- El reparto del tiempo máximo de 8 segundos entre consultas se fija en el plan, dentro de SC-005.
 - Las pruebas nunca consultan el GitHub real: usan un GitHub simulado con datos ficticios.
 - Sin token, el límite anónimo (60 consultas por hora) basta para el portafolio actual (6 repos) con
   una actualización; las peticiones condicionales permiten actualizaciones repetidas.
