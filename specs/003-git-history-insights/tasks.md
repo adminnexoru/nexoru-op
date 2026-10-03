@@ -344,11 +344,11 @@ CSP.
 
 ## Phase 8: Cierre de la feature
 
-- [ ] T048 [P] Actualizar:
+- [X] T048 [P] Actualizar:
   - `CLAUDE.md`: prefijo endurecido v2 de git, `tokens.css`, `docs/identidad-visual.md` y `.nexoruignore`;
   - `README.md`: qué muestra el tablero ahora;
   - `specs/002-portfolio-conformance/contracts/reader.md`, si quedó algo pendiente.
-- [ ] T049 Revisión de seguridad:
+- [X] T049 *(Hecha el 2026-10-02 y convertida en prueba permanente: `tests/unit/security/review.test.ts`. Se retiró `src/components/ui/sonner.tsx`, que no se usaba y tenía un atributo `style` incompatible con la CSP, junto con sus dependencias `sonner` y `next-themes`. Sin `.env*` versionados, sin puertos en `0.0.0.0` y una sola dependencia nueva en la fase, `@fontsource/inter`. `npm audit`: las 8 vulnerabilidades altas son anteriores a la fase y vienen de `braces` en herramientas de desarrollo.)* Revisión de seguridad:
   - ningún comando de git sin el prefijo v2 (prueba que recorre la lista exportada de comandos);
   - ningún `fetch`, `pull` ni `push` en el código;
   - `node:fs` y `node:child_process` solo en `safe-fs.ts` y `git.ts`;
