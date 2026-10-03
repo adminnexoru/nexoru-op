@@ -20,7 +20,7 @@ servicios:
 costo_mensual_usd: 0
 siguiente_hito: "Fase 3: cerrar 003-git-history-insights (historias US1 a US5 construidas; falta documentación, validación con el portafolio real, PR y merge)"
 mapa_funcional: docs/mapa-funcional.md
-version_estandar: "1.0"
+version_estandar: "1.1"
 ---
 
 # Nexoru Op

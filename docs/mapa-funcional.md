@@ -1,7 +1,7 @@
 ---
 proyecto: nexoru-op
 tipo_documento: mapa-funcional
-version_estandar: "1.0"
+version_estandar: "1.1"
 ---
 
 # Nexoru Op: mapa de diseño funcional
