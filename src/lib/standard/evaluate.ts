@@ -3,7 +3,7 @@
 // its own: its manifest and roadmap are still shown. Without a readable manifest there is no
 // version to read, and level 0 is true with any version, so it is evaluated with 1.0.
 import type { ConformanceResult } from "@/lib/portfolio/types";
-import { conformity } from "./indicators";
+import { NOT_EVALUATED_REASON } from "./indicators";
 import { parseFrontmatter } from "./frontmatter";
 import type { ProjectFiles } from "./project-files";
 import { evaluateProject as evaluateV1_0, type ProjectEvaluation } from "./v1_0/evaluate";
@@ -14,9 +14,13 @@ function notEvaluated(evaluation: "unsupported_version" | "no_version"): Conform
   return { standardVersion: null, evaluation, level: null, provisional: false, checks: [], failures: [], warnings: [], findings: [] };
 }
 
-/** Replaces the conformance of a project that is not evaluated; Conformidad becomes absent. */
+/**
+ * Replaces the conformance of a project that is not evaluated. Both indicators become absent:
+ * Conformidad needs the rules of its version, and reading the roadmap depends on the standard too.
+ */
 function withConformance(result: ProjectEvaluation, conformance: ConformanceResult): ProjectEvaluation {
-  return { ...result, conformance, indicators: { ...result.indicators, conformity: conformity(conformance) } };
+  const reason = NOT_EVALUATED_REASON[conformance.evaluation as keyof typeof NOT_EVALUATED_REASON];
+  return { ...result, conformance, indicators: { conformity: { absent: reason }, progress: { absent: reason } } };
 }
 
 export function evaluateProject(files: ProjectFiles, evaluationDate: string): ProjectEvaluation {

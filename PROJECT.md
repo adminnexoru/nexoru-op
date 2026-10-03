@@ -109,6 +109,10 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 ## Pendientes conocidos
 
 - Backlog en `specs/backlog.md`: B-001 a B-011. En particular, B-008 (validar los procedimientos manuales de recuperación), B-009 (`op:backup` / `op:restore`, opcional), B-010 (adoptar el look and feel de `nexoru-onboarding`; entra en la Fase 3) y B-011 (soportar `.nexoruignore`).
+- **Para la Fase 4 (spec y plan)**: al activar la verificación 3.2 (CI de `main` en GitHub), la base
+  de Conformidad pasará de 28 a 29 verificaciones aplicables y los porcentajes pueden bajar sin que
+  el proyecto empeore. La Fase 4 debe mostrar ese cambio de base de forma explícita (contrato
+  `specs/003-git-history-insights/contracts/indicators-ui.md`).
 - Para la sesión de portafolio: aclaración del estándar 1.0.1 (correspondencia fila–servicio) y propuesta de `.nexoruignore`.
 
 ## Evidencia de validación

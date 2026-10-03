@@ -27,9 +27,9 @@ describe("Conformidad", () => {
 
   it("is absent, with its reason, for projects that are not evaluated", () => {
     const unsupported = replaceIn(baseFiles(), "project", 'version_estandar: "1.0"', 'version_estandar: "2.0"');
-    expect(indicators(unsupported).conformity).toEqual({ absent: "Versión del estándar no soportada" });
+    expect(indicators(unsupported).conformity).toEqual({ absent: "versión del estándar no soportada" });
     const none = replaceIn(baseFiles(), "project", 'version_estandar: "1.0"\n', "");
-    expect(indicators(none).conformity).toEqual({ absent: "Sin versión del estándar" });
+    expect(indicators(none).conformity).toEqual({ absent: "sin versión del estándar" });
   });
 });
 
@@ -79,14 +79,16 @@ describe("Avance", () => {
   it("is absent, never 0 %, without a roadmap or without derived phases", () => {
     const noRoadmap = baseFiles();
     noRoadmap.project = { ok: false, problem: { path: "PROJECT.md", reason: "missing", detail: null } };
-    expect(indicators(noRoadmap).progress).toEqual({ absent: "Sin roadmap" });
+    expect(indicators(noRoadmap).progress).toEqual({ absent: "sin roadmap" });
 
     const onlyManual = roadmapFiles("| 1 | Sin spec | — | — | pendiente |", []);
-    expect(indicators(onlyManual).progress).toEqual({ absent: "Ninguna fase tiene specs con tasks.md" });
+    expect(indicators(onlyManual).progress).toEqual({ absent: "ninguna fase tiene specs con tasks.md" });
   });
 
-  it("is also computed for projects that are not evaluated (it does not depend on the standard version)", () => {
+  it("is absent for projects that are not evaluated: reading the roadmap depends on the standard", () => {
     const unsupported = replaceIn(baseFiles(), "project", 'version_estandar: "1.0"', 'version_estandar: "2.0"');
-    expect(indicators(unsupported).progress).toMatchObject({ percent: 100, done: 2, total: 2 });
+    expect(indicators(unsupported).progress).toEqual({ absent: "versión del estándar no soportada" });
+    const none = replaceIn(baseFiles(), "project", 'version_estandar: "1.0"\n', "");
+    expect(indicators(none).progress).toEqual({ absent: "sin versión del estándar" });
   });
 });

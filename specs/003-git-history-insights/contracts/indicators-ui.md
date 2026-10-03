@@ -36,6 +36,19 @@
 - **Roadmap**: activo o concluido.
 - **Hallazgos**: los dos nuevos de la 1.1, cuando aplican.
 
+## Base de Conformidad y Avance
+
+- **Conformidad**: verificaciones cumplidas sobre las aplicables. En esta fase son **28 aplicables**
+  (todas salvo la 3.2, que necesita GitHub).
+- **Cambio de base en la Fase 4**: al activar la verificación 3.2, el total pasará de **28 a 29**.
+  Los porcentajes pueden **bajar sin que el proyecto empeore**: por ejemplo, 28/28 = 100 % puede
+  pasar a 28/29 = 97 % si la CI de `main` no está en verde. La Fase 4 **deberá mostrar ese cambio de
+  base de forma explícita**, con la base anterior y la nueva y el motivo, por lo menos durante la
+  primera lectura con la base nueva. Esto queda anotado en `PROJECT.md` para su spec y su plan.
+- **Proyectos no evaluados** (versión del estándar no soportada o sin versión): **los dos**
+  indicadores quedan ausentes con el mismo motivo, porque la lectura del roadmap también depende
+  del estándar (decisión del Dueño, 2026-10-02).
+
 ## Semáforos
 
 | Tipo | Forma | Niveles (texto) | Ícono (`lucide-react`) |

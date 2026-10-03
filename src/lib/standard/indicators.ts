@@ -10,12 +10,18 @@ const DEFERRED_TO_LATER_PHASE = new Set(["3.2"]);
 
 const percent = (part: number, whole: number) => Math.round((part / whole) * 100);
 
+/** Why both indicators are absent when the project is not evaluated (they follow "ausente:"). */
+export const NOT_EVALUATED_REASON = {
+  unsupported_version: "versión del estándar no soportada",
+  no_version: "sin versión del estándar",
+} as const;
+
 /** Conformidad: checks passed over applicable ones; "Depende de X" counts as not met. */
 export function conformity(conformance: ConformanceResult): Indicators["conformity"] {
-  if (conformance.evaluation === "unsupported_version") return { absent: "Versión del estándar no soportada" };
-  if (conformance.evaluation === "no_version") return { absent: "Sin versión del estándar" };
+  if (conformance.evaluation === "unsupported_version") return { absent: NOT_EVALUATED_REASON.unsupported_version };
+  if (conformance.evaluation === "no_version") return { absent: NOT_EVALUATED_REASON.no_version };
   const applicable = conformance.checks.filter((check) => !DEFERRED_TO_LATER_PHASE.has(check.id));
-  if (applicable.length === 0) return { absent: "Sin verificaciones aplicables" };
+  if (applicable.length === 0) return { absent: "sin verificaciones aplicables" };
   const passed = applicable.filter((check) => check.status === "pass").length;
   return {
     percent: percent(passed, applicable.length),
@@ -30,7 +36,7 @@ export function conformity(conformance: ConformanceResult): Indicators["conformi
  * Phases with a manual state are left out of the percentage but counted in "fases completas".
  */
 export function progress(roadmap: ParsedRoadmap | null, specs: SpecFolder[]): Indicators["progress"] {
-  if (!roadmap?.found) return { absent: "Sin roadmap" };
+  if (!roadmap?.found) return { absent: "sin roadmap" };
   const derived = roadmap.phases.filter((phase) => phase.derived !== null);
   const linked = new Set(derived.flatMap((phase) => phase.specs));
   let done = 0;
@@ -41,7 +47,7 @@ export function progress(roadmap: ParsedRoadmap | null, specs: SpecFolder[]): In
     done += counts.done;
     total += counts.total;
   }
-  if (derived.length === 0 || total === 0) return { absent: "Ninguna fase tiene specs con tasks.md" };
+  if (derived.length === 0 || total === 0) return { absent: "ninguna fase tiene specs con tasks.md" };
   return {
     percent: percent(done, total),
     done,

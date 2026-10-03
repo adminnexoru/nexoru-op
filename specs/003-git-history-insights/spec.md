@@ -304,8 +304,9 @@ tabla y que no hay violaciones de la política de seguridad de contenido.
   del estándar aplicada, y mostrar cuáles faltan. Son **aplicables** todas las verificaciones del
   estándar salvo las que no se pueden evaluar en esta fase (hoy 3.2); una verificación que depende
   de otra que falló ("Depende de X") cuenta como no cumplida.
-- **FR-010**: La Conformidad NO DEBE calcularse para proyectos no evaluados (versión no soportada o
-  sin versión); se muestra como ausente con el motivo.
+- **FR-010**: La Conformidad y el Avance NO DEBEN calcularse para proyectos no evaluados (versión
+  no soportada o sin versión), porque la lectura del roadmap también depende del estándar; los dos
+  se muestran como ausentes con el motivo (ajuste del Dueño, 2026-10-02).
 - **FR-011**: El sistema DEBE calcular el **Avance** de cada proyecto a partir de las casillas de
   los `tasks.md` de todas las specs vinculadas en su roadmap: tareas marcadas sobre el total.
 - **FR-012**: El Avance DEBE mostrarse como ausente (no como 0 %) si el proyecto no tiene roadmap o

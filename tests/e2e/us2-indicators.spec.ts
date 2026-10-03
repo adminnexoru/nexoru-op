@@ -28,10 +28,14 @@ test("the portfolio shows both percentages with their names and bases", async ()
 
 test("missing percentages are absent with their reason, never 0 %", async () => {
   const missing = row("no-manifest");
-  await expect(missing.getByTestId("progress")).toContainText("Avance ausente: Sin roadmap");
+  await expect(missing.getByTestId("progress")).toContainText("Avance ausente: sin roadmap");
   await expect(row("Proyecto unsupported-version").getByTestId("conformity")).toContainText(
-    "Conformidad ausente: Versión del estándar no soportada",
+    "Conformidad ausente: versión del estándar no soportada",
   );
+});
+
+test("an unsupported version leaves Avance absent too", async () => {
+  await expect(row("Proyecto unsupported-version").getByTestId("progress")).toHaveText("Avance ausente: versión del estándar no soportada");
 });
 
 test("the detail explains how they were calculated", async () => {
