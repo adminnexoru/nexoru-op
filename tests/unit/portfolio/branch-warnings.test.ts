@@ -1,7 +1,7 @@
 // T001: "cambios sin commit" that could not be evaluated is shown as such, never as "sin cambios"
 // (contracts/git-history.md).
 import { describe, expect, it } from "vitest";
-import { branchWarnings, uncommittedLabel } from "@/lib/portfolio/git-labels";
+import { branchWarnings, uncommittedLabel, uncommittedValue } from "@/lib/portfolio/git-labels";
 import type { GitInfo } from "@/lib/portfolio/types";
 
 const repo: GitInfo = {
@@ -13,6 +13,16 @@ const repo: GitInfo = {
   uncommittedChangesReason: null,
   originRepo: "example-org/demo",
 };
+
+describe("value of the repository card (the label is the row title)", () => {
+  it("says only the value", () => {
+    expect(uncommittedValue(repo)).toBe("Ninguno");
+    expect(uncommittedValue({ ...repo, hasUncommittedChanges: true })).toBe("Sí");
+    expect(uncommittedValue({ ...repo, hasUncommittedChanges: null, uncommittedChangesReason: "error de git" })).toBe(
+      "No evaluado (error de git)",
+    );
+  });
+});
 
 describe("uncommitted changes", () => {
   it("says 'no evaluado' with its reason when git status was not run", () => {

@@ -8,6 +8,13 @@ export function uncommittedLabel(git: GitInfo): string {
   return `Cambios sin commit: no evaluado (${git.uncommittedChangesReason ?? "error de git"})`;
 }
 
+/** Value of the "Cambios sin commit" row of the repository card (the row gives the label). */
+export function uncommittedValue(git: GitInfo): string {
+  if (git.hasUncommittedChanges === true) return "Sí";
+  if (git.hasUncommittedChanges === false) return "Ninguno";
+  return `No evaluado (${git.uncommittedChangesReason ?? "error de git"})`;
+}
+
 export function branchWarnings(git: GitInfo): string[] {
   if (!git.isRepo) return ["no es repositorio git"];
   const warnings: string[] = [];

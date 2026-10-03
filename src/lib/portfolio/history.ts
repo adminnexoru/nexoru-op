@@ -1,6 +1,7 @@
 // T018: pure calculations of the git history (US1, FR-001 to FR-006, FR-032, data-model.md).
 // Inputs are the raw outputs of the fixed git commands of contracts/git-history.md; nothing here
 // touches the disk or runs git.
+import { phaseLabel } from "@/lib/format";
 import type { ActivityLevel, GitHistory, Problem, WeekActivity } from "./types";
 
 const DAY_MS = 86_400_000;
@@ -121,7 +122,7 @@ function checkPhase(change: PhaseChange | null, fase: string | null, faseDesde: 
     return {
       ...fromHistory,
       phaseCheck: "no_coincide",
-      phaseCheckDetail: `No coincide con fase_desde (${faseDesde}): el historial muestra el cambio a ${change.value} el ${changedOn}.`,
+      phaseCheckDetail: `No coincide con fase_desde (${faseDesde}): el historial muestra el cambio a ${phaseLabel(change.value)} el ${changedOn}.`,
       phaseMatchesFaseDesde: false,
     };
   }

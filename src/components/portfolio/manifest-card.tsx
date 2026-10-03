@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Manifest, ProjectReading } from "@/lib/portfolio/types";
 import { declaredLevel, TrafficLight } from "@/components/status/traffic-light";
+import { phaseLabel } from "@/lib/format";
 import { OrAbsent } from "./absent";
 import { PROBLEM_LABEL } from "./labels";
 
@@ -47,6 +48,8 @@ export function ManifestCard({ project }: { project: ProjectReading }) {
                 <dd className="break-words">
                   {field === "estado" && declaredLevel(manifest.estado) ? (
                     <TrafficLight kind="declared" level={declaredLevel(manifest.estado)!} />
+                  ) : field === "fase" && manifest.fase ? (
+                    phaseLabel(manifest.fase)
                   ) : (
                     <OrAbsent value={value(manifest, field)} />
                   )}

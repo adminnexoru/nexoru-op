@@ -37,9 +37,9 @@ test("the detail shows the history of history-demo", async () => {
   expect((await history.innerText()).match(/\b5 días\b/g)).toHaveLength(1);
   await expect(history).toContainText("2 adelante, 3 atrás respecto a origin/HEAD");
   await expect(history).toContainText("referencia local de hace 40 días");
-  await expect(history).toContainText("20 días en construccion");
+  await expect(history).toContainText("20 días en Construcción");
   await expect(page.getByTestId("phase-check")).toContainText("No coincide con fase_desde");
-  await expect(page.getByTestId("phase-check")).toContainText("el historial muestra el cambio a construccion");
+  await expect(page.getByTestId("phase-check")).toContainText("el historial muestra el cambio a Construcción");
   const chart = page.getByRole("img", { name: /Actividad de git por semana/ });
   await expect(chart).toBeVisible();
   await page.getByText("Ver datos").first().click();
@@ -53,7 +53,7 @@ test("a folder that is not a repository shows git data as absent", async () => {
 
 test("uncommitted changes that could not be evaluated are never shown as none", async () => {
   await page.goto("/projects/git-info-attributes");
-  await expect(page.getByTestId("uncommitted")).toContainText("Cambios sin commit: no evaluado (atributos locales: no se evalúa por seguridad)");
+  await expect(page.getByTestId("uncommitted")).toHaveText("No evaluado (atributos locales: no se evalúa por seguridad)");
   await page.goto("/");
   await expect(row("Proyecto git-info-attributes")).toContainText("no evaluado");
 });

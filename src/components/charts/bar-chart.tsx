@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from "react";
 import { declaredLevel, TrafficLight } from "@/components/status/traffic-light";
 import type { ChartItem } from "@/lib/charts/chart-data";
+import { percentText } from "@/lib/format";
 
 // T045: horizontal bar chart as a server-rendered SVG (research R5). Numeric attributes and CSS
 // classes from tokens.css only (no style attributes, no JavaScript): the strict CSP stays intact.
@@ -37,7 +38,7 @@ export function BarChart({
   const scale = max ?? Math.max(1, ...items.map((item) => item.value));
   const plot = WIDTH - LABEL_WIDTH - VALUE_WIDTH - PADDING;
   const height = items.length * ROW_HEIGHT + 2 * PADDING;
-  const format = (value: number) => (unit === "%" ? `${value} %` : String(value));
+  const format = (value: number) => (unit === "%" ? percentText(value) : String(value));
   const empty = items.length === 0 || items.every((item) => item.value === 0);
 
   return (

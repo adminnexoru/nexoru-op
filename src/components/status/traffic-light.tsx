@@ -30,18 +30,19 @@ export function TrafficLight({
   kind,
   level,
   detail,
-  showLabel = true,
+  labelHidden = false,
 }: {
   kind: Kind;
   level: ActivityLevel;
   detail?: string;
-  showLabel?: boolean;
+  /** In the table the column header gives the label: hidden visually, still read by screen readers. */
+  labelHidden?: boolean;
 }) {
   const Icon = ICON[kind][level];
   return (
     <span className={`traffic-light traffic-light--${kind} traffic-light--${level}`} data-testid={`traffic-light-${kind}`}>
       <Icon aria-hidden="true" className="size-3.5 shrink-0" />
-      {showLabel ? <span className="traffic-light__label">{LABEL[kind]}:</span> : null}{" "}
+      <span className={labelHidden ? "traffic-light__label sr-only" : "traffic-light__label"}>{LABEL[kind]}:</span>{" "}
       <span>{TEXT[kind][level]}</span>
       {detail ? <span> · {detail}</span> : null}
     </span>

@@ -62,6 +62,18 @@ describe("chartData", () => {
       "sin-dato",
     ]);
     expect(sum(phases)).toBe(reading.projects.length);
+    expect(phases.map((item) => item.label)).toEqual([
+      "Idea",
+      "Especificación",
+      "Construcción",
+      "Pruebas",
+      "Piloto",
+      "Migración",
+      "Operación",
+      "Pausado",
+      "Retirado",
+      "Sin dato",
+    ]);
     expect(phases.find((item) => item.key === "construccion")?.value).toBe(
       reading.projects.filter((p) => p.manifest?.fase === "construccion").length,
     );

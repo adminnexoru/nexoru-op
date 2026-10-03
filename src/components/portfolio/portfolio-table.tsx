@@ -4,7 +4,7 @@ import type { ProjectReading } from "@/lib/portfolio/types";
 import { declaredLevel, TrafficLight } from "@/components/status/traffic-light";
 import { Absent, OrAbsent } from "./absent";
 import { BranchBadge } from "./branch-badge";
-import { daysText } from "@/lib/format";
+import { daysText, phaseLabel } from "@/lib/format";
 import { IndicatorCell } from "./indicators";
 import { LevelBadge } from "./level-badge";
 
@@ -48,22 +48,31 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
               </TableCell>
               <TableCell><OrAbsent value={manifest?.tipo} /></TableCell>
               <TableCell><OrAbsent value={manifest?.cliente} /></TableCell>
-              <TableCell><OrAbsent value={manifest?.fase} /></TableCell>
+              <TableCell>{manifest?.fase ? phaseLabel(manifest.fase) : <Absent />}</TableCell>
               <TableCell>
                 {declaredLevel(manifest?.estado) ? (
-                  <TrafficLight kind="declared" level={declaredLevel(manifest?.estado)!} />
+                  <TrafficLight kind="declared" level={declaredLevel(manifest?.estado)!} labelHidden />
                 ) : (
                   <OrAbsent value={manifest?.estado} />
                 )}
               </TableCell>
               <TableCell><OrAbsent value={manifest?.fecha_objetivo} /></TableCell>
-              <TableCell className="max-w-64 whitespace-normal"><OrAbsent value={manifest?.siguiente_hito} /></TableCell>
+              <TableCell className="max-w-64 whitespace-normal">
+                {manifest?.siguiente_hito ? (
+                  // Two lines at most; the full text is in the detail (and in the tooltip).
+                  <span data-testid="milestone" className="line-clamp-2" title={manifest.siguiente_hito}>
+                    {manifest.siguiente_hito}
+                  </span>
+                ) : (
+                  <Absent />
+                )}
+              </TableCell>
               <TableCell><LevelBadge project={project} /></TableCell>
-              <TableCell className="whitespace-normal"><IndicatorCell kind="conformity" indicators={project.indicators} /></TableCell>
-              <TableCell className="whitespace-normal"><IndicatorCell kind="progress" indicators={project.indicators} /></TableCell>
+              <TableCell className="whitespace-nowrap"><IndicatorCell kind="conformity" indicators={project.indicators} /></TableCell>
+              <TableCell className="whitespace-nowrap"><IndicatorCell kind="progress" indicators={project.indicators} /></TableCell>
               <TableCell>
                 {project.history?.activityLight ? (
-                  <TrafficLight kind="activity" level={project.history.activityLight} detail={daysText(project.history.daysWithoutActivity ?? 0)} />
+                  <TrafficLight kind="activity" level={project.history.activityLight} detail={daysText(project.history.daysWithoutActivity ?? 0)} labelHidden />
                 ) : (
                   <Absent />
                 )}

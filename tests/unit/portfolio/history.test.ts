@@ -212,7 +212,7 @@ describe("days in the phase when the history starts with the creation of PROJECT
     const history = buildHistory(input({ phaseLog: changed(20) }), { fase: "construccion", fase_desde: iso(14) }, 24, NOW);
     expect(history).toMatchObject({ phaseCheck: "no_coincide", phaseMatchesFaseDesde: false, daysInPhase: 20, daysInPhaseSource: "historial" });
     expect(history.phaseCheckDetail).toBe(
-      `No coincide con fase_desde (${iso(14)}): el historial muestra el cambio a construccion el ${iso(20)}.`,
+      `No coincide con fase_desde (${iso(14)}): el historial muestra el cambio a Construcción el ${iso(20)}.`,
     );
   });
 });

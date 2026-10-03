@@ -1,12 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { conformityText, progressText } from "@/lib/format";
+import { conformityCellText, conformityText, progressCellText, progressText } from "@/lib/format";
 import type { Indicators } from "@/lib/portfolio/types";
 
 // T034: Conformidad and Avance always with their name and base (FR-013); absent values with their
 // reason, never 0 %. Plain text only.
 
 export function IndicatorCell({ kind, indicators }: { kind: "conformity" | "progress"; indicators: Indicators }) {
-  const text = kind === "conformity" ? conformityText(indicators.conformity) : progressText(indicators.progress);
+  // Table cell: the column header gives the name (owner review).
+  const text = kind === "conformity" ? conformityCellText(indicators.conformity) : progressCellText(indicators.progress);
   const absent = "absent" in indicators[kind];
   return (
     <span data-testid={kind} className={absent ? "text-muted-foreground" : undefined}>

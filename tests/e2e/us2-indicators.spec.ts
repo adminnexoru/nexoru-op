@@ -22,20 +22,19 @@ const row = (name: string) => page.getByRole("row").filter({ has: page.getByRole
 test("the portfolio shows both percentages with their names and bases", async () => {
   await page.goto("/");
   const demo = row("Proyecto Demo Nivel 3");
-  await expect(demo.getByTestId("conformity")).toHaveText("Conformidad 100 % · 28 de 28");
-  await expect(demo.getByTestId("progress")).toHaveText("Avance 100 % · 2 de 2 tareas");
+  // The column header gives the name; the number never separates from its % (no-break space).
+  expect(await demo.getByTestId("conformity").textContent()).toBe("100\u00a0% · 28 de 28");
+  expect(await demo.getByTestId("progress").textContent()).toBe("100\u00a0% · 2 de 2 tareas");
 });
 
 test("missing percentages are absent with their reason, never 0 %", async () => {
   const missing = row("no-manifest");
-  await expect(missing.getByTestId("progress")).toContainText("Avance ausente: sin roadmap");
-  await expect(row("Proyecto unsupported-version").getByTestId("conformity")).toContainText(
-    "Conformidad ausente: versión del estándar no soportada",
-  );
+  await expect(missing.getByTestId("progress")).toHaveText("Ausente: sin roadmap");
+  await expect(row("Proyecto unsupported-version").getByTestId("conformity")).toHaveText("Ausente: versión del estándar no soportada");
 });
 
 test("an unsupported version leaves Avance absent too", async () => {
-  await expect(row("Proyecto unsupported-version").getByTestId("progress")).toHaveText("Avance ausente: versión del estándar no soportada");
+  await expect(row("Proyecto unsupported-version").getByTestId("progress")).toHaveText("Ausente: versión del estándar no soportada");
 });
 
 test("the detail explains how they were calculated", async () => {
