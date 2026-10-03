@@ -152,6 +152,28 @@ export const gitHistorySchema = z.object({
 });
 export type GitHistory = z.infer<typeof gitHistorySchema>;
 
+const absentSchema = z.object({ absent: z.string() });
+
+/** T011/T033: Conformidad and Avance (US2, data-model.md). */
+export const indicatorsSchema = z.object({
+  conformity: z.union([
+    z.object({ percent: z.number(), passed: z.number(), applicable: z.number(), missing: z.array(z.string()) }),
+    absentSchema,
+  ]),
+  progress: z.union([
+    z.object({
+      percent: z.number(),
+      done: z.number(),
+      total: z.number(),
+      manualPhasesExcluded: z.number(),
+      phasesCompleted: z.number(),
+      phasesTotal: z.number(),
+    }),
+    absentSchema,
+  ]),
+});
+export type Indicators = z.infer<typeof indicatorsSchema>;
+
 export const projectReadingSchema = z.object({
   folder: z.string(),
   git: gitInfoSchema,
@@ -162,6 +184,7 @@ export const projectReadingSchema = z.object({
   /** FR-029: activo or concluido (standard/roadmap.md 1.1); null without roadmap. */
   roadmapStatus: z.enum(["activo", "concluido"]).nullable(),
   conformance: conformanceResultSchema,
+  indicators: indicatorsSchema,
   readErrors: z.array(problemSchema),
 });
 export type ProjectReading = z.infer<typeof projectReadingSchema>;

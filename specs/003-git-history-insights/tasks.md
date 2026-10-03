@@ -245,7 +245,7 @@ el cálculo a mano.
 
 ### Pruebas de US2 (escribir primero, deben fallar)
 
-- [ ] T031 [P] [US2] Pruebas en `tests/unit/standard/indicators.test.ts`:
+- [X] T031 [P] [US2] Pruebas en `tests/unit/standard/indicators.test.ts`:
   - **Conformidad**:
     - aplicables = todas las verificaciones salvo `3.2`;
     - las "Depende de X" cuentan como no cumplidas;
@@ -258,7 +258,7 @@ el cálculo a mano.
     - `phasesCompleted` / `phasesTotal` según la definición de fase concluida;
     - sin roadmap o sin fases derivadas da `{ absent }`, nunca 0 %.
   - **Redondeo**: `Math.round`.
-- [ ] T032 [P] [US2] E2E en `tests/e2e/us2-indicators.spec.ts`:
+- [X] T032 [P] [US2] E2E en `tests/e2e/us2-indicators.spec.ts`:
   - el tablero muestra "Conformidad 100 %" con "x de x" para `level3-demo`;
   - muestra "Avance" con "n de m tareas";
   - el detalle de `roadmap-states` dice "fases con estado manual no incluidas: 1" y "fases completas: x de y";
@@ -266,9 +266,9 @@ el cálculo a mano.
 
 ### Implementación de US2
 
-- [ ] T033 [US2] Implementar `src/lib/standard/indicators.ts` (`conformity(result)`, `progress(roadmap, specs)`) según research R8 y conectarlo en `src/lib/portfolio/read-project.ts` (T031).
-- [ ] T034 [US2] Interfaz: columnas "Conformidad" y "Avance" con su base en `src/components/portfolio/portfolio-table.tsx`, y la tarjeta `src/components/portfolio/indicators-card.tsx` en el detalle, con las verificaciones que faltan y la regla de las fases manuales.
-- [ ] T035 [US2] Ejecutar `npm test` y `npm run test:e2e` hasta verde.
+- [X] T033 [US2] Implementar `src/lib/standard/indicators.ts` (`conformity(result)`, `progress(roadmap, specs)`) según research R8 y conectarlo en `src/lib/portfolio/read-project.ts` (T031).
+- [X] T034 [US2] Interfaz: columnas "Conformidad" y "Avance" con su base en `src/components/portfolio/portfolio-table.tsx`, y la tarjeta `src/components/portfolio/indicators-card.tsx` en el detalle, con las verificaciones que faltan y la regla de las fases manuales.
+- [X] T035 [US2] Ejecutar `npm test` y `npm run test:e2e` hasta verde.
 
 ---
 
@@ -351,14 +351,15 @@ CSP.
   - sin dependencias nuevas en `package.json`;
   - sin `.env*` versionados;
   - ningún puerto en `0.0.0.0`.
-- [ ] T050 [MANUAL] Entorno de uso: el Dueño decide si crea `/home/fili/proyectos/.nexoruignore` con `nexoru-onboarding-line-endings`, y reinicia con `npm run op:stop` y `npm run op:start`. Claude da los pasos exactos.
-- [ ] T051 [MANUAL] Validación con el portafolio real: escenarios 1–10 de `specs/003-git-history-insights/quickstart.md` (Parte 2). Claude toma las huellas de solo lectura (escenario 8) y compara los datos de git con `git log` (escenario 3).
-- [ ] T052 Al cerrar la fase:
+- [ ] T050 [MANUAL] Validación de `.nexoruignore` en el entorno de uso (el worktree `nexoru-onboarding-line-endings` ya no existe; el Dueño lo eliminó el 2026-10-02). Pasos que da Claude para la terminal integrada de VS Code: `npm run op:stop` y `npm run op:start` (aplica la migración del índice); crear la carpeta de prueba `/home/fili/proyectos/zz-prueba-nexoruignore` con un `README.md` y comprobar que aparece en el tablero tras **Actualizar** (nivel 0, sin `PROJECT.md`); crear `/home/fili/proyectos/.nexoruignore` con la línea `zz-prueba-nexoruignore`, pulsar **Actualizar** y comprobar que la carpeta desaparece del tablero, los gráficos y los avisos; al final, borrar la carpeta de prueba y el `.nexoruignore` (o dejar este último vacío si el Dueño lo prefiere) y comprobar que el portafolio vuelve a su estado anterior.
+- [ ] T051 [MANUAL] Actualizar `version_estandar` a `"1.1"` en `amazon-business-engine` y en `nexoru-op`, **desde la sesión de cada proyecto** (la de `nexoru-op` es esta) y **después de verificar que cumplen la 1.1** (`nexoru-governance/standard/` 1.1: `fase` permitido, tabla de costos con la correspondencia normalizada, roadmap y hallazgos de cierre y reactivación). Cada cambio va con su propio commit en su repo. Así la validación real (T052) ejerce las reglas nuevas: evaluación con 1.1, estado del roadmap y hallazgos de cierre. Claude verifica después, en solo lectura, que el dashboard evalúa los dos con 1.1.
+- [ ] T052 [MANUAL] Validación con el portafolio real: escenarios 1–10 de `specs/003-git-history-insights/quickstart.md` (Parte 2). Claude toma las huellas de solo lectura (escenario 8) y compara los datos de git con `git log` (escenario 3).
+- [ ] T053 Al cerrar la fase:
   - `PROJECT.md`: roadmap con la Fase 3 derivada y `Estado manual` vacío, decisiones clave, riesgos, pendientes, evidencia y siguiente hito (Fase 4);
   - `docs/mapa-funcional.md`;
   - la fila de Nexoru Op en `/home/fili/proyectos/CLAUDE.md`.
-- [ ] T053 Con la autorización de push del Dueño: push de `003-git-history-insights` y PR hacia `main` con descripción en español; esperar la CI en verde.
-- [ ] T054 [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"; Claude confirma con `gh` la CI de `main`.
+- [ ] T054 Con la autorización de push del Dueño: push de `003-git-history-insights` y PR hacia `main` con descripción en español; esperar la CI en verde.
+- [ ] T055 [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"; Claude confirma con `gh` la CI de `main`.
 
 ---
 
@@ -376,7 +377,7 @@ CSP.
 - **US2 (Fase 5)**: depende de US5 (fases concluidas y reglas por versión).
 - **US3 (Fase 6)**: depende del semáforo base (T012); conviene hacerla después de US1 y US2 para aplicar el tema a todas las columnas.
 - **US4 (Fase 7)**: depende de US1 (actividad), US2 (Avance) y US3 (tokens).
-- **Cierre (Fase 8)**: depende de todas. T050 antes de T051; T053 requiere la autorización del Dueño; T054 lo hace el Dueño.
+- **Cierre (Fase 8)**: depende de todas. T050 y T051 antes de T052; T054 requiere la autorización del Dueño; T055 lo hace el Dueño.
 
 ### Paralelismo
 

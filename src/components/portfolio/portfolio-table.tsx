@@ -4,6 +4,7 @@ import type { ProjectReading } from "@/lib/portfolio/types";
 import { TrafficLight } from "@/components/status/traffic-light";
 import { Absent, OrAbsent } from "./absent";
 import { BranchBadge } from "./branch-badge";
+import { IndicatorCell } from "./indicators";
 import { LevelBadge } from "./level-badge";
 
 // Portfolio table (contracts/ui.md, FR-015). Plain text only: React escapes every value.
@@ -25,6 +26,8 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
           <TableHead>Fecha objetivo</TableHead>
           <TableHead>Siguiente hito</TableHead>
           <TableHead>Nivel</TableHead>
+          <TableHead>Conformidad</TableHead>
+          <TableHead>Avance</TableHead>
           <TableHead>Actividad</TableHead>
           <TableHead>Roadmap</TableHead>
           <TableHead>Rama</TableHead>
@@ -49,6 +52,8 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
               <TableCell><OrAbsent value={manifest?.fecha_objetivo} /></TableCell>
               <TableCell className="max-w-64 whitespace-normal"><OrAbsent value={manifest?.siguiente_hito} /></TableCell>
               <TableCell><LevelBadge project={project} /></TableCell>
+              <TableCell className="whitespace-normal"><IndicatorCell kind="conformity" indicators={project.indicators} /></TableCell>
+              <TableCell className="whitespace-normal"><IndicatorCell kind="progress" indicators={project.indicators} /></TableCell>
               <TableCell>
                 {project.history?.activityLight ? (
                   <TrafficLight kind="activity" level={project.history.activityLight} detail={`${project.history.daysWithoutActivity} días`} />

@@ -17,14 +17,16 @@ proyecto que declara la 1.1 y un `.nexoruignore`. Las pruebas usan una fecha de 
 
 ## Parte 2: validación en el entorno de uso (con el portafolio real)
 
-1. `npm run op:stop` y `npm run op:start` (no hay migraciones nuevas; el índice con formato 1 se
-   vuelve a leer solo).
-2. **[MANUAL] `.nexoruignore`**: el Dueño crea `/home/fili/proyectos/.nexoruignore` con la línea
-   `nexoru-onboarding-line-endings` (si lo decide).
+1. `npm run op:stop` y `npm run op:start`: aplica la migración `20261002000000_snapshot_format_version.sql`
+   sin borrar datos; el índice con formato 1 se vuelve a leer solo.
+2. **[MANUAL] `.nexoruignore` (T050)**: con una carpeta de prueba `zz-prueba-nexoruignore` que se
+   crea, se excluye con `.nexoruignore`, se comprueba que desaparece y al final se borra.
+3. **[MANUAL] Estándar 1.1 (T051)**: `amazon-business-engine` y `nexoru-op` pasan a
+   `version_estandar: "1.1"` desde sus propias sesiones, tras verificar que cumplen la 1.1.
 
 | # | Escenario | Resultado esperado |
 |---|---|---|
-| 1 | Abrir `/` | Cinco gráficos encima de la tabla, cada uno con "Ver datos"; sin `nexoru-onboarding-line-endings` si está en `.nexoruignore`; sin el aviso de estándar más nuevo |
+| 1 | Abrir `/` | Cinco gráficos encima de la tabla, cada uno con "Ver datos"; sin la carpeta de prueba de T050 cuando está en `.nexoruignore`; sin el aviso de estándar más nuevo; `amazon-business-engine` y `nexoru-op` evaluados con 1.1 |
 | 2 | Columnas del tablero | Estado declarado (círculo) y Actividad (cuadrado), cada uno con su etiqueta y texto; Conformidad y Avance con su base; Roadmap activo o concluido |
 | 3 | Actividad | Los días sin actividad coinciden con `git log -1 --branches --format=%cI` de cada repo; semáforo según 5/15 días; neutro en `operacion`, `pausado` y `retirado` |
 | 4 | Detalle de `nexoru-op` | 12 semanas con commits; adelanto/atraso contra `origin/HEAD`; antigüedad de la referencia remota; días en `construccion` y coincidencia con `fase_desde` |

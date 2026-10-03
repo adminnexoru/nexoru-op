@@ -1,6 +1,7 @@
 // T026: evaluation of one project with the standard v1.0: checks, cumulative level (with the
 // provisional level 3 while 3.2 waits for GitHub), failures, warnings and findings (FR-021 to FR-025).
-import type { Check, ConformanceResult, Manifest, Problem, RoadmapPhase } from "@/lib/portfolio/types";
+import type { Check, ConformanceResult, Indicators, Manifest, Problem, RoadmapPhase } from "@/lib/portfolio/types";
+import { conformity, progress } from "../indicators";
 import type { ProjectFiles } from "../project-files";
 import { buildContext } from "./context";
 import { findings } from "./findings";
@@ -21,6 +22,7 @@ export interface ProjectEvaluation {
   /** FR-029: activo or concluido (standard/roadmap.md 1.1), for every project with a roadmap. */
   roadmapStatus: "activo" | "concluido" | null;
   conformance: ConformanceResult;
+  indicators: Indicators;
 }
 
 export function computeLevel(checks: Check[]): Pick<ConformanceResult, "level" | "provisional" | "failures"> {
@@ -54,18 +56,21 @@ export function evaluateProject(files: ProjectFiles, evaluationDate: string, rul
     manifestProblem = { path: "PROJECT.md", reason: "invalid_yaml", detail: ctx.fm.message };
   }
 
+  const conformance: ConformanceResult = {
+    standardVersion: rules.version,
+    evaluation: "evaluated",
+    ...computeLevel(checks),
+    checks,
+    warnings: specWarnings(ctx),
+    findings: findings(ctx),
+  };
+
   return {
     manifest: ctx.manifest,
     manifestProblem,
     roadmap: ctx.roadmap ? toRoadmapPhases(ctx.roadmap) : null,
     roadmapStatus: roadmapStatus(ctx.roadmap),
-    conformance: {
-      standardVersion: rules.version,
-      evaluation: "evaluated",
-      ...computeLevel(checks),
-      checks,
-      warnings: specWarnings(ctx),
-      findings: findings(ctx),
-    },
+    conformance,
+    indicators: { conformity: conformity(conformance), progress: progress(ctx.roadmap, files.specs) },
   };
 }
