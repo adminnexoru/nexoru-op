@@ -57,6 +57,19 @@ No te saltes pasos. Si un artefacto previo no existe o está desactualizado, vue
   `PROJECTS_ROOT`, nunca abre `.env*` ni llaves) y todo git por `src/lib/portfolio/git.ts` (comandos
   fijos de solo lectura, sin shell). Ningún otro archivo importa `node:fs` ni `node:child_process`
   para leer proyectos (`specs/002-portfolio-conformance/contracts/reader.md`).
+- **Git endurecido**: todo comando de git lleva el **prefijo v2** (`PREFIX` en `git.ts`;
+  `specs/003-git-history-insights/contracts/git-history.md`), que neutraliza la configuración de un
+  repo que podría ejecutar programas: `core.fsmonitor`, filtros `clean` (con `--attr-source` al árbol
+  vacío y `core.attributesFile=/dev/null`), firmas, ganchos, submódulos y mantenimiento, además de
+  `GIT_OPTIONAL_LOCKS=0` y `--no-optional-locks`. `log -p` lleva `--no-ext-diff --no-textconv`. Si
+  existe `.git/info/attributes` no se ejecuta `status` ("no evaluado"). Nunca `fetch`, `pull`,
+  `push` ni ningún comando que escriba en `.git`. Un comando nuevo exige su prueba en
+  `tests/unit/portfolio/git-hardening.test.ts`.
+- **Interfaz sin estilos en línea**: la CSP bloquea los atributos `style`; todo va por clases. Los
+  tokens de diseño están en `src/app/tokens.css` y sus decisiones en `docs/identidad-visual.md`. Los
+  gráficos son SVG generados en el servidor, sin librería ni JavaScript. Los textos con números
+  pasan por `src/lib/format.ts` (singular y plural, "%" con espacio no separable, nombres legibles
+  de las fases).
 - **Nunca** se suben archivos `.env*` ni secretos al repositorio. El `.gitignore` los bloquea; si hace falta documentar variables, usa `.env.example` sin valores reales.
 
 ## Comandos y entornos
@@ -78,14 +91,17 @@ un entorno puede tocar el otro (`scripts/env-guard.ts`):
   datos que chocan con los fixtures de pgTAP.
 - Estructura: `src/app` (páginas: `/` portafolio y `/projects/[folder]` detalle), `src/lib` (auth,
   Supabase, IP, contraseñas), `src/lib/portfolio` (lector seguro, git, lectura del portafolio e
-  índice), `src/lib/standard` (reglas puras de conformidad, por versión del estándar en `v1_0/`),
-  `src/components/portfolio`, `src/proxy.ts` (CSP con nonce y sesión), `supabase/migrations`
+  índice, historial de git e `.nexoruignore`), `src/lib/standard` (reglas puras de conformidad: un
+  motor en `v1_0/` con reglas por versión en `rules.ts`, e indicadores), `src/lib/charts` (datos de
+  los gráficos), `src/lib/format.ts`, `src/components/portfolio`, `src/components/status`
+  (semáforos), `src/components/charts`, `src/app/tokens.css`, `src/proxy.ts` (CSP con nonce y sesión), `supabase/migrations`
   (esquema, RLS y funciones, compartido por los dos entornos), `supabase/tests` (pgTAP),
   `tests/unit` (Vitest), `tests/e2e` (Playwright), `tests/fixtures/portfolio` (portafolio ficticio),
   `scripts/` (bootstrap y `op:*`).
 - `PROJECTS_ROOT`: carpeta del portafolio. En uso va en `.env.op.local` (`/home/fili/proyectos`).
   Las pruebas generan solas una copia temporal del portafolio ficticio (`nexoru-op-fixture-*`) y
   `assertTestProjectsRoot` impide que lean cualquier otra carpeta; no la pongas en `.env.local`.
+  Las carpetas listadas en `PROJECTS_ROOT/.nexoruignore` (estándar 1.1) no se leen ni se muestran.
 - Regla de la base de datos: toda tabla con RLS y toda mutación sensible mediante función
   `security definer` que escribe su evento en la bitácora en la misma transacción.
   Excepción documentada: `save_portfolio_snapshot` guarda el índice regenerable del portafolio sin

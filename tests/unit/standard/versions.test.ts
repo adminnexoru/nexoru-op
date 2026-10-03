@@ -48,8 +48,8 @@ describe("evaluateProject by version", () => {
 });
 
 describe("versions", () => {
-  it("supports 1.0 only", () => {
-    expect(SUPPORTED_STANDARD_VERSIONS).toEqual(["1.0"]);
+  it("supports 1.0 and 1.1", () => {
+    expect(SUPPORTED_STANDARD_VERSIONS).toEqual(["1.0", "1.1"]);
   });
 
   it("reads the first version of the CHANGELOG as MAJOR.MINOR", () => {
@@ -59,7 +59,8 @@ describe("versions", () => {
 
   it("knows when the local standard is newer than the supported versions", () => {
     expect(isNewerThanSupported("1.0")).toBe(false);
-    expect(isNewerThanSupported("1.1")).toBe(true);
+    expect(isNewerThanSupported("1.1")).toBe(false);
+    expect(isNewerThanSupported("1.2")).toBe(true);
     expect(isNewerThanSupported("2.0")).toBe(true);
     expect(isNewerThanSupported("0.9")).toBe(false);
   });

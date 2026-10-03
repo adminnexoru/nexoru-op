@@ -16,6 +16,8 @@ export const FINDING_LABEL: Record<Finding["code"], string> = {
   env_example_missing: "Falta .env.example",
   env_example_coverage: ".env.example lista todas las variables que lee el código",
   yaml_comments: "Comentarios YAML en el frontmatter",
+  operacion_pending_phases: "`operacion` con fases pendientes en el roadmap",
+  construction_roadmap_concluded: "`construccion` o `especificacion` con el roadmap concluido",
 };
 
 export const PROBLEM_LABEL: Record<Problem["reason"], string> = {

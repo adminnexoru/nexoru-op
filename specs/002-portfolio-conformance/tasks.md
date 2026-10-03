@@ -318,8 +318,8 @@ el dashboard avisa si el estándar local es más nuevo o no se encuentra.
   - actualizar `PROJECT.md`: roadmap (Fase 2 derivada y `Estado manual` vacío), decisiones clave (`yaml`, índice `jsonb`, git endurecido), riesgos, pendientes, evidencia de validación y siguiente hito (Fase 3);
   - actualizar `docs/mapa-funcional.md`: componentes Lector del portafolio, Evaluador de conformidad e Índice ya construidos, flujo y datos;
   - actualizar la fila de Nexoru Op en `/home/fili/proyectos/CLAUDE.md`.
-- [ ] T055 Con la autorización de push del Dueño: push de `002-portfolio-conformance` y PR hacia `main` con `gh pr create` y descripción en español (resumen, pruebas y tareas [MANUAL]); esperar la CI en verde
-- [ ] T056 [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"; Claude confirma con `gh` la CI de `main`
+- [X] T055 Con la autorización de push del Dueño: push de `002-portfolio-conformance` y PR hacia `main` con `gh pr create` y descripción en español (resumen, pruebas y tareas [MANUAL]); esperar la CI en verde
+- [X] T056 [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"; Claude confirma con `gh` la CI de `main`
 
 ---
 

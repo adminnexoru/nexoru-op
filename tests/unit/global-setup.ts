@@ -5,7 +5,7 @@ import { assertTestProjectsRoot } from "../../scripts/env-guard";
 import { buildFixturePortfolio, removeFixturePortfolio } from "../fixtures/build-portfolio";
 
 export default async function setup(): Promise<() => Promise<void>> {
-  const root = await buildFixturePortfolio();
+  const { root } = await buildFixturePortfolio();
   process.env.PROJECTS_ROOT = assertTestProjectsRoot(root);
   return () => removeFixturePortfolio(root);
 }

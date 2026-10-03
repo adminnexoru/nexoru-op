@@ -1,6 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrAbsent } from "@/components/portfolio/absent";
+import { PortfolioCharts } from "@/components/charts/portfolio-charts";
 import { PortfolioTable } from "@/components/portfolio/portfolio-table";
 import { RefreshButton } from "@/components/portfolio/refresh-button";
 import { getPortfolio } from "@/lib/portfolio/snapshot";
@@ -40,14 +41,14 @@ export default async function PortfolioPage() {
       {root.status !== "ok" ? (
         <Alert>
           <AlertTitle>No hay proyectos que mostrar</AlertTitle>
-          <AlertDescription>{ROOT_MESSAGES[root.status]}</AlertDescription>
+          <AlertDescription className="max-w-prose">{ROOT_MESSAGES[root.status]}</AlertDescription>
         </Alert>
       ) : null}
 
       {standard.found && standard.newerThanSupported ? (
         <Alert data-testid="standard-warning">
           <AlertTitle>El estándar local es más nuevo</AlertTitle>
-          <AlertDescription>
+          <AlertDescription className="max-w-prose">
             {standard.folder} está en la versión {standard.version}, pero el dashboard solo sabe evaluar la{" "}
             {portfolio.supportedStandardVersions.join(", ")}. Los proyectos que declaren la versión nueva no se evalúan.
           </AlertDescription>
@@ -57,7 +58,7 @@ export default async function PortfolioPage() {
       {root.status === "ok" && !standard.found ? (
         <Alert data-testid="standard-warning">
           <AlertTitle>No se encontró el estándar</AlertTitle>
-          <AlertDescription>
+          <AlertDescription className="max-w-prose">
             No hay una carpeta {standard.folder} en el portafolio. Los proyectos se evalúan con la versión soportada:{" "}
             {portfolio.supportedStandardVersions.join(", ")}.
           </AlertDescription>
@@ -67,13 +68,15 @@ export default async function PortfolioPage() {
       {warnings.map((warning) => (
         <Alert key={warning.detail}>
           <AlertTitle>Identificador duplicado</AlertTitle>
-          <AlertDescription>{warning.detail}</AlertDescription>
+          <AlertDescription className="max-w-prose">{warning.detail}</AlertDescription>
         </Alert>
       ))}
 
       {root.status === "ok" && projects.length === 0 ? (
         <p className="text-muted-foreground">PROJECTS_ROOT no tiene carpetas de proyecto.</p>
       ) : null}
+
+      {projects.length > 0 ? <PortfolioCharts portfolio={portfolio} /> : null}
 
       {projects.length > 0 ? <PortfolioTable projects={projects} /> : null}
 

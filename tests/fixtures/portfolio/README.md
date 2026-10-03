@@ -27,6 +27,12 @@ FIFO, archivo grande, `.env` versionado) y esa copia es el `PROJECTS_ROOT` de la
 | `secret-link` | `CLAUDE.md` es un enlace a un `.env` | Nivel 1; falla 2.7; error de lectura `secret_file` |
 | `fifo-and-large` | `tasks.md` es una FIFO y el mapa pesa más de 1 MB | Nivel 1; falla 2.1; errores `not_regular_file` y `too_large` |
 | `nexoru-governance` | Solo `CHANGELOG.md` con `## [1.0.0]` | Aparte, como estándar 1.0; sin nivel |
+| `history-demo` | Repo con fechas controladas (Fase 3): último commit hace 5 días, rama `feature/history` 2 adelante y 3 atrás de `origin/main`, `FETCH_HEAD` de hace 40 días, `fase` cambiada hace 20 días y `fase_desde` de hace 14 | Actividad verde (5 días); fase que no coincide con `fase_desde` |
+| `git-info-attributes` | Repo con `.git/info/attributes` no vacío | "Cambios sin commit: no evaluado" |
+| `standard-1-1-retirado` | 1.1, `fase: retirado`, sin `fecha_objetivo`, roadmap concluido | Sin fallas; actividad neutra |
+| `standard-1-1-operacion` | 1.1, `fase: operacion`, una fase pendiente | Hallazgo medio `operacion_pending_phases`; actividad neutra |
+| `standard-1-1-construccion` | 1.1, `fase: construccion`, roadmap concluido | Hallazgo medio `construction_roadmap_concluded` |
+| `ignored-copy` | Listada en `.nexoruignore` de la raíz | No aparece en ninguna parte |
 
 Los textos `TEXTO-DE-SPEC-FICTICIO` y `TEXTO-DE-ENV-FICTICIO` sirven para comprobar que la
 interfaz nunca muestra contenido de specs ni de archivos `.env` (FR-019, FR-004).

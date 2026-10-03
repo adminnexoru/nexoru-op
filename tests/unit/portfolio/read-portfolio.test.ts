@@ -18,7 +18,7 @@ const project = (folder: string): ProjectReading => {
 };
 
 beforeAll(async () => {
-  root = await buildFixturePortfolio();
+  ({ root } = await buildFixturePortfolio());
   reading = await readPortfolio(root);
 });
 
@@ -29,10 +29,12 @@ describe("portfolio", () => {
     const folders = reading.projects.map((p) => p.folder);
     expect(folders).not.toContain("nexoru-governance");
     expect(folders).toContain("level3-demo");
-    expect(folders).toHaveLength(18);
+    // 18 projects of phase 2 + 5 of phase 3; ignored-copy is skipped by .nexoruignore (US5).
+    expect(folders).toHaveLength(23);
+    expect(folders).not.toContain("ignored-copy");
     expect([...folders].sort()).toEqual(folders);
     expect(reading.root).toEqual({ status: "ok" });
-    expect(reading.supportedStandardVersions).toEqual(["1.0"]);
+    expect(reading.supportedStandardVersions).toEqual(["1.0", "1.1"]);
   });
 
   it("shows nexoru-governance apart as the standard", () => {
@@ -129,8 +131,8 @@ async function fingerprint(dir: string): Promise<string> {
 }
 
 describe("read-only and regenerable", () => {
-  it("does not change any file of the portfolio, including .git (SC-007)", async () => {
-    const copy = await buildFixturePortfolio();
+  it("does not change any file of the portfolio, including .git (SC-007)", { timeout: 30_000 }, async () => {
+    const { root: copy } = await buildFixturePortfolio();
     try {
       const before = await fingerprint(copy);
       await readPortfolio(copy);
@@ -145,8 +147,8 @@ describe("read-only and regenerable", () => {
     expect({ ...again, readAt: null }).toEqual({ ...reading, readAt: null });
   });
 
-  it("drops a folder deleted between two readings", async () => {
-    const copy = await buildFixturePortfolio();
+  it("drops a folder deleted between two readings", { timeout: 30_000 }, async () => {
+    const { root: copy } = await buildFixturePortfolio();
     try {
       expect((await readPortfolio(copy)).projects.some((p) => p.folder === "confirmar")).toBe(true);
       await rm(join(copy, "confirmar"), { recursive: true });
@@ -175,13 +177,13 @@ describe("performance (SC-006)", () => {
 
 // T046: the standard found in nexoru-governance (FR-027).
 describe("standard version found in nexoru-governance", () => {
-  it("flags a CHANGELOG newer than the supported versions", async () => {
-    const copy = await buildFixturePortfolio({ standardVersion: "1.1.0" });
+  it("flags a CHANGELOG newer than the supported versions", { timeout: 30_000 }, async () => {
+    const { root: copy } = await buildFixturePortfolio({ standardVersion: "1.2.0" });
     try {
       expect((await readPortfolio(copy)).standard).toEqual({
         folder: "nexoru-governance",
         found: true,
-        version: "1.1",
+        version: "1.2",
         newerThanSupported: true,
       });
     } finally {
@@ -189,8 +191,8 @@ describe("standard version found in nexoru-governance", () => {
     }
   });
 
-  it("reports when nexoru-governance is not in the portfolio, and still evaluates with 1.0", async () => {
-    const copy = await buildFixturePortfolio({ withoutStandard: true });
+  it("reports when nexoru-governance is not in the portfolio, and still evaluates with 1.0", { timeout: 30_000 }, async () => {
+    const { root: copy } = await buildFixturePortfolio({ withoutStandard: true });
     try {
       const result = await readPortfolio(copy);
       expect(result.standard.found).toBe(false);
@@ -203,5 +205,48 @@ describe("standard version found in nexoru-governance", () => {
   it("does not evaluate the fictitious projects with an unsupported version or without one", () => {
     expect(project("unsupported-version").conformance).toMatchObject({ evaluation: "unsupported_version", level: null });
     expect(project("no-version").conformance).toMatchObject({ evaluation: "no_version", level: null });
+  });
+});
+
+// T024: .nexoruignore and the supported versions (US5, FR-028, FR-031).
+describe(".nexoruignore", () => {
+  it("skips the listed folders entirely and counts them only internally", () => {
+    expect(reading.projects.some((p) => p.folder === "ignored-copy")).toBe(false);
+    expect(reading.ignoredCount).toBe(1);
+  });
+
+  it("ignores invalid entries and folders that do not exist", () => {
+    expect(reading.projects.some((p) => p.folder === "no")).toBe(false);
+    expect(reading.projects.map((p) => p.folder)).toContain("level3-demo");
+  });
+
+  it("still reads nexoru-governance as the standard when it is listed", async () => {
+    const { root: copy } = await buildFixturePortfolio();
+    try {
+      const { appendFile } = await import("node:fs/promises");
+      await appendFile(`${copy}/.nexoruignore`, "nexoru-governance\n");
+      const result = await readPortfolio(copy);
+      expect(result.standard.found).toBe(true);
+    } finally {
+      await removeFixturePortfolio(copy);
+    }
+  }, 30_000);
+
+  it("is not newer than supported with the CHANGELOG in 1.1.0", async () => {
+    const { root: copy } = await buildFixturePortfolio({ standardVersion: "1.1.0" });
+    try {
+      expect((await readPortfolio(copy)).standard).toMatchObject({ version: "1.1", newerThanSupported: false });
+    } finally {
+      await removeFixturePortfolio(copy);
+    }
+  }, 30_000);
+});
+
+describe("standard 1.1 fixtures", () => {
+  it("evaluates them with 1.1", () => {
+    expect(project("standard-1-1-retirado").conformance).toMatchObject({ standardVersion: "1.1", failures: [] });
+    expect(project("standard-1-1-retirado").roadmapStatus).toBe("concluido");
+    expect(project("standard-1-1-operacion").conformance.findings.find((f) => f.code === "operacion_pending_phases")?.status).toBe("found");
+    expect(project("standard-1-1-construccion").conformance.findings.find((f) => f.code === "construction_roadmap_concluded")?.status).toBe("found");
   });
 });

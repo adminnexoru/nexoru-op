@@ -9,7 +9,7 @@ let root: string;
 let reading: PortfolioReading;
 
 beforeAll(async () => {
-  root = await buildFixturePortfolio();
+  ({ root } = await buildFixturePortfolio());
   reading = await readPortfolio(root);
 });
 
@@ -34,7 +34,7 @@ describe("parseSnapshot", () => {
 
   it("treats a missing row, another format version or an invalid payload as an empty index", () => {
     expect(parseSnapshot(null)).toBeNull();
-    expect(parseSnapshot({ format_version: 2, payload: reading })).toBeNull();
+    expect(parseSnapshot({ format_version: FORMAT_VERSION - 1, payload: reading })).toBeNull();
     expect(parseSnapshot({ format_version: FORMAT_VERSION, payload: { readAt: "ayer" } })).toBeNull();
     expect(parseSnapshot({ format_version: FORMAT_VERSION, payload: [] })).toBeNull();
   });

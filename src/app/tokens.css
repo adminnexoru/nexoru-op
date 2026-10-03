@@ -1,0 +1,77 @@
+/*
+ * T012: design tokens of Nexoru Op (research R6, docs/identidad-visual.md).
+ * Traffic-light tones are our own, tuned for AA contrast on the dark background
+ * of nexoru-onboarding (#05060a); they are not reused as-is from that repo.
+ * No inline styles anywhere: components only use these classes (strict CSP).
+ */
+:root {
+  /*
+   * T039: dark theme of the nexoru-onboarding app (app/onboarding-ui.css, --nx-*). Translucent
+   * values of that file are stored here already composed over --nx-bg, so their contrast can be
+   * checked (tests/unit/visual/contrast.test.ts). Origin of every value: docs/identidad-visual.md.
+   */
+  --nx-bg: #05060a;
+  --nx-surface: #0a0c13;
+  --nx-surface-2: #0d101a;
+  --nx-surface-3: #0c0d11;
+  --nx-border: rgb(255 255 255 / 0.08);
+  --nx-border-strong: rgb(124 58 237 / 0.24);
+  --nx-text: #ffffff;
+  --nx-text-soft: #c3c3c4;
+  --nx-text-muted: #919193;
+  --nx-violet: #7c3aed;
+  --nx-violet-2: #8b5cf6;
+  --nx-violet-text: #a78bfa;
+  --nx-blue: #38bdf8;
+  --nx-radius-card: 18px;
+  --nx-radius-pill: 999px;
+  --nx-shadow-glow: 0 0 26px rgb(124 58 237 / 0.28);
+  --nx-font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  --tl-verde: #4ade80;
+  --tl-ambar: #f5b942;
+  --tl-rojo: #ff7a7a;
+  --tl-neutro: #a6adbb;
+  --tl-verde-bg: rgb(74 222 128 / 0.12);
+  --tl-ambar-bg: rgb(245 185 66 / 0.12);
+  --tl-rojo-bg: rgb(255 122 122 / 0.12);
+  --tl-neutro-bg: rgb(166 173 187 / 0.12);
+}
+
+.traffic-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border: 1px solid currentColor;
+  padding: 0.125rem 0.5rem 0.125rem 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  white-space: nowrap;
+}
+
+/* Declared state: circle (pill); activity: rounded square. Shapes differ besides color (FR-033). */
+.traffic-light--declared {
+  border-radius: 999px;
+}
+.traffic-light--activity {
+  border-radius: 0.25rem;
+  border-style: dashed;
+}
+
+.traffic-light__label {
+  opacity: 0.8;
+}
+
+.traffic-light--verde { color: var(--tl-verde); background: var(--tl-verde-bg); }
+.traffic-light--ambar { color: var(--tl-ambar); background: var(--tl-ambar-bg); }
+.traffic-light--rojo { color: var(--tl-rojo); background: var(--tl-rojo-bg); }
+.traffic-light--neutro { color: var(--tl-neutro); background: var(--tl-neutro-bg); }
+
+/* Charts (server-side SVG): fills come from classes, never from style attributes. */
+.chart-bar { fill: var(--tl-neutro); }
+.chart-bar--verde { fill: var(--tl-verde); }
+.chart-bar--ambar { fill: var(--tl-ambar); }
+.chart-bar--rojo { fill: var(--tl-rojo); }
+.chart-bar--accent { fill: #8b5cf6; }
+.chart-axis { stroke: currentColor; opacity: 0.3; }
+.chart-label { fill: currentColor; font-size: 14px; }

@@ -14,14 +14,28 @@ escucha solo en `127.0.0.1`.
 
 ## Qué muestra
 
-- **Portafolio (`/`):** cada proyecto de `PROJECTS_ROOT` con los datos de su `PROJECT.md` (tipo,
-  cliente, fase, estado, fecha objetivo, siguiente hito), su nivel de conformidad con el estándar
-  (0 a 3) y su rama actual. `nexoru-governance` aparece aparte, como estándar. El portafolio se
-  vuelve a leer al abrirlo si la última lectura tiene más de 10 minutos, o con el botón
-  **Actualizar**.
-- **Detalle (`/projects/<carpeta>`):** fallas para subir de nivel, advertencias, hallazgos (p. ej.
-  un `.env` versionado), verificaciones que todavía no se evalúan (las que necesitan GitHub),
-  manifiesto completo, roadmap con el estado derivado de `tasks.md` y errores de lectura.
+- **Portafolio (`/`):**
+  - cinco gráficos: estado declarado, nivel de conformidad, Avance por proyecto, fase del ciclo de
+    vida y actividad de git por semana, cada uno con su tabla "Ver datos";
+  - una tabla con cada proyecto de `PROJECTS_ROOT`: datos de su `PROJECT.md`, semáforo de estado
+    declarado, nivel de conformidad (0 a 3), Conformidad y Avance en porcentaje, semáforo de
+    actividad de git, estado del roadmap (activo o concluido) y rama actual;
+  - `nexoru-governance` aparte, como estándar (se soportan las versiones 1.0 y 1.1).
+
+  El portafolio se vuelve a leer al abrirlo si la última lectura tiene más de 10 minutos, o con el
+  botón **Actualizar**. Las carpetas listadas en `PROJECTS_ROOT/.nexoruignore` no se muestran.
+- **Detalle (`/projects/<carpeta>`):**
+  - indicadores con su cálculo;
+  - conformidad: fallas para subir de nivel, advertencias, hallazgos (p. ej. un `.env` versionado)
+    y verificaciones que todavía no se evalúan (las que necesitan GitHub);
+  - roadmap con el estado derivado de `tasks.md`;
+  - manifiesto completo y repositorio;
+  - historial de git: último commit, 12 semanas de actividad, adelanto y atraso frente a la rama
+    principal, antigüedad de las referencias remotas y días en la fase frente a `fase_desde`;
+  - errores de lectura.
+
+Todo se lee en solo lectura: el dashboard nunca ejecuta `fetch` ni escribe en los repositorios.
+La identidad visual sigue la app de `nexoru-onboarding` (`docs/identidad-visual.md`).
 
 Un dato que no está en los archivos del proyecto se muestra como ausente (—); nunca se inventa.
 

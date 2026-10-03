@@ -2,12 +2,15 @@
 // every check reads from here and never touches the disk (research R6).
 import type { Check, Manifest, Problem } from "@/lib/portfolio/types";
 import { parseFrontmatter, type FrontmatterResult } from "../frontmatter";
+import { RULES, type StandardRules } from "../rules";
 import type { ProjectFiles } from "../project-files";
 import { readManifest } from "./manifest";
 import { parseRoadmap, type ParsedRoadmap } from "./roadmap";
 
 export interface Context {
   files: ProjectFiles;
+  /** Rules of the version of the standard the project is evaluated with. */
+  rules: StandardRules;
   /** Evaluation date, AAAA-MM-DD (the reading date). */
   date: string;
   projectText: string | null;
@@ -21,7 +24,7 @@ export interface Context {
   roadmap: ParsedRoadmap | null;
 }
 
-export function buildContext(files: ProjectFiles, date: string): Context {
+export function buildContext(files: ProjectFiles, date: string, rules: StandardRules = RULES["1.0"]): Context {
   const projectText = files.project.ok ? files.project.text : null;
   const fm = projectText === null ? null : parseFrontmatter(projectText);
   const data = fm?.status === "ok" ? fm.data : null;
@@ -29,6 +32,7 @@ export function buildContext(files: ProjectFiles, date: string): Context {
   const mapText = files.map.ok ? files.map.text : null;
   return {
     files,
+    rules,
     date,
     projectText,
     fm,
