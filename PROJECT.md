@@ -18,7 +18,7 @@ stack:
 servicios:
   - have-i-been-pwned
 costo_mensual_usd: 0
-siguiente_hito: "Fase 4: datos de GitHub en solo lectura (CI, visibilidad y PRs), tras el merge del PR de 003-git-history-insights"
+siguiente_hito: "Fase 4: especificar los datos de GitHub en solo lectura (CI, visibilidad y PRs) con /speckit-specify"
 mapa_funcional: docs/mapa-funcional.md
 version_estandar: "1.1"
 ---
@@ -53,7 +53,7 @@ version_estandar: "1.1"
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) se deriva de su `tasks.md` y cierra con el merge de su PR a `main`. La Fase 4 no tiene spec y lleva estado manual.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 no tiene spec y lleva estado manual.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
@@ -133,6 +133,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | Todo escucha solo en `127.0.0.1` (FR-033) | `ss -ltn`: app (3000, 3200) y las dos instancias de Supabase (5432x, 5532x) solo en `127.0.0.1`; desde la IP de red y desde otro dispositivo no responden (2026-09-28) |
 | Bitácora inmutable y consultable desde Studio (FR-028, FR-038) | La consulta del quickstart devuelve los eventos del entorno de uso; un `update` falla con `audit_events is append-only` (2026-09-28) |
 | CSP con nonce | La app de uso responde con `script-src 'self' 'nonce-…' 'strict-dynamic'`, sin `'unsafe-eval'`; las E2E fallan ante cualquier violación de CSP y no hubo ninguna |
+| Cierre de la Fase 3 en `main` | PR #3 fusionado por el Dueño el 2026-10-03 (merge commit `0e1359a`); CI de `main` en verde (ejecución 37095999987) |
 | Fase 2: lector seguro, git, conformidad v1.0, portafolio, detalle, roadmap y versiones | CI en verde en el PR #2 y, tras el merge, en `main` (ejecución 36940235574, commit `46a673d`, 2026-10-01). En local, rama `002-portfolio-conformance`, 2026-10-01: Vitest 281/281 (una prueba por verificación de conformidad, enlaces fuera de la raíz, `.env`, FIFO, archivo > 1 MB, `core.fsmonitor` malicioso), pgTAP 88/88 y Playwright 38/38, con un portafolio ficticio |
 | Solo lectura sobre el portafolio real (SC-007) | Entorno de uso, 2026-10-01: antes y después de pulsar Actualizar, fechas de modificación y tamaño de 5206 archivos de `/home/fili/proyectos` idénticos y `git status` de los 7 repos sin cambios |
 | Validación con el portafolio real (quickstart Fase 2, escenarios 1–13) | Validada por el Dueño el 2026-10-01 en el entorno de uso: 6 proyectos y el estándar aparte; niveles: `amazon-business-engine` 3 (provisional), `nexoru-op` 3 (provisional) y 0 los cuatro sin `PROJECT.md`; ramas y avisos correctos; Actualizar, vencimiento a 10 min y acceso sin sesión (redirige a `/login`) comprobados; sin discrepancias con los `PROJECT.md` |
@@ -147,5 +148,5 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 
 Fase 4: datos de GitHub en solo lectura (CI, visibilidad y PRs).
 
-1. **Antes:** PR de `003-git-history-insights` hacia `main` con la CI en verde y merge del Dueño (T054 y T055).
-2. **Después:** `/speckit-specify` de la Fase 4. Debe activar la verificación 3.2 (CI de `main`), con lo que el nivel 3 deja de ser provisional, y mostrar de forma explícita el cambio de base de Conformidad de 28 a 29. Fecha objetivo: 2026-11-08.
+1. **Hecho:** Fase 3 cerrada (PR #3, merge `0e1359a`, CI de `main` en verde).
+2. **Siguiente:** `/speckit-specify` de la Fase 4. Debe activar la verificación 3.2 (CI de `main`), con lo que el nivel 3 deja de ser provisional, y mostrar de forma explícita el cambio de base de Conformidad de 28 a 29. Fecha objetivo: 2026-11-08.
