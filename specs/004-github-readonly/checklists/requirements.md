@@ -36,4 +36,4 @@
 - Los 3 marcadores [NEEDS CLARIFICATION] se resolvieron con las respuestas del Dueño del
   2026-10-03 (token en `.env.op.local` con enmienda PATCH de la constitución a v2.0.1; campo
   `visibilidad` del estándar 1.2.0; 3.2 con la última ejecución de cada workflow que cumple 3.1).
-- Dependencia externa: las reglas 1.2 se implementan con el estándar 1.2.0 publicado.
+- El estándar 1.2.0 se publicó el 2026-10-03 (commit `d37f3ca`) y la spec se concilió con su texto.
