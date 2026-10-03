@@ -94,6 +94,11 @@ workflows), publicado el 2026-10-03 (`nexoru-governance`, commit `d37f3ca`).
   botón Actualizar: lee lo local y consulta GitHub a la vez, con un tiempo máximo de 8 segundos
   para GitHub; lo que no responda a tiempo queda con los datos guardados o "no disponible: tiempo
   agotado".
+- Q (ajuste del Dueño al aprobar el plan): ¿Qué muestra la Conformidad cuando 3.2 no se puede
+  evaluar (sin red, sin token, token vencido o dato de 7 días o más)? → A: La base excluye 3.2 y el
+  porcentaje lo dice en el mismo lugar, p. ej. "100 % · 28 de 28 (3.2 sin evaluar: sin datos
+  recientes de GitHub)". El aviso de la base explica el estado de cada proyecto y no se presenta
+  como un "cambio" cada vez que GitHub no responde.
 
 ### Session 2026-10-03 (conciliación con el estándar 1.2.0 publicado)
 
@@ -120,8 +125,9 @@ con su texto; donde diferían, manda el estándar:
 El Dueño ve, para cada proyecto con remoto en GitHub, el resultado, la fecha y el nombre del workflow
 de la última ejecución de CI en la rama principal (una por workflow de CI si hay varios). Con ese dato, el dashboard evalúa la verificación
 3.2 del estándar: el nivel 3 deja de ser provisional (o el proyecto baja a nivel 2 si la CI está en
-rojo) y la Conformidad pasa a 29 verificaciones aplicables. El dashboard anuncia el cambio de base
-para que una baja del porcentaje no se lea como retroceso.
+rojo) y la Conformidad pasa a 29 verificaciones aplicables. Junto a cada porcentaje, el dashboard
+dice si la base incluye 3.2 o por qué no, para que una baja del porcentaje no se lea como retroceso
+y una falla de GitHub no se lea como un cambio.
 
 **Why this priority**: es lo único que falta para que la conformidad sea completa; hoy todos los
 proyectos de nivel 3 son "provisionales". Además, una CI rota en `main` es la señal más directa de
@@ -129,7 +135,7 @@ que algo se descompuso.
 
 **Independent Test**: con GitHub simulado (repos ficticios con ejecuciones de CI en verde, en rojo,
 en curso y sin ejecuciones), pulsar Actualizar y comprobar el dato de CI, el resultado de 3.2, el
-nivel, la Conformidad con base 29 y el aviso de cambio de base.
+nivel, la Conformidad con su base y el texto del estado de 3.2 en el mismo lugar.
 
 **Acceptance Scenarios**:
 
@@ -139,14 +145,14 @@ nivel, la Conformidad con base 29 y el aviso de cambio de base.
 2. **Given** un proyecto cuya última CI en la rama principal falló, **When** se actualiza, **Then**
    3.2 aparece como falla con su detalle (workflow y fecha), el proyecto queda en nivel 2 y la
    Conformidad baja a, p. ej., 28/29.
-3. **Given** un proyecto con 3.2 evaluada por primera vez, **When** el Dueño ve su Conformidad en el
-   tablero o en el detalle, **Then** junto al porcentaje aparece "la base cambió de 28 a 29 por la
-   activación de 3.2".
+3. **Given** un proyecto con 3.2 evaluada, **When** el Dueño ve su Conformidad en el tablero o en
+   el detalle, **Then** el mismo texto dice, p. ej., "97 % · 28 de 29 (incluye 3.2)", y la leyenda
+   fija de Conformidad explica que la base cambió de 28 a 29 por la activación de 3.2.
 4. **Given** un proyecto para el que GitHub no respondió (sin red, error, límite agotado o repo
    privado sin token) y sin datos guardados de menos de 7 días, **When** se actualiza, **Then** 3.2
-   queda "no evaluada" con el motivo, el
-   nivel 3 sigue provisional, la Conformidad mantiene la base 28 y los datos locales se muestran
-   igual.
+   queda "no evaluada" con el motivo, el nivel 3 sigue provisional, la Conformidad dice, p. ej.,
+   "100 % · 28 de 28 (3.2 sin evaluar: sin datos recientes de GitHub)" y los datos locales se
+   muestran igual. No aparece ningún aviso de "cambio" de base.
 5. **Given** un proyecto cuyo remoto no es de GitHub o que no tiene remoto, **When** se muestra,
    **Then** los datos de GitHub dicen "no aplica" y 3.2 queda "no evaluada" con ese motivo.
 6. **Given** un proyecto con datos de CI guardados hace 2 días y una actualización en la que GitHub
@@ -325,10 +331,18 @@ token no tiene permiso y la consulta sin token.
   anterior con menos de 7 días, 3.2 se evalúa con ese dato y se muestra su antigüedad ("CI de hace
   X"). Sin dato guardado, o con uno de 7 días o más, 3.2 queda "no evaluada" con el motivo (p. ej.
   "datos de GitHub de más de 7 días") y el nivel 3 sigue provisional, como en la Fase 3.
-- **FR-016**: La Conformidad DEBE contar 3.2 como aplicable solo cuando se evaluó: base 29 con 3.2
-  evaluada, base 28 si no.
-- **FR-017**: Cuando la base de un proyecto es 29, el dashboard DEBE mostrar junto a su Conformidad,
-  en el tablero y en el detalle, el aviso "la base cambió de 28 a 29 por la activación de 3.2".
+- **FR-016**: La Conformidad DEBE contar 3.2 como aplicable solo cuando se evaluó (pasa o falla):
+  base 29 con 3.2 evaluada, base 28 si no (sin red, sin token, token no válido o vencido, límite o
+  tiempo agotado, dato de 7 días o más, o remoto que no es de GitHub).
+- **FR-017**: El texto de la Conformidad DEBE decir el estado de 3.2 en el mismo lugar que el
+  porcentaje, en el tablero y en el detalle: "97 % · 28 de 29 (incluye 3.2)" o "100 % · 28 de 28
+  (3.2 sin evaluar: <motivo>)". Los motivos son cortos y fijos ("sin datos recientes de GitHub",
+  "requiere token", "token de GitHub no válido o vencido", "el remoto no es de GitHub", "sin
+  remoto"). Una leyenda fija de Conformidad (tablero y detalle) explica: "La Conformidad incluye la
+  verificación 3.2 (CI de la rama principal) desde la Fase 4: la base es 29 cuando 3.2 se evalúa y
+  28 cuando no se puede evaluar; la base cambió de 28 a 29 por la activación de 3.2". El dashboard
+  NO DEBE presentar como un cambio de base el paso de 29 a 28 o de 28 a 29 entre actualizaciones:
+  solo describe el estado actual de cada proyecto.
 
 **Visibilidad (US2)**
 
@@ -381,9 +395,9 @@ token no tiene permiso y la consulta sin token.
 **Documentación**
 
 - **FR-025**: El quickstart DEBE explicar cómo crear el token fine-grained con los permisos mínimos
-  de cada historia (metadatos y Actions para US1; metadatos para US2; pull requests y estados de
-  commit para US3; alertas de secret scanning para US4), todos de solo lectura y limitados a los
-  repos de la organización.
+  de cada historia (metadatos y Actions para US1; metadatos para US2; pull requests para US3, que
+  usa además Actions para la CI de cada PR; alertas de secret scanning para US4), todos de solo
+  lectura y limitados a los repos de la cuenta `adminnexoru` (plan, research R1).
 - **FR-027**: El cierre de la fase DEBE incluir una tarea [MANUAL]: declarar `visibilidad` en
   `amazon-business-engine` y `nexoru-op` y subirlos a `version_estandar: "1.2"`, desde la sesión de
   cada proyecto y después de verificar que cumplen la 1.2.
@@ -418,8 +432,10 @@ token no tiene permiso y la consulta sin token.
   end-to-end, con la misma política que en la Fase 3.
 - **SC-005**: Sin conexión con GitHub, Actualizar termina en menos de 10 segundos y muestra todos los
   datos locales; con GitHub disponible, termina en menos de 10 segundos para el portafolio real.
-- **SC-006**: Una segunda actualización sin cambios en GitHub consume como máximo el 10 % del límite
-  de la primera, gracias a las peticiones condicionales.
+- **SC-006**: Con token, una segunda actualización sin cambios en GitHub consume como máximo el 10 %
+  del límite de la primera, gracias a las peticiones condicionales. Sin token no aplica: GitHub
+  solo deja de contar una respuesta "sin cambios" cuando la petición lleva token (plan, research
+  R4).
 - **SC-007**: El Dueño distingue en el tablero, en menos de 30 segundos, qué proyectos tienen la CI
   de su rama principal en rojo.
 
