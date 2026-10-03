@@ -363,8 +363,8 @@ CSP.
   - `PROJECT.md`: roadmap con la Fase 3 derivada y `Estado manual` vacío, decisiones clave, riesgos, pendientes, evidencia y siguiente hito (Fase 4);
   - `docs/mapa-funcional.md`;
   - la fila de Nexoru Op en `/home/fili/proyectos/CLAUDE.md`.
-- [ ] T054 Con la autorización de push del Dueño: push de `003-git-history-insights` y PR hacia `main` con descripción en español; esperar la CI en verde.
-- [ ] T055 [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"; Claude confirma con `gh` la CI de `main`.
+- [X] T054 *(Hecha el 2026-10-02: PR #3 con la CI en verde.)* Con la autorización de push del Dueño: push de `003-git-history-insights` y PR hacia `main` con descripción en español; esperar la CI en verde.
+- [X] T055 *(Hecha el 2026-10-03: merge del PR #3 por el Dueño, merge commit `0e1359a`; CI de `main` en verde, ejecución 37095999987.)* [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"; Claude confirma con `gh` la CI de `main`.
 
 ---
 
