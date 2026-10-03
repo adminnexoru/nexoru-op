@@ -286,8 +286,8 @@ solo del color.
 
 ### Pruebas de US3 (escribir primero, deben fallar)
 
-- [ ] T036 [P] [US3] Pruebas en `tests/unit/visual/contrast.test.ts`: lee `src/app/tokens.css`, calcula el contraste WCAG de cada tono del semáforo y del texto contra el fondo y la superficie del tema, y exige ≥ 4,5:1.
-- [ ] T037 [P] [US3] E2E en `tests/e2e/us3-visual.spec.ts`:
+- [X] T036 [P] [US3] Pruebas en `tests/unit/visual/contrast.test.ts`: lee `src/app/tokens.css`, calcula el contraste WCAG de cada tono del semáforo y del texto contra el fondo y la superficie del tema, y exige ≥ 4,5:1.
+- [X] T037 [P] [US3] E2E en `tests/e2e/us3-visual.spec.ts`:
   - cada semáforo del tablero y del detalle tiene etiqueta, texto visible e ícono (`svg` con `aria-hidden` y texto al lado);
   - el de estado declarado es circular (clase `traffic-light--declared`) y el de actividad cuadrado (`traffic-light--activity`);
   - `standard-1-1-operacion` muestra el semáforo de actividad neutro con "Sin seguimiento" y su número de días;
@@ -295,7 +295,7 @@ solo del color.
 
 ### Implementación de US3
 
-- [ ] T038 [US3] Escribir `docs/identidad-visual.md` (en español), con base en la lectura de `nexoru-onboarding`:
+- [X] T038 [US3] Escribir `docs/identidad-visual.md` (en español), con base en la lectura de `nexoru-onboarding`:
   - origen de cada valor: archivo y variable de `nexoru-onboarding/app/onboarding-ui.css` o `app/globals.css`;
   - tema oscuro elegido y paleta clara descartada;
   - tokens de color, tipografía (pila Inter sin fuente descargada), espaciados, radios y sombras;
@@ -303,9 +303,9 @@ solo del color.
   - reglas de uso (nunca solo color, etiquetas siempre).
 
   No importar código de ese repo.
-- [ ] T039 [US3] Completar `src/app/tokens.css` y adaptar `src/app/globals.css`: variables de shadcn (`--background`, `--card`, `--border`, `--primary` violeta, etc.) en tema oscuro con los valores del documento, pila tipográfica Inter, radios (18 px tarjetas, 999 px píldoras) y superficies. Verificar que las pantallas de acceso de la Fase 1 siguen legibles (T037).
-- [ ] T040 [US3] Usar `TrafficLight` en el tablero (columna "Estado declarado", que reemplaza el texto de `estado`), en el detalle y en la leyenda de los gráficos. El semáforo de actividad pasa a neutro según `fase` (FR-032) (T036, T037).
-- [ ] T041 [US3] Ejecutar `npm test` y `npm run test:e2e` hasta verde.
+- [X] T039 [US3] Completar `src/app/tokens.css` y adaptar `src/app/globals.css`: variables de shadcn (`--background`, `--card`, `--border`, `--primary` violeta, etc.) en tema oscuro con los valores del documento, pila tipográfica Inter, radios (18 px tarjetas, 999 px píldoras) y superficies. Verificar que las pantallas de acceso de la Fase 1 siguen legibles (T037).
+- [X] T040 [US3] Usar `TrafficLight` en el tablero (columna "Estado declarado", que reemplaza el texto de `estado`), en el detalle y en la leyenda de los gráficos. El semáforo de actividad pasa a neutro según `fase` (FR-032) (T036, T037).
+- [X] T041 [US3] Ejecutar `npm test` y `npm run test:e2e` hasta verde.
 
 ---
 

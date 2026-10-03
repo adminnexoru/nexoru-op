@@ -5,6 +5,29 @@
  * No inline styles anywhere: components only use these classes (strict CSP).
  */
 :root {
+  /*
+   * T039: dark theme of the nexoru-onboarding app (app/onboarding-ui.css, --nx-*). Translucent
+   * values of that file are stored here already composed over --nx-bg, so their contrast can be
+   * checked (tests/unit/visual/contrast.test.ts). Origin of every value: docs/identidad-visual.md.
+   */
+  --nx-bg: #05060a;
+  --nx-surface: #0a0c13;
+  --nx-surface-2: #0d101a;
+  --nx-surface-3: #0c0d11;
+  --nx-border: rgb(255 255 255 / 0.08);
+  --nx-border-strong: rgb(124 58 237 / 0.24);
+  --nx-text: #ffffff;
+  --nx-text-soft: #c3c3c4;
+  --nx-text-muted: #919193;
+  --nx-violet: #7c3aed;
+  --nx-violet-2: #8b5cf6;
+  --nx-violet-text: #a78bfa;
+  --nx-blue: #38bdf8;
+  --nx-radius-card: 18px;
+  --nx-radius-pill: 999px;
+  --nx-shadow-glow: 0 0 26px rgb(124 58 237 / 0.28);
+  --nx-font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+
   --tl-verde: #4ade80;
   --tl-ambar: #f5b942;
   --tl-rojo: #ff7a7a;

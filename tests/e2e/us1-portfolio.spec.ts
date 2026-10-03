@@ -36,7 +36,7 @@ test("shows every project with the data of its PROJECT.md", async () => {
   await expect(demo).toContainText("producto-nexoru");
   await expect(demo).toContainText("Nexoru");
   await expect(demo).toContainText("construccion");
-  await expect(demo).toContainText("verde");
+  await expect(demo).toContainText("Estado declarado: Verde");
   await expect(demo).toContainText("2027-12-15");
   await expect(demo).toContainText("Fase 2, reportes ficticios");
   await expect(demo).toContainText("3 (provisional)");

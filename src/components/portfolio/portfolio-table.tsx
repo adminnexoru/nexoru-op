@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ProjectReading } from "@/lib/portfolio/types";
-import { TrafficLight } from "@/components/status/traffic-light";
+import { declaredLevel, TrafficLight } from "@/components/status/traffic-light";
 import { Absent, OrAbsent } from "./absent";
 import { BranchBadge } from "./branch-badge";
 import { IndicatorCell } from "./indicators";
@@ -22,7 +22,7 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
           <TableHead>Tipo</TableHead>
           <TableHead>Cliente</TableHead>
           <TableHead>Fase</TableHead>
-          <TableHead>Estado</TableHead>
+          <TableHead>Estado declarado</TableHead>
           <TableHead>Fecha objetivo</TableHead>
           <TableHead>Siguiente hito</TableHead>
           <TableHead>Nivel</TableHead>
@@ -48,7 +48,13 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
               <TableCell><OrAbsent value={manifest?.tipo} /></TableCell>
               <TableCell><OrAbsent value={manifest?.cliente} /></TableCell>
               <TableCell><OrAbsent value={manifest?.fase} /></TableCell>
-              <TableCell><OrAbsent value={manifest?.estado} /></TableCell>
+              <TableCell>
+                {declaredLevel(manifest?.estado) ? (
+                  <TrafficLight kind="declared" level={declaredLevel(manifest?.estado)!} />
+                ) : (
+                  <OrAbsent value={manifest?.estado} />
+                )}
+              </TableCell>
               <TableCell><OrAbsent value={manifest?.fecha_objetivo} /></TableCell>
               <TableCell className="max-w-64 whitespace-normal"><OrAbsent value={manifest?.siguiente_hito} /></TableCell>
               <TableCell><LevelBadge project={project} /></TableCell>
