@@ -49,7 +49,7 @@ No te saltes pasos. Si un artefacto previo no existe o está desactualizado, vue
 
 - **Qué es Nexoru Op**: dashboard local, de solo lectura y para un solo usuario (el Dueño), que
   muestra el estado del portafolio leyendo los proyectos de `PROJECTS_ROOT` según el Estándar de
-  Proyecto Nexoru (constitución v2.0.0). Next.js + Supabase local; los detalles están en
+  Proyecto Nexoru (constitución v2.0.1). Next.js + Supabase local; los detalles están en
   `plan.md` de cada feature.
 - **Nunca** envía correos ni notificaciones ni escribe en los proyectos, en git o en GitHub.
 - **Lector seguro (principio XIII)**: todo acceso al disco del portafolio pasa por

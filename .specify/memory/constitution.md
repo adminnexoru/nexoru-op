@@ -28,8 +28,9 @@ local, un acceso indebido la expondría completa.
 
 - Credenciales y tokens DEBEN vivir solo en variables de entorno, en archivos `.env*` ignorados
   por git (salvo `.env.example`, que lleva solo nombres).
-- El token de GitHub es **opcional**, de **solo lectura** y vive en `.env.local`. Sin él, el
-  dashboard funciona sin los datos de GitHub.
+- El token de GitHub es **opcional**, de **solo lectura** y vive en `.env.op.local`, el archivo
+  de variables del entorno de uso, ignorado por git. Sin él, el dashboard funciona sin los datos
+  de GitHub. Las pruebas simulan GitHub y nunca usan un token real.
 - NO DEBEN aparecer secretos en el código, en el historial de git, en la base de datos, en logs
   ni en las specs. Un secreto filtrado se considera comprometido y se rota de inmediato.
 
@@ -204,4 +205,4 @@ explícita (MAJOR si contradice los principios III o XII):
 - **Guía operativa**: `CLAUDE.md` describe cómo trabajar día a día y DEBE mantenerse coherente
   con esta constitución.
 
-**Versión**: 2.0.0 | **Ratificada**: 2026-09-26 | **Última enmienda**: 2026-09-28
+**Versión**: 2.0.1 | **Ratificada**: 2026-09-26 | **Última enmienda**: 2026-10-03
