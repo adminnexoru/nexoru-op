@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+// Inter bundled locally (OFL-1.1): served from this server, no external requests (strict CSP).
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

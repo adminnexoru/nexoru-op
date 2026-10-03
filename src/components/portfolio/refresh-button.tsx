@@ -8,7 +8,7 @@ export function RefreshButton() {
   const [state, action, pending] = useActionState<RefreshState, FormData>(refreshPortfolio, {});
   return (
     <form action={action} className="flex items-center gap-3">
-      <Button type="submit" variant="outline" size="sm" disabled={pending}>
+      <Button type="submit" size="sm" disabled={pending}>
         {pending ? "Leyendo…" : "Actualizar"}
       </Button>
       {state.error ? (

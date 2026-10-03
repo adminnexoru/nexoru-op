@@ -36,17 +36,17 @@ export function IndicatorsCard({ indicators }: { indicators: Indicators }) {
       <CardContent className="grid gap-4 text-sm md:grid-cols-2">
         <section className="grid gap-1">
           <h3 className="font-medium">{conformityText(conformity)}</h3>
-          <p className="text-muted-foreground">
+          <p className="max-w-prose text-muted-foreground">
             Verificaciones del estándar cumplidas sobre las aplicables. No cuentan las que se evaluarán con GitHub (3.2); las
             que dependen de otra que falló cuentan como no cumplidas.
           </p>
           {"missing" in conformity && conformity.missing.length > 0 ? (
-            <p>Verificaciones que faltan: {conformity.missing.join(", ")}</p>
+            <p className="max-w-prose">Verificaciones que faltan: {conformity.missing.join(", ")}</p>
           ) : null}
         </section>
         <section className="grid gap-1">
           <h3 className="font-medium">{progressText(progress)}</h3>
-          <p className="text-muted-foreground">
+          <p className="max-w-prose text-muted-foreground">
             Tareas marcadas sobre el total de las specs vinculadas a fases con estado derivado; cada spec cuenta una vez.
           </p>
           {"absent" in progress ? null : (

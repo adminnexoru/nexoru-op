@@ -305,7 +305,7 @@ solo del color.
   No importar código de ese repo.
 - [X] T039 [US3] Completar `src/app/tokens.css` y adaptar `src/app/globals.css`: variables de shadcn (`--background`, `--card`, `--border`, `--primary` violeta, etc.) en tema oscuro con los valores del documento, pila tipográfica Inter, radios (18 px tarjetas, 999 px píldoras) y superficies. Verificar que las pantallas de acceso de la Fase 1 siguen legibles (T037).
 - [X] T040 [US3] Usar `TrafficLight` en el tablero (columna "Estado declarado", que reemplaza el texto de `estado`), en el detalle y en la leyenda de los gráficos. El semáforo de actividad pasa a neutro según `fase` (FR-032) (T036, T037).
-- [X] T041 [US3] Ejecutar `npm test` y `npm run test:e2e` hasta verde.
+- [X] T041 [US3] *(Ajustes de la revisión visual del Dueño, 2026-10-02: El botón Actualizar usaba la variante sin acento y los enlaces no tomaban el violeta: la acción principal pasa a violeta, los enlaces a `--nx-violet-text` y el foco al anillo violeta. El contenido usa todo el ancho, las tablas tienen su propio desplazamiento y los textos largos llevan `max-w-prose`. Inter se empaqueta con `@fontsource/inter`. Prueba E2E con `getComputedStyle` en `tests/e2e/us3-visual-render.spec.ts`.)* Ejecutar `npm test` y `npm run test:e2e` hasta verde.
 
 ---
 

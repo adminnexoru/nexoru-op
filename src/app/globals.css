@@ -130,4 +130,8 @@
   html {
     @apply font-sans;
   }
+  /* Links take the accent of tokens.css (US3 review); navigation sets its own color. */
+  a {
+    color: var(--nx-violet-text);
+  }
 }

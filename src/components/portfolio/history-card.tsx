@@ -73,7 +73,7 @@ export function HistoryCard({ project }: { project: ProjectReading }) {
             </dl>
 
             {history.notes.length > 0 ? (
-              <ul className="grid list-disc gap-1 pl-5 text-muted-foreground">
+              <ul className="grid max-w-prose list-disc gap-1 pl-5 text-muted-foreground">
                 {history.notes.map((note) => (
                   <li key={note}>{note}</li>
                 ))}

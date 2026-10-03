@@ -45,12 +45,32 @@ matiz.
 
 - La pila es la misma que en onboarding: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
   Helvetica, Arial, sans-serif`.
-- **No se descarga ninguna fuente**, igual que onboarding. Se retiró la fuente Geist que traía la
-  plantilla inicial, que se descargaba en el build.
+- **Inter va empaquetada localmente** con `@fontsource/inter` (licencia OFL-1.1, sin dependencias),
+  en los pesos 400, 500, 600 y 700. Motivo (revisión del Dueño, 2026-10-02): en la máquina del Dueño
+  Inter no está instalada y se renderizaba Noto Sans. Los archivos se sirven desde la propia app
+  (`font-src 'self'`); no hay peticiones a servidores externos, y una prueba E2E lo comprueba.
+- Se retiró la fuente Geist que traía la plantilla inicial, que se descargaba en el build.
 - Monoespaciada para rutas, ramas e identificadores: la pila del sistema (`ui-monospace`, Menlo,
   Consolas).
 
-## 4. Espaciado, radios y sombras
+## 4. Acento en componentes y ancho
+
+- **Acción principal** de cada pantalla (Actualizar, Iniciar sesión, Activar cuenta, Verificar):
+  botón **violeta** (`--primary` = `--nx-violet`), texto blanco y hover al 80 %.
+- **Acciones secundarias** (Cerrar sesión, copiar o descargar códigos, regenerarlos): botón con
+  borde, sin relleno.
+- **Foco con teclado**: anillo violeta (`--ring` = `--nx-violet-2`) en todos los botones y campos.
+- **Enlaces**: violeta claro `--nx-violet-text` (`#a78bfa`, contraste AA). La navegación del
+  encabezado usa el color de texto normal.
+- **Ancho**: el contenido usa todo el ancho de la ventana (márgenes de 24 px). Las tablas y los
+  gráficos ocupan todo el ancho disponible; en pantallas angostas, la tabla tiene su propio
+  desplazamiento horizontal, sin cortar columnas ni desplazar la página. Los textos largos
+  (descripciones, avisos, notas) se limitan a un ancho de lectura cómodo (`max-w-prose`, unos 65
+  caracteres).
+- Lo comprueban pruebas E2E con los valores que calcula el navegador (`getComputedStyle`), no solo
+  con los tokens (`tests/e2e/us3-visual-render.spec.ts`).
+
+## 5. Espaciado, radios y sombras
 
 | Elemento | Valor | Origen |
 |---|---|---|
@@ -63,7 +83,7 @@ matiz.
 Se omiten a propósito los orbes y la rejilla decorativa del fondo de onboarding: el tablero muestra
 datos densos, y la decoración resta legibilidad.
 
-## 5. Semáforos
+## 6. Semáforos
 
 **Tonos propios**, ajustados para el fondo oscuro y sin reutilizar tal cual los de onboarding:
 
@@ -90,7 +110,7 @@ datos densos, y la decoración resta legibilidad.
 5. **Sin estilos en línea.** Todo es por clases de CSS (`.traffic-light--…`), porque la CSP
    estricta bloquea los atributos `style`.
 
-## 6. Qué no cambia
+## 7. Qué no cambia
 
 - Componentes: se mantienen los de shadcn/ui; solo cambian sus variables.
 - `conversa-experiencias` no se toca.

@@ -169,8 +169,10 @@ Cada decisión sigue el formato: decisión, razón y alternativas descartadas. N
     "Actividad".
   - **Neutro**: gris, con el ícono `CircleMinus` y el texto "Sin seguimiento".
   - Los íconos son de `lucide-react`, que ya es una dependencia.
-- **Fuente**: no se descarga Inter. Se usa la misma pila, igual que `nexoru-onboarding`, sin costo y
-  sin red.
+- **Fuente**: se usa la misma pila que `nexoru-onboarding`. **Actualizado el 2026-10-02**: Inter no
+  está instalada en la máquina del Dueño y se renderizaba Noto Sans, así que se empaqueta con
+  `@fontsource/inter` (OFL-1.1, sin dependencias). Los archivos de fuente se sirven desde la propia
+  app (`font-src 'self'`), sin peticiones externas.
 - **Alternativas**:
   - Importar el CSS de `nexoru-onboarding`: acoplaría los repos y traería clases que no se usan.
   - `next/font/google`: descarga en el build, y el principio III prefiere evitarlo.

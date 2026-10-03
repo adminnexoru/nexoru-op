@@ -19,6 +19,7 @@
     "op:fingerprint": "tsx scripts/op-fingerprint.ts"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "class-variance-authority": "^0.7.1",

@@ -5,10 +5,11 @@ import type { WeekActivity } from "@/lib/portfolio/types";
 // only (no style attributes, no JavaScript), so the strict CSP stays intact. The same values are
 // in a table under "Ver datos" (FR-023).
 
-const WIDTH = 360;
-const HEIGHT = 120;
-const PADDING = 16;
-const BAR_GAP = 4;
+// Wide viewBox: the chart takes the full width of its container and keeps its proportions.
+const WIDTH = 960;
+const HEIGHT = 180;
+const PADDING = 24;
+const BAR_GAP = 12;
 
 const shortDate = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "short" });
 const label = (weekStart: string) => shortDate.format(new Date(`${weekStart}T00:00:00`));
@@ -25,7 +26,7 @@ export function WeeklyChart({ weeks, title, testId = "weekly-data" }: { weeks: W
       {total === 0 ? (
         <p className="text-sm text-muted-foreground">Sin datos: no hubo commits en las últimas 12 semanas.</p>
       ) : (
-        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-labelledby={`${id}-title ${id}-desc`} className="h-32 w-full max-w-md">
+        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-labelledby={`${id}-title ${id}-desc`} className="h-auto w-full">
           <title id={`${id}-title`}>{title}</title>
           <desc id={`${id}-desc`}>
             {total} commits en 12 semanas; la semana con más actividad tuvo {max}.

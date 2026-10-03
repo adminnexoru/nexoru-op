@@ -55,7 +55,10 @@ Todo se calcula en cada lectura del portafolio y se guarda en el índice regener
 
 - Las de la Fase 2: Next.js 16.3, React 19, Tailwind 4, shadcn/ui, Supabase, `zod` y `yaml`.
 - Los íconos de `lucide-react`, que ya está instalado.
-- **Ninguna dependencia nueva.**
+- **Una dependencia nueva, solo de recursos**: `@fontsource/inter` 5.x (OFL-1.1, sin dependencias ni
+  scripts), para empaquetar Inter localmente. Se añadió en la revisión visual del Dueño
+  (2026-10-02), porque Inter no está instalada en su máquina; costo 0 y sin red en tiempo de
+  ejecución (research R6).
 
 **Storage**:
 

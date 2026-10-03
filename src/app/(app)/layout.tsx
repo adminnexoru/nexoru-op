@@ -26,13 +26,13 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <div className="flex min-h-full flex-1 flex-col">
       <IdleTimer />
       <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
-          <Link href="/" className="font-semibold">
+        <div className="flex w-full items-center gap-6 px-6 py-3">
+          <Link href="/" className="font-semibold text-foreground">
             Nexoru Op
           </Link>
           <nav className="flex flex-1 gap-4 text-sm">
-            <Link href="/">Portafolio</Link>
-            <Link href="/account">Mi cuenta</Link>
+            <Link href="/" className="text-foreground">Portafolio</Link>
+            <Link href="/account" className="text-foreground">Mi cuenta</Link>
           </nav>
           <span className="hidden text-sm text-muted-foreground sm:inline">
             {profile?.full_name} · {role ? roleLabel(role as Role) : ""}
@@ -44,7 +44,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           </form>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+      {/* Full width for tables and charts; long text limits itself (max-w-prose). */}
+      <main className="w-full min-w-0 flex-1 px-6 py-6">
         {typeof remaining === "number" && remaining <= 2 ? (
           <Alert className="mb-6">
             <AlertDescription>
