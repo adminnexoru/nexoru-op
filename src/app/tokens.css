@@ -74,4 +74,4 @@
 .chart-bar--rojo { fill: var(--tl-rojo); }
 .chart-bar--accent { fill: #8b5cf6; }
 .chart-axis { stroke: currentColor; opacity: 0.3; }
-.chart-label { fill: currentColor; font-size: 10px; }
+.chart-label { fill: currentColor; font-size: 14px; }

@@ -284,6 +284,11 @@ accesibles.
 **Independent Test**: el documento de diseño enumera los tokens y su origen; ningún semáforo depende
 solo del color.
 
+> **Aprobada por el Dueño el 2026-10-02** (T036–T041), tras su revisión en el navegador del entorno
+> de uso: acento violeta en la acción principal, enlaces y foco; ancho completo con desplazamiento
+> propio de las tablas; fuente Inter empaquetada; pantalla de inicio de sesión. La primera revisión
+> encontró el botón sin acento y el ancho limitado, corregidos en el commit `db3a2cf`.
+
 ### Pruebas de US3 (escribir primero, deben fallar)
 
 - [X] T036 [P] [US3] Pruebas en `tests/unit/visual/contrast.test.ts`: lee `src/app/tokens.css`, calcula el contraste WCAG de cada tono del semáforo y del texto contra el fondo y la superficie del tema, y exige ≥ 4,5:1.
@@ -321,8 +326,8 @@ CSP.
 
 ### Pruebas de US4 (escribir primero, deben fallar)
 
-- [ ] T042 [P] [US4] Pruebas puras en `tests/unit/charts/chart-data.test.ts`: cálculo de las series de los cinco gráficos desde `PortfolioReading` (distribución de `estado`, proyectos por nivel con los provisionales aparte, Avance por proyecto sin los ausentes y con su nota, proyectos por `fase` y actividad por semana); los totales de los gráficos 1, 2 y 4 coinciden con el número de proyectos.
-- [ ] T043 [P] [US4] E2E en `tests/e2e/us4-charts.spec.ts`:
+- [X] T042 [P] [US4] Pruebas puras en `tests/unit/charts/chart-data.test.ts`: cálculo de las series de los cinco gráficos desde `PortfolioReading` (distribución de `estado`, proyectos por nivel con los provisionales aparte, Avance por proyecto sin los ausentes y con su nota, proyectos por `fase` y actividad por semana); los totales de los gráficos 1, 2 y 4 coinciden con el número de proyectos.
+- [X] T043 [P] [US4] E2E en `tests/e2e/us4-charts.spec.ts`:
   - hay cinco gráficos (`role="img"` con `<title>`), cada uno con "Ver datos";
   - la suma de "Ver datos" de "Nivel de conformidad" es igual a las filas de la tabla;
   - **sin violaciones de CSP**;
@@ -330,10 +335,10 @@ CSP.
 
 ### Implementación de US4
 
-- [ ] T044 [US4] Implementar `src/lib/charts/chart-data.ts` (puro) (T042).
-- [ ] T045 [P] [US4] Implementar `src/components/charts/bar-chart.tsx` (barras horizontales SVG en el servidor, atributos numéricos y clases de `tokens.css`, `role="img"`, `<title>`, `<desc>` y tabla "Ver datos" en `<details>`; "Sin datos" si no hay valores) y reutilizar `weekly-chart.tsx` para la actividad del portafolio.
-- [ ] T046 [US4] Añadir la sección de gráficos encima de la tabla en `src/app/(app)/page.tsx`.
-- [ ] T047 [US4] Ejecutar `npm test` y `npm run test:e2e` hasta verde, sin violaciones de CSP.
+- [X] T044 [US4] Implementar `src/lib/charts/chart-data.ts` (puro) (T042).
+- [X] T045 [P] [US4] Implementar `src/components/charts/bar-chart.tsx` (barras horizontales SVG en el servidor, atributos numéricos y clases de `tokens.css`, `role="img"`, `<title>`, `<desc>` y tabla "Ver datos" en `<details>`; "Sin datos" si no hay valores) y reutilizar `weekly-chart.tsx` para la actividad del portafolio.
+- [X] T046 [US4] Añadir la sección de gráficos encima de la tabla en `src/app/(app)/page.tsx`.
+- [X] T047 [US4] Ejecutar `npm test` y `npm run test:e2e` hasta verde, sin violaciones de CSP.
 
 ---
 

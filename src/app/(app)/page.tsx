@@ -1,6 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrAbsent } from "@/components/portfolio/absent";
+import { PortfolioCharts } from "@/components/charts/portfolio-charts";
 import { PortfolioTable } from "@/components/portfolio/portfolio-table";
 import { RefreshButton } from "@/components/portfolio/refresh-button";
 import { getPortfolio } from "@/lib/portfolio/snapshot";
@@ -74,6 +75,8 @@ export default async function PortfolioPage() {
       {root.status === "ok" && projects.length === 0 ? (
         <p className="text-muted-foreground">PROJECTS_ROOT no tiene carpetas de proyecto.</p>
       ) : null}
+
+      {projects.length > 0 ? <PortfolioCharts portfolio={portfolio} /> : null}
 
       {projects.length > 0 ? <PortfolioTable projects={projects} /> : null}
 
