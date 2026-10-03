@@ -51,6 +51,7 @@ dicen "no disponible: requiere token".
 | 1 | Sin token, pulsar Actualizar | Repos públicos con CI, visibilidad y PRs; `conversa-experiencias` "no disponible: requiere token"; alertas "no evaluado: requiere token" |
 | 2 | Con token, pulsar Actualizar | Los 6 repos con datos; "Datos de GitHub de hace unos segundos"; consultas restantes y vencimiento del token |
 | 3 | CI | La CI de `main` de cada repo coincide con `gh run list --branch main --limit 1` |
+| 3b | CI en rojo (SC-007) | Con el tablero abierto, el Dueño identifica en menos de 30 s qué proyectos tienen la CI de su rama principal en rojo |
 | 4 | 3.2 y Conformidad | ABE y `nexoru-op` con nivel 3 sin "provisional" y "… de 29 (incluye 3.2)"; la leyenda fija bajo la tabla |
 | 4b | Sin red tras 7 días o más | "100 % · 28 de 28 (3.2 sin evaluar: sin datos recientes de GitHub)", sin ningún aviso de "cambio" |
 | 5 | Visibilidad | Público o privado, igual que `gh repo list adminnexoru`; ABE y `nexoru-op` en 1.1 sin hallazgo y con el aviso de la versión 1.2 |

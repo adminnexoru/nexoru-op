@@ -32,7 +32,7 @@ Reglas generales de la Fase 3:
 | Proyecto | Nombre y, debajo, "público" o "privado" (o nada si no hay dato) |
 | Tipo | Tipo y, en `producto-cliente`, el cliente debajo (antes eran dos columnas) |
 | Conformidad | "97 % · 28 de 29 (incluye 3.2)" o "100 % · 28 de 28 (3.2 sin evaluar: sin datos recientes de GitHub)": el estado de 3.2 en la misma celda, como texto (sin depender de un ícono ni de un tooltip) |
-| CI | Semáforo compacto (forma: rombo, distinta de círculo y cuadrado) con éxito, falla, en curso, no disponible o no aplica; "hace X" si el dato es guardado |
+| CI | Semáforo compacto (forma: rombo, distinta de círculo y cuadrado) con éxito, falla, en curso, no disponible o no aplica. Todo resultado terminado distinto de éxito usa el nivel "falla" y el texto dice el resultado real ("falla", "cancelada", "tiempo agotado"…); "hace X" si el dato es guardado |
 | PRs | Número de PRs abiertos, "—" si no aplica, "?" con motivo accesible si no disponible |
 
 La columna **Roadmap** sale de la tabla: sigue en el detalle.

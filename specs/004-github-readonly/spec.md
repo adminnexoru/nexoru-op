@@ -456,8 +456,9 @@ token no tiene permiso y la consulta sin token.
   versionados que ya evalúa la Fase 2.
 - El reparto del tiempo máximo de 8 segundos entre consultas se fija en el plan, dentro de SC-005.
 - Las pruebas nunca consultan el GitHub real: usan un GitHub simulado con datos ficticios.
-- Sin token, el límite anónimo (60 consultas por hora) basta para el portafolio actual (6 repos) con
-  una actualización; las peticiones condicionales permiten actualizaciones repetidas.
+- Sin token, el límite anónimo (60 consultas por hora) alcanza para una o dos actualizaciones
+  completas por hora con el portafolio actual (6 repos); sin token, una respuesta "sin cambios" sí
+  gasta consultas (research R4), por eso se recomienda el token.
 - Si el alcance pone en riesgo la fecha objetivo (2026-11-08), se sacrifica primero US4 y luego US3.
 - Fuera de alcance: cualquier escritura en GitHub, webhooks, issues, notificaciones, volver a correr
   workflows, históricos de CI o de PRs, imágenes de GitHub en el navegador y alertas de discrepancia

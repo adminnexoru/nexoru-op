@@ -75,7 +75,9 @@ contrato; nunca se debilita la prueba.
   - `tests/fixtures/github/fake-github.ts` construye un `fetch` simulado en memoria con:
     - un registro de las peticiones recibidas (método, ruta y cabeceras);
     - respuestas programables: 200 con ETag, 304, 401, 403 con `x-ratelimit-remaining: 0`, 404,
-      429 con `retry-after`, 500, retraso y red caída.
+      429 con `retry-after`, 500, retraso y red caída;
+    - cabeceras `x-ratelimit-*` y `GitHub-Authentication-Token-Expiration` con fecha programable
+      (para el aviso de 14 días o menos).
 - [ ] T004 [P] Remotos de GitHub en el portafolio ficticio: en `tests/fixtures/build-portfolio.ts` y
   `tests/fixtures/portfolio/`, los proyectos con repo git reciben `origin` apuntando a
   `https://github.com/example-org/<nombre>.git`, con `git remote add`, sin red.
@@ -428,6 +430,8 @@ el número en el tablero.
   - **`docs/identidad-visual.md`**: el rombo de la CI.
   - **`README.md`**: si menciona variables.
   - **`.env.example`**: revisión.
+  - **`specs/004-github-readonly/quickstart.md`**: revisar que los pasos del token y los escenarios
+    coinciden con lo construido (FR-025).
 - [ ] T049 Revisión de seguridad, convertida en pruebas permanentes en
   `tests/unit/security/review.test.ts`:
   - solo `GET`;
