@@ -31,7 +31,10 @@ test("the portfolio shows the activity traffic light with its days", async () =>
 test("the detail shows the history of history-demo", async () => {
   await page.goto("/projects/history-demo");
   const history = page.getByTestId("history");
-  await expect(history).toContainText("5 días sin actividad");
+  // The days without activity appear once, in the activity traffic light (owner review).
+  await expect(history.getByTestId("traffic-light-activity")).toContainText("5 días");
+  await expect(history).not.toContainText("días sin actividad");
+  expect((await history.innerText()).match(/\b5 días\b/g)).toHaveLength(1);
   await expect(history).toContainText("2 adelante, 3 atrás respecto a origin/HEAD");
   await expect(history).toContainText("referencia local de hace 40 días");
   await expect(history).toContainText("20 días en construccion");

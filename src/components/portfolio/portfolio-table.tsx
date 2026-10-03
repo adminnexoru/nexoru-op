@@ -4,6 +4,7 @@ import type { ProjectReading } from "@/lib/portfolio/types";
 import { declaredLevel, TrafficLight } from "@/components/status/traffic-light";
 import { Absent, OrAbsent } from "./absent";
 import { BranchBadge } from "./branch-badge";
+import { daysText } from "@/lib/format";
 import { IndicatorCell } from "./indicators";
 import { LevelBadge } from "./level-badge";
 
@@ -62,7 +63,7 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
               <TableCell className="whitespace-normal"><IndicatorCell kind="progress" indicators={project.indicators} /></TableCell>
               <TableCell>
                 {project.history?.activityLight ? (
-                  <TrafficLight kind="activity" level={project.history.activityLight} detail={`${project.history.daysWithoutActivity} días`} />
+                  <TrafficLight kind="activity" level={project.history.activityLight} detail={daysText(project.history.daysWithoutActivity ?? 0)} />
                 ) : (
                   <Absent />
                 )}

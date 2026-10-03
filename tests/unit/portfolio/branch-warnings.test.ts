@@ -29,7 +29,7 @@ describe("uncommitted changes", () => {
 
   it("keeps the Phase 2 texts for known values", () => {
     expect(uncommittedLabel({ ...repo, hasUncommittedChanges: true })).toBe("cambios sin commit");
-    expect(uncommittedLabel(repo)).toBe("sin cambios sin commit");
+    expect(uncommittedLabel(repo)).toBe("Cambios sin commit: ninguno");
     expect(branchWarnings({ ...repo, hasUncommittedChanges: true })).toEqual(["cambios sin commit"]);
     expect(branchWarnings(repo)).toEqual([]);
   });

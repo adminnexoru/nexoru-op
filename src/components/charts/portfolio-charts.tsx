@@ -2,6 +2,7 @@ import { BarChart } from "@/components/charts/bar-chart";
 import { WeeklyChart } from "@/components/charts/weekly-chart";
 import { Card, CardContent } from "@/components/ui/card";
 import { chartData } from "@/lib/charts/chart-data";
+import { projectsText } from "@/lib/format";
 import type { PortfolioReading } from "@/lib/portfolio/types";
 
 // T046: the five charts of the portfolio (US4, FR-022). Their totals match the table (FR-024).
@@ -15,7 +16,7 @@ export function PortfolioCharts({ portfolio }: { portfolio: PortfolioReading }) 
           <BarChart
             chartKey="declared"
             title="Estado declarado"
-            description={`${projects} proyectos según el campo estado de su PROJECT.md.`}
+            description={`${projectsText(projects)} según el campo estado de su PROJECT.md.`}
             items={data.declared}
             unit="proyectos"
           />
@@ -26,7 +27,7 @@ export function PortfolioCharts({ portfolio }: { portfolio: PortfolioReading }) 
           <BarChart
             chartKey="levels"
             title="Nivel de conformidad"
-            description={`${projects} proyectos por nivel del estándar; el nivel 3 provisional espera la verificación 3.2.`}
+            description={`${projectsText(projects)} por nivel del estándar; el nivel 3 provisional espera la verificación 3.2.`}
             items={data.levels}
             unit="proyectos"
           />
@@ -50,7 +51,7 @@ export function PortfolioCharts({ portfolio }: { portfolio: PortfolioReading }) 
           <BarChart
             chartKey="phases"
             title="Fase del ciclo de vida"
-            description={`${projects} proyectos según el campo fase de su PROJECT.md.`}
+            description={`${projectsText(projects)} según el campo fase de su PROJECT.md.`}
             items={data.phases}
             unit="proyectos"
           />

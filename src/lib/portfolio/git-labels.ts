@@ -4,7 +4,7 @@ import type { GitInfo } from "./types";
 
 export function uncommittedLabel(git: GitInfo): string {
   if (git.hasUncommittedChanges === true) return "cambios sin commit";
-  if (git.hasUncommittedChanges === false) return "sin cambios sin commit";
+  if (git.hasUncommittedChanges === false) return "Cambios sin commit: ninguno";
   return `Cambios sin commit: no evaluado (${git.uncommittedChangesReason ?? "error de git"})`;
 }
 

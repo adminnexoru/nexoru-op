@@ -18,7 +18,7 @@ stack:
 servicios:
   - have-i-been-pwned
 costo_mensual_usd: 0
-siguiente_hito: "Fase 3: especificar, planificar y construir el historial de git, los indicadores de conformidad y avance, la identidad visual y los gráficos (003-git-history-insights)"
+siguiente_hito: "Fase 3: cerrar 003-git-history-insights (historias US1 a US5 construidas; falta documentación, validación con el portafolio real, PR y merge)"
 mapa_funcional: docs/mapa-funcional.md
 version_estandar: "1.0"
 ---
@@ -53,13 +53,13 @@ version_estandar: "1.0"
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 tiene spec (`003-git-history-insights`) pero todavía no `tasks.md`, y la Fase 4 no tiene spec; por eso las dos llevan estado manual.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) se deriva de su `tasks.md`. La Fase 4 no tiene spec y lleva estado manual.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
 | 1 | Acceso seguro del Dueño, bitácora y puesta en marcha local | 001-user-access | — | |
 | 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | — | |
-| 3 | Historial de git, indicadores de conformidad y avance, identidad visual y gráficos | 003-git-history-insights | 2026-10-25 | en-curso |
+| 3 | Historial de git, indicadores de conformidad y avance, identidad visual y gráficos | 003-git-history-insights | 2026-10-25 | |
 | 4 | Datos de GitHub en solo lectura (CI, visibilidad, PRs) | — | 2026-11-08 | pendiente |
 
 ## Decisiones clave
@@ -133,8 +133,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 
 ## Siguiente hito
 
-Fase 3: especificar, planificar y construir el historial de git, los indicadores de conformidad y avance, la identidad visual y los gráficos (003-git-history-insights).
+Fase 3: cerrar 003-git-history-insights (historias US1 a US5 construidas; falta documentación, validación con el portafolio real, PR y merge).
 
-1. **Spec:** `specs/003-git-history-insights/spec.md`, con `/speckit-clarify` y aprobación del Dueño.
-2. **Plan, tareas y análisis:** `/speckit-plan` (incluye si el alcance pone en riesgo la fecha y qué historias mover), `/speckit-tasks` y `/speckit-analyze` sin hallazgos críticos, y aprobación del `tasks.md`.
-3. **Construcción y cierre:** implementación con pruebas, validación con el portafolio real, PR con CI en verde y merge. Fecha objetivo de la fase: 2026-10-25.
+1. **Hecho:** historial de git (US1), estándar 1.1 y `.nexoruignore` (US5), Conformidad y Avance (US2), identidad visual aprobada por el Dueño (US3) y gráficos (US4), con la CI de la rama en verde.
+2. **Cierre (T048–T055 de `specs/003-git-history-insights/tasks.md`):** documentación y revisión de seguridad; validación de `.nexoruignore` con una carpeta de prueba; `version_estandar` 1.1 en `amazon-business-engine` y `nexoru-op`; validación con el portafolio real; `PROJECT.md` y mapa funcional; PR con CI en verde y merge. Fecha objetivo de la fase: 2026-10-25.

@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { commitsInWeeks } from "@/lib/format";
 import type { WeekActivity } from "@/lib/portfolio/types";
 
 // T020: commits per week as a server-rendered SVG (research R5). Numeric attributes and CSS classes
@@ -29,7 +30,7 @@ export function WeeklyChart({ weeks, title, testId = "weekly-data" }: { weeks: W
         <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-labelledby={`${id}-title ${id}-desc`} className="h-auto w-full">
           <title id={`${id}-title`}>{title}</title>
           <desc id={`${id}-desc`}>
-            {total} commits en 12 semanas; la semana con más actividad tuvo {max}.
+            {commitsInWeeks(total)}; la semana con más actividad tuvo {max}.
           </desc>
           <line className="chart-axis" x1={PADDING} y1={HEIGHT - PADDING} x2={WIDTH - PADDING} y2={HEIGHT - PADDING} />
           {weeks.map((week, i) => {

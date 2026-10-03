@@ -2,6 +2,7 @@ import { WeeklyChart } from "@/components/charts/weekly-chart";
 import { TrafficLight } from "@/components/status/traffic-light";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ProjectReading } from "@/lib/portfolio/types";
+import { daysInPhaseText, daysText, remoteAgeText } from "@/lib/format";
 import { Absent } from "./absent";
 
 // T020: git history of a project (US1, contracts/indicators-ui.md). Everything comes from local
@@ -27,9 +28,8 @@ export function HistoryCard({ project }: { project: ProjectReading }) {
               <dd className="flex flex-wrap items-center gap-2">
                 {history.lastCommitAt ? dateTime.format(new Date(history.lastCommitAt)) : <Absent />}
                 {history.activityLight ? (
-                  <TrafficLight kind="activity" level={history.activityLight} detail={`${history.daysWithoutActivity} días`} />
+                  <TrafficLight kind="activity" level={history.activityLight} detail={daysText(history.daysWithoutActivity ?? 0)} />
                 ) : null}
-                {history.daysWithoutActivity !== null ? <span>{history.daysWithoutActivity} días sin actividad</span> : null}
               </dd>
 
               <dt className="text-muted-foreground">Rama actual frente a la principal</dt>
@@ -42,7 +42,7 @@ export function HistoryCard({ project }: { project: ProjectReading }) {
               <dt className="text-muted-foreground">Referencias remotas</dt>
               <dd>
                 {history.remoteRefsAgeDays !== null
-                  ? `referencia local de hace ${history.remoteRefsAgeDays} días (último fetch de esta copia; el dashboard nunca la actualiza)`
+                  ? `${remoteAgeText(history.remoteRefsAgeDays)} (último fetch de esta copia; el dashboard nunca la actualiza)`
                   : "antigüedad desconocida: esta copia nunca ha hecho fetch"}
               </dd>
 
@@ -50,7 +50,7 @@ export function HistoryCard({ project }: { project: ProjectReading }) {
               <dd className="grid gap-1">
                 {history.daysInPhase !== null ? (
                   <span>
-                    {history.daysInPhase} días en {manifest?.fase ?? "la fase actual"}
+                    {daysInPhaseText(history.daysInPhase, manifest?.fase ?? "la fase actual")}
                     {history.daysInPhaseSource === "fase_desde"
                       ? " (contados desde fase_desde, el dato declarado)"
                       : history.phaseChangedAt

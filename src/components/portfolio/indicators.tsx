@@ -1,20 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { conformityText, progressText } from "@/lib/format";
 import type { Indicators } from "@/lib/portfolio/types";
 
 // T034: Conformidad and Avance always with their name and base (FR-013); absent values with their
 // reason, never 0 %. Plain text only.
-
-export function conformityText(conformity: Indicators["conformity"]): string {
-  return "absent" in conformity
-    ? `Conformidad ausente: ${conformity.absent}`
-    : `Conformidad ${conformity.percent} % · ${conformity.passed} de ${conformity.applicable}`;
-}
-
-export function progressText(progress: Indicators["progress"]): string {
-  return "absent" in progress
-    ? `Avance ausente: ${progress.absent}`
-    : `Avance ${progress.percent} % · ${progress.done} de ${progress.total} tareas`;
-}
 
 export function IndicatorCell({ kind, indicators }: { kind: "conformity" | "progress"; indicators: Indicators }) {
   const text = kind === "conformity" ? conformityText(indicators.conformity) : progressText(indicators.progress);
