@@ -4,7 +4,9 @@ import type { Check, ConformanceResult, Indicators, Manifest, Problem, RoadmapPh
 import { conformity, progress } from "../indicators";
 import type { ProjectFiles } from "../project-files";
 import type { GithubData } from "@/lib/github/types";
-import { buildContext } from "./context";
+import { newerStandardNotice } from "../versions";
+import { buildContext, type Context } from "./context";
+import { VISIBILIDAD_VALUES } from "./manifest";
 import { findings } from "./findings";
 import { level1 } from "./level1";
 import { level2, specWarnings } from "./level2";
@@ -24,6 +26,19 @@ export interface ProjectEvaluation {
   roadmapStatus: "activo" | "concluido" | null;
   conformance: ConformanceResult;
   indicators: Indicators;
+}
+
+/** Standard 1.2: a visibilidad with a value that is not allowed counts as not declared, with a warning. */
+function manifestWarnings(ctx: Context): Problem[] {
+  const raw = ctx.data?.visibilidad;
+  if (!ctx.rules.visibilityField || raw === undefined || raw === null || raw === "" || VISIBILIDAD_VALUES.includes(String(raw))) return [];
+  return [
+    {
+      path: "PROJECT.md",
+      reason: "invalid_value",
+      detail: `\`visibilidad\` tiene un valor no permitido (${String(raw)}); se toma como no declarada. Valores permitidos: ${VISIBILIDAD_VALUES.join(", ")}`,
+    },
+  ];
 }
 
 export function computeLevel(checks: Check[]): Pick<ConformanceResult, "level" | "provisional" | "failures"> {
@@ -67,8 +82,9 @@ export function evaluateProject(
     evaluation: "evaluated",
     ...computeLevel(checks),
     checks,
-    warnings: specWarnings(ctx),
+    warnings: [...manifestWarnings(ctx), ...specWarnings(ctx)],
     findings: findings(ctx),
+    newerStandardNotice: newerStandardNotice(rules.version),
   };
 
   return {

@@ -273,7 +273,7 @@ nueva.
 
 ### Pruebas primero (deben fallar)
 
-- [ ] T026 [P] Pruebas en `tests/unit/standard/versions.test.ts` y
+- [X] T026 [P] Pruebas en `tests/unit/standard/versions.test.ts` y
   `tests/unit/standard/rules-1-2.test.ts`:
   - **Versiones**: `SUPPORTED_STANDARD_VERSIONS` es `["1.0", "1.1", "1.2"]`; el aviso de estándar
     local más nuevo se calcula contra 1.2.
@@ -282,26 +282,26 @@ nueva.
   - **3.2 en 1.2**: cumple si la última ejecución terminada de **cada** workflow que cumple 3.1 está
     en verde; un workflow sin ejecuciones terminadas no cumple; la falla nombra los workflows; si
     3.1 falla, 3.2 falla con "ningún workflow cumple 3.1".
-- [ ] T027 [P] Pruebas del manifiesto en `tests/unit/standard/manifest-visibilidad.test.ts`: campo
+- [X] T027 [P] Pruebas del manifiesto en `tests/unit/standard/manifest-visibilidad.test.ts`: campo
   opcional `visibilidad`.
   - Vacía equivale a no declarada.
   - `publico` y `privado` son válidos.
   - Otro valor (incluido `CONFIRMAR`) da una advertencia y cuenta como no declarada. Con
     `CONFIRMAR` además falla 1.11, como dice el estándar.
   - No es un campo enumerado de 1.4.
-- [ ] T028 [P] Pruebas del aviso de versión en `tests/unit/standard/newer-version.test.ts` y en
+- [X] T028 [P] Pruebas del aviso de versión en `tests/unit/standard/newer-version.test.ts` y en
   `tests/e2e/us2-standard-1-2.spec.ts`. El texto es "hay una versión más nueva del estándar (1.2)
   con reglas más estrictas de CI y visibilidad" (FR-028).
   - Aparece en proyectos 1.0 y 1.1, en el detalle y como indicación en el tablero.
   - No aparece en 1.2.
   - No es hallazgo ni cambia el nivel ni la Conformidad.
   - El número sale de la versión más reciente soportada.
-- [ ] T029 [P] Fixtures 1.2 en `tests/fixtures/portfolio/`: proyectos 1.2 ficticios `interno`,
+- [X] T029 [P] Fixtures 1.2 en `tests/fixtures/portfolio/`: proyectos 1.2 ficticios `interno`,
   `producto-nexoru` y `producto-cliente`, con y sin `visibilidad`. El README se actualiza.
 
 ### Implementación
 
-- [ ] T030 Soporte de 1.2:
+- [X] T030 Soporte de 1.2:
   - `src/lib/standard/versions.ts`;
   - `src/lib/standard/rules.ts` (1.2);
   - `src/lib/standard/v1_0/level3.ts` (`each_workflow`);
@@ -309,10 +309,10 @@ nueva.
   - `src/lib/portfolio/types.ts` (manifiesto).
 
   Cubre T026 y T027.
-- [ ] T031 Aviso de versión más nueva: cálculo en `src/lib/standard/evaluate.ts`, que lo incluye
+- [X] T031 Aviso de versión más nueva: cálculo en `src/lib/standard/evaluate.ts`, que lo incluye
   en el resultado; se muestra en `src/components/portfolio/conformance-panel.tsx` y como indicación
   en la tabla (T028).
-- [ ] T032 Parada: pruebas en verde; commit y push.
+- [X] T032 Parada: pruebas en verde; commit y push.
 
 ---
 

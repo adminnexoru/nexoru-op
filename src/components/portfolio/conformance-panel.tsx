@@ -35,6 +35,12 @@ export function ConformancePanel({ project }: { project: ProjectReading }) {
             <span className="text-muted-foreground">con el estándar {conformance.standardVersion}</span>
           ) : null}
         </p>
+        {conformance.newerStandardNotice ? (
+          // Phase 4 (FR-028): informative, not a finding; it changes neither the level nor Conformidad.
+          <p data-testid="newer-standard-notice" className="max-w-prose text-muted-foreground">
+            {conformance.newerStandardNotice}
+          </p>
+        ) : null}
 
         {conformance.evaluation === "evaluated" ? (
           <>

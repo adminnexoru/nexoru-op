@@ -1,6 +1,7 @@
 // T025: level 3 checks 3.1–3.8 (standard/conformance.md v1.0). 3.2 needs GitHub (phase 4).
 import { ROADMAP_STATES, type Check } from "@/lib/portfolio/types";
 import { ciConclusionLabel } from "@/lib/format";
+import type { CiInfo } from "@/lib/github/types";
 import type { ProjectFiles } from "../project-files";
 import { parseYaml } from "../frontmatter";
 import { sectionText } from "../markdown";
@@ -41,6 +42,7 @@ function check32(ctx: Context): Check {
   }
   if (daysBetween(localDay(ci.fetchedAt), ctx.date) >= STALE_GITHUB_DAYS) return check("3.2", "not_evaluated", CHECK_32_REASONS.stale);
 
+  if (ctx.rules.ciRule === "each_workflow") return eachWorkflow(ctx, ci.value);
   const { branch, latestCompletedAny } = ci.value;
   if (!latestCompletedAny) return fail("3.2", `Sin ejecuciones de CI terminadas en ${branch}`);
   if (latestCompletedAny.conclusion === "success") return pass("3.2");
@@ -75,6 +77,28 @@ function ciCheck(ctx: Context): Check {
   if (workflows.length === 0) return fail("3.1", "No hay flujos de CI en .github/workflows/");
   const ok = ciWorkflowPaths(ctx.files).length > 0;
   return ok ? pass("3.1") : fail("3.1", "Ningún flujo de .github/workflows/ se dispara con push y pull_request");
+}
+
+/** Name of a workflow from its `name:`, or its file name. */
+function workflowName(ctx: Context, path: string): string {
+  const file = path.split("/").pop() ?? path;
+  const content = ctx.files.workflows.find((w) => w.name === file)?.content;
+  const parsed = content?.ok ? parseYaml(content.text) : null;
+  const name = parsed?.ok && parsed.value && typeof parsed.value === "object" ? (parsed.value as Record<string, unknown>).name : null;
+  return typeof name === "string" && name ? name : file;
+}
+
+/** Standard 1.2: the latest completed run of every workflow that satisfies 3.1 succeeded. */
+function eachWorkflow(ctx: Context, ci: CiInfo): Check {
+  const paths = ciWorkflowPaths(ctx.files);
+  if (paths.length === 0) return fail("3.2", "Ningún workflow cumple 3.1");
+  const issues = paths.flatMap((path) => {
+    const run = ci.perWorkflow.find((w) => w.path === path)?.latestCompleted ?? null;
+    if (!run) return [`${workflowName(ctx, path)}: sin ejecuciones terminadas en ${ci.branch}`];
+    if (run.conclusion === "success") return [];
+    return [`${run.workflowName}: ${ciConclusionLabel(run.conclusion)} el ${localDay(run.at)} en ${ci.branch}`];
+  });
+  return issues.length === 0 ? pass("3.2") : fail("3.2", issues.join("; "));
 }
 
 export function level3(ctx: Context): Check[] {

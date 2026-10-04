@@ -23,6 +23,7 @@ export const problemSchema = z.object({
     "git_error",
     "no_checkboxes",
     "unreadable",
+    "invalid_value",
   ]),
   detail: z.string().nullable(),
 });
@@ -64,6 +65,8 @@ export const manifestSchema = z.object({
   siguiente_hito: text,
   mapa_funcional: text,
   version_estandar: text,
+  /** Standard 1.2: publico or privado; null when absent, empty or not allowed. */
+  visibilidad: text,
 });
 export type Manifest = z.infer<typeof manifestSchema>;
 
@@ -112,6 +115,8 @@ export const conformanceResultSchema = z.object({
   failures: z.array(checkSchema),
   warnings: z.array(problemSchema),
   findings: z.array(findingSchema),
+  /** Phase 4 (FR-028): informative notice of a newer supported version; not a finding. */
+  newerStandardNotice: z.string().nullable(),
 });
 export type ConformanceResult = z.infer<typeof conformanceResultSchema>;
 

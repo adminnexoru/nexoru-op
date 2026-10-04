@@ -27,7 +27,7 @@ test("projects with an unsupported version or without one are not evaluated", as
 });
 
 test("the portfolio shows the supported versions and the version found in nexoru-governance", async () => {
-  await expect(page.getByText("Estándar soportado: 1.0, 1.1")).toBeVisible();
+  await expect(page.getByText("Estándar soportado: 1.0, 1.1, 1.2")).toBeVisible();
   await expect(page.getByTestId("standard")).toContainText("versión 1.0");
   await expect(page.getByTestId("standard-warning")).toHaveCount(0);
 });

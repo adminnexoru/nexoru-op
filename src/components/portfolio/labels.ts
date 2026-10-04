@@ -31,4 +31,5 @@ export const PROBLEM_LABEL: Record<Problem["reason"], string> = {
   git_error: "error al consultar git",
   no_checkboxes: "no tiene casillas",
   unreadable: "no se pudo leer",
+  invalid_value: "tiene un valor no permitido",
 };

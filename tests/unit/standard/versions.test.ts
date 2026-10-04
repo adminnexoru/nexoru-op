@@ -22,6 +22,7 @@ describe("evaluateProject by version", () => {
       failures: [],
       warnings: [],
       findings: [],
+      newerStandardNotice: null,
     });
     expect(result.manifest).toMatchObject({ id: "level3-demo", version_estandar: "2.0" });
     expect(result.roadmap).not.toBeNull();
@@ -48,8 +49,8 @@ describe("evaluateProject by version", () => {
 });
 
 describe("versions", () => {
-  it("supports 1.0 and 1.1", () => {
-    expect(SUPPORTED_STANDARD_VERSIONS).toEqual(["1.0", "1.1"]);
+  it("supports 1.0, 1.1 and 1.2 (phase 4)", () => {
+    expect(SUPPORTED_STANDARD_VERSIONS).toEqual(["1.0", "1.1", "1.2"]);
   });
 
   it("reads the first version of the CHANGELOG as MAJOR.MINOR", () => {
@@ -60,7 +61,8 @@ describe("versions", () => {
   it("knows when the local standard is newer than the supported versions", () => {
     expect(isNewerThanSupported("1.0")).toBe(false);
     expect(isNewerThanSupported("1.1")).toBe(false);
-    expect(isNewerThanSupported("1.2")).toBe(true);
+    expect(isNewerThanSupported("1.2")).toBe(false);
+    expect(isNewerThanSupported("1.3")).toBe(true);
     expect(isNewerThanSupported("2.0")).toBe(true);
     expect(isNewerThanSupported("0.9")).toBe(false);
   });

@@ -24,7 +24,7 @@ test("folders in .nexoruignore do not appear anywhere", async () => {
 });
 
 test("both supported versions are shown and there is no newer-standard warning", async () => {
-  await expect(page.getByText("Estándar soportado: 1.0, 1.1")).toBeVisible();
+  await expect(page.getByText("Estándar soportado: 1.0, 1.1, 1.2")).toBeVisible();
   await expect(page.getByTestId("standard-warning")).toHaveCount(0);
 });
 

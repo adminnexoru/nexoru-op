@@ -107,6 +107,12 @@ un entorno puede tocar el otro (`scripts/env-guard.ts`):
   Excepción documentada: `save_portfolio_snapshot` guarda el índice regenerable del portafolio sin
   evento de bitácora (no es una acción sobre la cuenta).
 - Todo cambio llega a `main` por PR con CI en verde; el push lo autoriza el Dueño tras revisar.
+- **Commit solo con la verificación completa en verde**: el commit se ejecuta únicamente si la
+  verificación termina con éxito, encadenando los comandos con `&&` en una sola línea (nunca
+  separados ni con `;`), para que cualquier fallo detenga el commit. Ejemplo:
+  `npm test && npm run lint && npm run typecheck && npx supabase db reset && npm run db:test && npm run test:e2e && git commit …`.
+  Si una prueba falla de forma intermitente, se investiga y se registra; nunca se hace commit "porque
+  la siguiente corrida pasó" (decisión del Dueño, 2026-10-04).
 
 ## Repositorio público: qué nunca entra al repo
 

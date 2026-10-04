@@ -50,6 +50,11 @@ export const GITHUB_SCENARIO: Record<string, RepoScenario> = {
     pulls: Array.from({ length: 12 }, (_, i) => ({ number: 100 + i, title: `Cambio ficticio ${i + 1}`, daysAgo: i, sha: sha(100 + i), ci: "success" as const })),
     alerts: 0,
   },
+  "standard-1-2-interno": { visibility: "public", runs: [ci("success", 1)], pulls: [], alerts: 0 },
+  "standard-1-2-nexoru": { visibility: "public", runs: [ci("success", 1)], pulls: [], alerts: 0 },
+  "standard-1-2-sin-decision": { visibility: "public", runs: [ci("success", 1)], pulls: [], alerts: 0 },
+  "standard-1-2-cliente": { visibility: "public", runs: [ci("success", 1)], pulls: [], alerts: 0 },
+  "standard-1-2-discrepancia": { visibility: "public", runs: [ci("success", 1)], pulls: [], alerts: 0 },
   "multi-workflow": {
     visibility: "public",
     runs: [

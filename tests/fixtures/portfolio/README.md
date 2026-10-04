@@ -33,6 +33,12 @@ FIFO, archivo grande, `.env` versionado) y esa copia es el `PROJECTS_ROOT` de la
 | `standard-1-1-operacion` | 1.1, `fase: operacion`, una fase pendiente | Hallazgo medio `operacion_pending_phases`; actividad neutra |
 | `standard-1-1-construccion` | 1.1, `fase: construccion`, roadmap concluido | Hallazgo medio `construction_roadmap_concluded` |
 | `gitlab-remote` | Remoto `origin` en `gitlab.example.com` (Fase 4) | Nivel 0; falla 1.7 "sin remoto origin en GitHub"; datos de GitHub "no aplica" |
+| `standard-1-2-interno` | 1.2, `interno`, sin `visibilidad` (Fase 4) | Resultado de visibilidad `sin-declarar (interno)`, sin hallazgo |
+| `standard-1-2-nexoru` | 1.2, `producto-nexoru`, `visibilidad: publico`, repo público | Visibilidad `aceptada` |
+| `standard-1-2-sin-decision` | 1.2, `producto-nexoru`, sin `visibilidad` | `requiere-decision`, hallazgo alto |
+| `standard-1-2-cliente` | 1.2, `producto-cliente`, `visibilidad: publico`, repo público | `aceptada`, más el hallazgo alto de `producto-cliente` público |
+| `standard-1-2-discrepancia` | 1.2, `producto-nexoru`, `visibilidad: privado`, repo público | `discrepancia`, hallazgo alto |
+| `multi-workflow` | 1.2 con tres workflows que cumplen 3.1 (CI en rojo, E2E en verde, Lint con su última ejecución fuera de las 50 recientes) | 3.2 falla nombrando CI; nivel 2 tras Actualizar |
 | `ignored-copy` | Listada en `.nexoruignore` de la raíz | No aparece en ninguna parte |
 
 Los textos `TEXTO-DE-SPEC-FICTICIO` y `TEXTO-DE-ENV-FICTICIO` sirven para comprobar que la

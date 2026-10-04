@@ -6,6 +6,7 @@ import { Absent, OrAbsent } from "./absent";
 import { BranchBadge } from "./branch-badge";
 import { daysText, phaseLabel } from "@/lib/format";
 import { ciState } from "@/lib/github/ci-state";
+import { SUPPORTED_STANDARD_VERSIONS } from "@/lib/standard/versions";
 import { IndicatorCell } from "./indicators";
 import { LevelBadge } from "./level-badge";
 
@@ -72,7 +73,15 @@ export function PortfolioTable({ projects, now }: { projects: ProjectReading[]; 
                   <Absent />
                 )}
               </TableCell>
-              <TableCell><LevelBadge project={project} /></TableCell>
+              <TableCell>
+                <LevelBadge project={project} />
+                {project.conformance.newerStandardNotice ? (
+                  // FR-028: the short form of the notice; the full text is in the detail.
+                  <div data-testid="newer-standard" className="text-xs text-muted-foreground" title={project.conformance.newerStandardNotice}>
+                    Estándar {SUPPORTED_STANDARD_VERSIONS[SUPPORTED_STANDARD_VERSIONS.length - 1]} disponible
+                  </div>
+                ) : null}
+              </TableCell>
               <TableCell className="whitespace-nowrap"><IndicatorCell kind="conformity" indicators={project.indicators} /></TableCell>
               <TableCell className="whitespace-nowrap"><IndicatorCell kind="progress" indicators={project.indicators} /></TableCell>
               <TableCell>

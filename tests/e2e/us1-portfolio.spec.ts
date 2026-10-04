@@ -43,9 +43,9 @@ test("shows every project with the data of its PROJECT.md", async () => {
   await expect(demo).toContainText("3 (provisional)");
   await expect(demo).toContainText("main");
 
-  // 24 project folders plus the header row (duplicate ids are both listed; ignored-copy is in .nexoruignore;
-  // gitlab-remote was added in phase 4).
-  await expect(page.getByTestId("portfolio-table").getByRole("row")).toHaveCount(25);
+  // 30 project folders plus the header row (duplicate ids are both listed; ignored-copy is in .nexoruignore;
+  // phase 4 added gitlab-remote, multi-workflow and five standard-1-2-*).
+  await expect(page.getByTestId("portfolio-table").getByRole("row")).toHaveCount(31);
 });
 
 test("a project without PROJECT.md is listed by folder, level 0 and absent data", async () => {
