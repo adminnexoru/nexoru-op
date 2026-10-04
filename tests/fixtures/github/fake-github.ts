@@ -62,7 +62,21 @@ export function scenarioResponse(path: string, scenario: Record<string, RepoScen
     const runs =
       !pull || pull.ci === "none"
         ? []
-        : [runJson(now, { workflow: "CI", path: ".github/workflows/ci.yml", status: pull.ci === "in_progress" ? "in_progress" : "completed", conclusion: pull.ci === "in_progress" ? null : pull.ci, daysAgo: pull.daysAgo }, pull.number, `pr-${pull.number}`)];
+        : [
+            runJson(
+              now,
+              {
+                workflow: "CI",
+                path: ".github/workflows/ci.yml",
+                status: pull.ci === "in_progress" ? "in_progress" : "completed",
+                // A run of a fork that waits for approval ends as action_required.
+                conclusion: pull.ci === "in_progress" ? null : pull.ci === "awaiting_approval" ? "action_required" : pull.ci,
+                daysAgo: pull.daysAgo,
+              },
+              pull.number,
+              `pr-${pull.number}`,
+            ),
+          ];
     return ok({ total_count: runs.length, workflow_runs: runs });
   }
   if (rest === "/actions/runs") {
@@ -81,7 +95,12 @@ export function scenarioResponse(path: string, scenario: Record<string, RepoScen
         number: p.number,
         title: p.title,
         created_at: iso(now, p.daysAgo),
-        head: { sha: p.sha },
+        draft: p.draft ?? false,
+        head: {
+          sha: p.sha,
+          repo: p.fork === "deleted" ? null : { full_name: p.fork === "other" ? `persona-ficticia/${match[2]}` : `${FAKE_OWNER}/${match[2]}` },
+        },
+        base: { repo: { full_name: `${FAKE_OWNER}/${match[2]}` } },
         body: "CUERPO-DE-PR-FICTICIO",
         user: { login: "persona-ficticia" },
       })),

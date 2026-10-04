@@ -186,3 +186,39 @@ describe("wave 2: CI", () => {
     expect(fake.requests.filter((r) => r.path.includes("/actions/"))).toHaveLength(0);
   });
 });
+
+// T038 (US3): wave 3, open pull requests and the CI of the 10 most recent ones.
+describe("wave 3: pull requests", () => {
+  it("lists the open PRs with their CI, including a draft, a fork waiting for approval and a deleted fork", async () => {
+    const { client } = setup();
+    const state = await fetchPortfolioGithub([target("env-versioned")], null, { client, now: NOW });
+    const pulls = state.github["env-versioned"].pulls;
+    expect(pulls.status).toBe("ok");
+    const byNumber = Object.fromEntries((pulls.value ?? []).map((p) => [p.number, p]));
+    expect(byNumber[7]).toMatchObject({ title: "Reporte ficticio <script>alert(1)</script>", ci: "failure", draft: false, fromFork: false });
+    expect(byNumber[8]).toMatchObject({ ci: "success" });
+    expect(byNumber[9]).toMatchObject({ draft: true, ci: "in_progress" });
+    expect(byNumber[10]).toMatchObject({ fromFork: true, ci: "awaiting_approval" });
+    expect(byNumber[11]).toMatchObject({ fromFork: true, ci: "none" });
+  });
+
+  it("asks the CI of the 10 most recent PRs only, with the 40-hex head sha", async () => {
+    const { fake, client } = setup();
+    const state = await fetchPortfolioGithub([target("history-demo")], null, { client, now: NOW });
+    const pulls = state.github["history-demo"].pulls.value ?? [];
+    expect(pulls).toHaveLength(12);
+    expect(pulls.filter((p) => p.ci === "not_queried")).toHaveLength(2);
+    const asked = fake.requests.filter((r) => r.path.includes("head_sha="));
+    expect(asked).toHaveLength(10);
+    for (const r of asked) expect(r.path).toMatch(/head_sha=[0-9a-f]{40}&per_page=20$/);
+  });
+
+  it("an empty list is 'Ninguno' data, not missing data; without repo data it does not ask", async () => {
+    const { client } = setup();
+    expect((await fetchPortfolioGithub([target("level3-demo")], null, { client, now: NOW })).github["level3-demo"].pulls).toMatchObject({ status: "ok", value: [] });
+    const { fake, client: anonymous } = setup(null);
+    const state = await fetchPortfolioGithub([target("feature-branch")], null, { client: anonymous, now: NOW });
+    expect(state.github["feature-branch"].pulls).toMatchObject({ status: "unavailable", reason: "requiere token" });
+    expect(fake.requests.filter((r) => r.path.includes("/pulls"))).toHaveLength(0);
+  });
+});

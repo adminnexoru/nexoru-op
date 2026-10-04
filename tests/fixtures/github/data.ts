@@ -2,7 +2,16 @@
 // The same scenario feeds the in-memory fake (unit tests) and the fake server (E2E).
 
 export type RunState = { workflow: string; path: string; status: "completed" | "in_progress" | "queued"; conclusion: string | null; daysAgo: number };
-export type PullState = { number: number; title: string; daysAgo: number; sha: string; ci: "success" | "failure" | "in_progress" | "none" };
+export type PullState = {
+  number: number;
+  title: string;
+  daysAgo: number;
+  sha: string;
+  ci: "success" | "failure" | "in_progress" | "awaiting_approval" | "none";
+  draft?: boolean;
+  /** The head branch lives in another repo ("other") or that repo was deleted ("deleted"). */
+  fork?: "other" | "deleted";
+};
 
 export type RepoScenario = {
   visibility: "public" | "private" | "internal";
@@ -41,6 +50,9 @@ export const GITHUB_SCENARIO: Record<string, RepoScenario> = {
     pulls: [
       { number: 7, title: "Reporte ficticio <script>alert(1)</script>", daysAgo: 30, sha: sha(7), ci: "failure" },
       { number: 8, title: "Ajuste ficticio de textos", daysAgo: 2, sha: sha(8), ci: "success" },
+      { number: 9, title: "Borrador ficticio", daysAgo: 1, sha: sha(9), ci: "in_progress", draft: true },
+      { number: 10, title: "Aporte ficticio desde un fork", daysAgo: 3, sha: sha(10), ci: "awaiting_approval", fork: "other" },
+      { number: 11, title: "Fork ficticio borrado", daysAgo: 5, sha: sha(11), ci: "none", fork: "deleted" },
     ],
     alerts: 2,
   },

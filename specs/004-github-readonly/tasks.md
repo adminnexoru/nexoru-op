@@ -367,26 +367,32 @@ el número en el tablero.
 
 ### Pruebas de US3 (escribir primero, deben fallar)
 
-- [ ] T038 [P] [US3] Pruebas de PRs:
+- [X] T038 [P] [US3] Pruebas de PRs:
   - **Resumen**, en `tests/unit/github/summarize.test.ts`:
     - número, título, `openedAt` y CI (`success`, `failure`, `in_progress`, `none`);
+    - *(Añadido el 2026-10-04 a pedido del Dueño.)* PR en borrador (`draft`), PR de un fork
+      (`fromFork`, incluido un fork borrado con `head.repo` nulo), ejecuciones de un fork que
+      esperan aprobación (`awaiting_approval`) y un PR sin `head.sha` válido (`not_queried`, sin
+      error);
     - CI consultada solo para los 10 PRs más recientes, el resto `not_queried`;
     - no se guarda el cuerpo ni el autor.
   - **Oleada 3**, en `tests/unit/github/fetch-portfolio.test.ts`: consultas 3 y 4, con
     `head_sha` validado como 40 hexadecimales.
-- [ ] T039 [P] [US3] E2E en `tests/e2e/us3-github-pulls.spec.ts`:
+- [X] T039 [P] [US3] E2E en `tests/e2e/us3-github-pulls.spec.ts`:
   - columna PRs (número, "—" o "?" con motivo);
   - lista en el detalle con "abierto hace N días" y la CI;
   - "Ninguno" cuando no hay PRs;
-  - el título con `<script>` se muestra como texto, sin ejecutarse y sin violación de CSP.
+  - el título con `<script>` se muestra como texto, sin ejecutarse y sin violación de CSP;
+  - *(Añadido el 2026-10-04.)* un PR en borrador muestra "borrador" y uno de un fork "desde un fork",
+    con su CI ("requiere aprobación" si GitHub la espera), sin errores ni violaciones de CSP.
 
 ### Implementación de US3
 
-- [ ] T040 [US3] Resumen de PRs en `src/lib/github/summarize.ts` y oleada 3 en
+- [X] T040 [US3] Resumen de PRs en `src/lib/github/summarize.ts` y oleada 3 en
   `src/lib/github/fetch-portfolio.ts` (T038).
-- [ ] T041 [US3] Interfaz: columna PRs en `src/components/portfolio/portfolio-table.tsx` y lista
+- [X] T041 [US3] Interfaz: columna PRs en `src/components/portfolio/portfolio-table.tsx` y lista
   de PRs en `src/components/github/github-card.tsx` (T039).
-- [ ] T042 [US3] Parada: pruebas en verde; commit y push.
+- [X] T042 [US3] Parada: pruebas en verde; commit y push.
 
 ---
 

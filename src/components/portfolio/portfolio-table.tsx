@@ -32,6 +32,7 @@ export function PortfolioTable({ projects, now }: { projects: ProjectReading[]; 
           <TableHead>Avance</TableHead>
           <TableHead>Actividad</TableHead>
           <TableHead>CI</TableHead>
+          <TableHead>PRs</TableHead>
           <TableHead>Rama</TableHead>
         </TableRow>
       </TableHeader>
@@ -99,6 +100,19 @@ export function PortfolioTable({ projects, now }: { projects: ProjectReading[]; 
               </TableCell>
               <TableCell>
                 <TrafficLight kind="ci" {...ciState(project.github, now)} labelHidden />
+              </TableCell>
+              <TableCell>
+                {/* Phase 4 (US3): open PRs; "—" when GitHub does not apply, "?" with its reason when unavailable. */}
+                {project.github.applies !== "yes" ? (
+                  <span data-testid="pulls-count" className="text-muted-foreground">—</span>
+                ) : project.github.pulls.value ? (
+                  <span data-testid="pulls-count">{project.github.pulls.value.length}</span>
+                ) : (
+                  <span>
+                    <span data-testid="pulls-count" aria-hidden="true">?</span>
+                    <span className="sr-only">PRs no disponibles: {project.github.pulls.reason}</span>
+                  </span>
+                )}
               </TableCell>
               <TableCell><BranchBadge git={project.git} /></TableCell>
             </TableRow>

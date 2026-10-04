@@ -52,7 +52,8 @@ donde aparece "cambió"; no depende de lo que pasó en la última actualización
 - **CI de la rama principal** (`rama`): una fila por workflow que cumple 3.1 (1.2), o la última
   ejecución (1.0 y 1.1). Cada fila lleva el nombre del workflow, el resultado, la fecha y "en
   curso" si aplica.
-- **PRs abiertos**: número, título (texto), "abierto hace N días" y CI; "Ninguno" si no hay.
+- **PRs abiertos**: número, título (texto), "abierto hace N días" y CI; "borrador" y "desde un
+  fork" cuando aplican; "Ninguno" si no hay.
 - **Alertas de secretos**: "Ninguna", "N abiertas" o "no evaluado: motivo".
 - **Origen de los datos**: "Datos de GitHub de hace X" y "desactualizado" si tienen 7 días o más.
 

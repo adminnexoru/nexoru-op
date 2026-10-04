@@ -1,6 +1,6 @@
 // T016: summary of the CI runs of the default branch (queries 2 and 2b, research R3, data-model).
 import { describe, expect, it } from "vitest";
-import { buildCiInfo, missingWorkflows, summarizeRuns } from "@/lib/github/summarize";
+import { buildCiInfo, missingWorkflows, pullCi, pullSha, summarizePulls, summarizeRuns } from "@/lib/github/summarize";
 
 const run = (path: string, status: string, conclusion: string | null, at: string, name = "CI") => ({
   name,
@@ -76,5 +76,73 @@ describe("buildCiInfo", () => {
       latestCompletedAny: null,
       perWorkflow: [{ path: CI, latestCompleted: null, inProgress: false }],
     });
+  });
+});
+
+// T038 (US3): open pull requests and the CI of each one.
+describe("summarizePulls", () => {
+  const pull = (number: number, extra: Record<string, unknown> = {}) => ({
+    number,
+    title: `Cambio ficticio ${number}`,
+    created_at: `2026-09-${String(number).padStart(2, "0")}T10:00:00Z`,
+    draft: false,
+    head: { sha: number.toString(16).padStart(40, "a"), repo: { full_name: "example-org/demo" } },
+    body: "CUERPO-DE-PR-FICTICIO",
+    user: { login: "persona-ficticia" },
+    ...extra,
+  });
+
+  it("keeps number, title, date, draft and fork, newest first, and never the body or the author", () => {
+    const pulls = summarizePulls([pull(3), pull(5, { draft: true })], "example-org/demo");
+    expect(pulls).toEqual([
+      { number: 5, title: "Cambio ficticio 5", openedAt: "2026-09-05T10:00:00Z", draft: true, fromFork: false, ci: "not_queried" },
+      { number: 3, title: "Cambio ficticio 3", openedAt: "2026-09-03T10:00:00Z", draft: false, fromFork: false, ci: "not_queried" },
+    ]);
+    expect(JSON.stringify(pulls)).not.toMatch(/CUERPO|persona-ficticia/);
+  });
+
+  it("marks a fork, also when its repo was deleted (head.repo null), comparing names case-insensitively", () => {
+    const [fork, deleted, same] = summarizePulls(
+      [
+        pull(9, { head: { sha: "f".repeat(40), repo: { full_name: "persona-ficticia/demo" } } }),
+        pull(8, { head: { sha: "e".repeat(40), repo: null } }),
+        pull(7, { head: { sha: "d".repeat(40), repo: { full_name: "Example-Org/Demo" } } }),
+      ],
+      "example-org/demo",
+    );
+    expect([fork.fromFork, deleted.fromFork, same.fromFork]).toEqual([true, true, false]);
+  });
+
+  it("keeps the title as plain text, including markup", () => {
+    expect(summarizePulls([pull(1, { title: "Reporte <script>alert(1)</script>" })], "example-org/demo")[0].title).toBe(
+      "Reporte <script>alert(1)</script>",
+    );
+  });
+
+  it("does not break on missing or unexpected fields; without a valid sha there is no CI query", () => {
+    expect(summarizePulls(null, "example-org/demo")).toEqual([]);
+    const [weird] = summarizePulls([{ number: 4, title: 7, created_at: null, head: null }], "example-org/demo");
+    expect(weird).toMatchObject({ number: 4, title: "7", draft: false, fromFork: true, ci: "not_queried" });
+    expect(pullSha({ number: 4, head: null })).toBeNull();
+    expect(pullSha({ number: 4, head: { sha: "nope" } })).toBeNull();
+    expect(pullSha({ number: 4, head: { sha: "a".repeat(40) } })).toBe("a".repeat(40));
+  });
+});
+
+describe("pullCi", () => {
+  const runs = (...items: [string, string | null][]) => ({
+    workflow_runs: items.map(([status, conclusion], i) => ({ name: "CI", path: ".github/workflows/ci.yml", status, conclusion, run_started_at: `2026-10-0${i + 1}T10:00:00Z` })),
+  });
+
+  it.each([
+    [runs(["completed", "success"]), "success"],
+    [runs(["completed", "success"], ["completed", "failure"]), "failure"],
+    [runs(["in_progress", null], ["completed", "success"]), "in_progress"],
+    [runs(["completed", "action_required"]), "awaiting_approval"],
+    [runs(["completed", "skipped"], ["completed", "success"]), "success"],
+    [runs(), "none"],
+    [null, "none"],
+  ] as const)("%j → %s", (body, expected) => {
+    expect(pullCi(body)).toBe(expected);
   });
 });

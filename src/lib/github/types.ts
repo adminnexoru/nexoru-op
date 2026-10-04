@@ -38,7 +38,12 @@ export const pullInfoSchema = z.object({
   /** Plain text, shown escaped. */
   title: z.string(),
   openedAt: iso,
-  ci: z.enum(["success", "failure", "in_progress", "none", "not_queried"]),
+  /** A draft PR. */
+  draft: z.boolean(),
+  /** The head branch lives in another repo, or that repo was deleted (head.repo null). */
+  fromFork: z.boolean(),
+  /** awaiting_approval: GitHub waits for approval of the runs of a fork (action_required). */
+  ci: z.enum(["success", "failure", "in_progress", "awaiting_approval", "none", "not_queried"]),
 });
 export type PullInfo = z.infer<typeof pullInfoSchema>;
 

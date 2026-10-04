@@ -3,7 +3,7 @@
 // cache and a stop for the whole update when the rate limit runs out. What fails keeps the last
 // good value with its date and says why.
 import { githubRoutes, type GithubClient, type GithubFailure } from "./client";
-import { buildCiInfo, missingWorkflows, summarizeRuns } from "./summarize";
+import { buildCiInfo, missingWorkflows, pullCi, pullSha, summarizePulls, summarizeRuns } from "./summarize";
 import type { CiRun, Fetched, GithubCache, GithubData, GithubState, GithubStatus, RepoInfo } from "./types";
 
 export const GITHUB_DEADLINE_MS = 8_000;
@@ -170,8 +170,43 @@ export const ciWave: Wave = async (ctx) => {
   );
 };
 
+/** PRs whose CI is asked (query 4); the rest say "no consultada" (research R3). */
+export const PULLS_WITH_CI = 10;
+
+/** Wave 3 (US3): open pull requests and the CI of the 10 most recent ones. */
+export const pullsWave: Wave = async (ctx) => {
+  const jobs: (() => Promise<void>)[] = [];
+  for (const t of ctx.targets.filter((target) => ctx.github[target.folder].applies === "yes")) {
+    const data = ctx.github[t.folder];
+    if (!data.repoInfo.value) {
+      data.pulls = failed(data.pulls, data.repoInfo.reason ?? NO_DATA_REASON);
+      continue;
+    }
+    jobs.push(async () => {
+      const [owner, name] = splitRepo(data.repo as string);
+      const raw = await ctx.query(githubRoutes.pulls(owner, name), (body) => ({
+        pulls: summarizePulls(body, data.repo as string),
+        shas: Array.isArray(body) ? Object.fromEntries((body as Parameters<typeof pullSha>[0][]).map((p) => [Number(p.number), pullSha(p)])) : {},
+      }));
+      if (!raw.ok) {
+        data.pulls = failed(data.pulls, raw.reason);
+        return;
+      }
+      const pulls = raw.summary.pulls.map((pull) => ({ ...pull }));
+      for (const pull of pulls.slice(0, PULLS_WITH_CI)) {
+        const sha = raw.summary.shas[pull.number];
+        if (!sha) continue;
+        const ci = await ctx.query(githubRoutes.commitRuns(owner, name, sha), pullCi);
+        if (ci.ok) pull.ci = ci.summary;
+      }
+      data.pulls = fresh(pulls, ctx.now);
+    });
+  }
+  await ctx.pool(jobs);
+};
+
 /** Waves in priority order; each story adds its own. */
-export const GITHUB_WAVES: Wave[] = [repoWave, ciWave];
+export const GITHUB_WAVES: Wave[] = [repoWave, ciWave, pullsWave];
 
 export async function fetchPortfolioGithub(
   targets: GithubTarget[],

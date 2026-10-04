@@ -54,9 +54,16 @@ conclusion: "success" | "failure" | "cancelled" | "timed_out" | "skipped" | "neu
 
 ### PullInfo
 
-`{ number: number, title: string, openedAt: ISO, ci: "success" | "failure" | "in_progress" |
-"none" | "not_queried" }`. El título se guarda como texto plano y se muestra escapado. Máximo 10
-PRs con CI consultada por repo.
+`{ number: number, title: string, openedAt: ISO, draft: boolean, fromFork: boolean, ci: "success" |
+"failure" | "in_progress" | "awaiting_approval" | "none" | "not_queried" }`. El título se guarda como
+texto plano y se muestra escapado. Máximo 10 PRs con CI consultada por repo.
+
+- `draft`: el PR es un borrador (se muestra "borrador").
+- `fromFork`: la rama del PR vive en otro repo, o su repo ya no existe (`head.repo` nulo); se muestra
+  "desde un fork".
+- `awaiting_approval`: GitHub espera la aprobación de las ejecuciones de un fork
+  (`conclusion: action_required`); se muestra "CI: requiere aprobación".
+- Un PR sin `head.sha` válido no consulta CI (`not_queried`) y no rompe la lectura.
 
 ## GithubStatus (por lectura: `PortfolioReading.githubStatus`)
 

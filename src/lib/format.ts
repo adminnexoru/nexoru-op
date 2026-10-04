@@ -61,6 +61,18 @@ export function agoText(fromIso: string, now: Date): string {
   return `hace ${count(Math.floor(hours / 24), "día", "días")}`;
 }
 
+/** CI of a pull request, as the dashboard names it (contracts/github-ui.md). */
+const PULL_CI: Record<string, string> = {
+  success: "éxito",
+  failure: "falla",
+  in_progress: "en curso",
+  awaiting_approval: "requiere aprobación",
+  none: "sin CI",
+  not_queried: "no consultada",
+};
+
+export const pullCiLabel = (ci: string) => PULL_CI[ci] ?? ci;
+
 /** "1 día", "2 días", "0 días". */
 export function count(n: number, singular: string, plural: string): string {
   return `${n} ${n === 1 ? singular : plural}`;

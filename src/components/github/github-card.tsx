@@ -1,8 +1,8 @@
 import { TrafficLight } from "@/components/status/traffic-light";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { agoText, capitalize, ciConclusionLabel } from "@/lib/format";
+import { agoText, capitalize, ciConclusionLabel, daysText, pullCiLabel } from "@/lib/format";
 import { ciState } from "@/lib/github/ci-state";
-import type { CiRun, Fetched } from "@/lib/github/types";
+import type { CiRun, Fetched, PullInfo } from "@/lib/github/types";
 import type { ProjectReading } from "@/lib/portfolio/types";
 
 // T024: GitHub data of a project in the detail (contracts/github-ui.md). Plain text only: React
@@ -29,6 +29,21 @@ function RunLine({ run, label }: { run: CiRun | null; label: string }) {
   return (
     <li>
       {run.workflowName}: {result} · {new Date(run.at).toLocaleDateString("en-CA")}
+    </li>
+  );
+}
+
+function PullItem({ pull, now }: { pull: PullInfo; now: Date }) {
+  const days = Math.max(0, Math.floor((now.getTime() - new Date(pull.openedAt).getTime()) / DAY_MS));
+  return (
+    <li data-testid={`pull-${pull.number}`}>
+      <span className="font-mono">#{pull.number}</span> {pull.title}
+      <span className="text-muted-foreground">
+        {" "}
+        · abierto hace {daysText(days)} · CI: {pullCiLabel(pull.ci)}
+        {pull.draft ? " · borrador" : ""}
+        {pull.fromFork ? " · desde un fork" : ""}
+      </span>
     </li>
   );
 }
@@ -95,6 +110,22 @@ export function GithubCard({ project, now }: { project: ProjectReading; now: Dat
                 </ul>
               ) : null}
               <Origin data={github.ci} now={now} />
+            </section>
+            <section className="grid gap-1">
+              <h3 className="font-medium">PRs abiertos</h3>
+              {github.pulls.value === null ? (
+                <p data-testid="pulls" className="text-muted-foreground">
+                  No disponible: {github.pulls.reason}
+                </p>
+              ) : github.pulls.value.length === 0 ? (
+                <p data-testid="pulls">Ninguno</p>
+              ) : (
+                <ul data-testid="pulls" className="grid gap-0.5">
+                  {github.pulls.value.map((pull) => (
+                    <PullItem key={pull.number} pull={pull} now={now} />
+                  ))}
+                </ul>
+              )}
             </section>
           </>
         )}
