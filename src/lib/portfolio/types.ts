@@ -160,7 +160,14 @@ const absentSchema = z.object({ absent: z.string() });
 /** T011/T033: Conformidad and Avance (US2, data-model.md). */
 export const indicatorsSchema = z.object({
   conformity: z.union([
-    z.object({ percent: z.number(), passed: z.number(), applicable: z.number(), missing: z.array(z.string()) }),
+    z.object({
+      percent: z.number(),
+      passed: z.number(),
+      applicable: z.number(),
+      missing: z.array(z.string()),
+      /** Phase 4 (FR-016, FR-017): whether 3.2 is in the base, or why not. The current state only. */
+      check32: z.union([z.object({ included: z.literal(true) }), z.object({ included: z.literal(false), reason: z.string() })]),
+    }),
     absentSchema,
   ]),
   progress: z.union([

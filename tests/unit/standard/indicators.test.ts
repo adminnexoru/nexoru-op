@@ -2,18 +2,19 @@
 import { describe, expect, it } from "vitest";
 import { evaluateProject } from "@/lib/standard/evaluate";
 import type { ProjectFiles } from "@/lib/standard/project-files";
+import type { GithubData } from "@/lib/github/types";
 import { baseFiles, DATE, replaceIn, roadmapFiles } from "./helpers";
 
 const indicators = (files: ProjectFiles) => evaluateProject(files, DATE).indicators;
 
 describe("Conformidad", () => {
-  it("counts every check except 3.2 as applicable: 28 of 28 on the conforming fixture", () => {
-    expect(indicators(baseFiles()).conformity).toEqual({ percent: 100, passed: 28, applicable: 28, missing: [] });
+  it("without GitHub data, 3.2 is out of the base: 28 of 28 on the conforming fixture, saying why", () => {
+    expect(indicators(baseFiles()).conformity).toEqual({ percent: 100, passed: 28, applicable: 28, missing: [], check32: { included: false, reason: "sin datos recientes de GitHub" } });
   });
 
   it("names the checks that are missing", () => {
     const files = replaceIn(baseFiles(), "project", "Ninguno.", "CONFIRMAR");
-    expect(indicators(files).conformity).toEqual({ percent: 96, passed: 27, applicable: 28, missing: ["1.11"] });
+    expect(indicators(files).conformity).toEqual({ percent: 96, passed: 27, applicable: 28, missing: ["1.11"], check32: { included: false, reason: "sin datos recientes de GitHub" } });
   });
 
   it("counts the checks that depend on a failed one as not met", () => {
@@ -30,6 +31,40 @@ describe("Conformidad", () => {
     expect(indicators(unsupported).conformity).toEqual({ absent: "versión del estándar no soportada" });
     const none = replaceIn(baseFiles(), "project", 'version_estandar: "1.0"\n', "");
     expect(indicators(none).conformity).toEqual({ absent: "sin versión del estándar" });
+  });
+});
+
+// T018 (004-github-readonly, FR-016, FR-017): 3.2 is in the base only when it was evaluated.
+describe("Conformidad with 3.2", () => {
+  const ci = (conclusion: string): GithubData => {
+    const run = { workflowName: "CI", path: ".github/workflows/ci.yml", status: "completed" as const, conclusion, at: "2026-09-30T10:00:00Z" };
+    const unavailable = { status: "unavailable" as const, value: null, fetchedAt: null, reason: "x" };
+    return {
+      applies: "yes",
+      repo: "example-org/level3-demo",
+      repoMismatch: null,
+      repoInfo: unavailable,
+      ci: { status: "ok", value: { branch: "main", latest: run, latestCompletedAny: run, perWorkflow: [] }, fetchedAt: "2026-09-30T12:00:00Z", reason: null },
+      pulls: unavailable,
+      secretAlerts: unavailable,
+    };
+  };
+
+  it("with 3.2 evaluated the base is 29 and it says so", () => {
+    expect(evaluateProject(baseFiles(), DATE, ci("success")).indicators.conformity).toEqual({
+      percent: 100,
+      passed: 29,
+      applicable: 29,
+      missing: [],
+      check32: { included: true },
+    });
+    expect(evaluateProject(baseFiles(), DATE, ci("failure")).indicators.conformity).toEqual({
+      percent: 97,
+      passed: 28,
+      applicable: 29,
+      missing: ["3.2"],
+      check32: { included: true },
+    });
   });
 });
 

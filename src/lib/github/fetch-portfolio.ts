@@ -3,7 +3,8 @@
 // cache and a stop for the whole update when the rate limit runs out. What fails keeps the last
 // good value with its date and says why.
 import { githubRoutes, type GithubClient, type GithubFailure } from "./client";
-import type { Fetched, GithubCache, GithubData, GithubState, GithubStatus, RepoInfo } from "./types";
+import { buildCiInfo, missingWorkflows, summarizeRuns } from "./summarize";
+import type { CiRun, Fetched, GithubCache, GithubData, GithubState, GithubStatus, RepoInfo } from "./types";
 
 export const GITHUB_DEADLINE_MS = 8_000;
 export const GITHUB_CONCURRENCY = 3;
@@ -136,8 +137,41 @@ export function summarizeRepo(body: unknown): RepoInfo {
   return { visibility, defaultBranch: String(repo.default_branch ?? "main"), archived: Boolean(repo.archived) };
 }
 
+/** Wave 2 (US1): CI runs of the default branch, and query 2b for workflows not among them. */
+export const ciWave: Wave = async (ctx) => {
+  await ctx.pool(
+    ctx.targets
+      .filter((t) => ctx.github[t.folder].applies === "yes")
+      .map((t) => async () => {
+        const data = ctx.github[t.folder];
+        const branch = data.repoInfo.value?.defaultBranch;
+        if (!branch) {
+          data.ci = failed(data.ci, data.repoInfo.reason ?? NO_DATA_REASON);
+          return;
+        }
+        const [owner, name] = splitRepo(data.repo as string);
+        const runs = await ctx.query(githubRoutes.branchRuns(owner, name, branch), summarizeRuns);
+        if (!runs.ok) {
+          data.ci = failed(data.ci, runs.reason);
+          return;
+        }
+        const older: Record<string, CiRun | null> = {};
+        for (const path of missingWorkflows(runs.summary, t.workflowFiles)) {
+          const file = path.split("/").pop() as string;
+          const result = await ctx.query(githubRoutes.workflowRuns(owner, name, file, branch), (body) => summarizeRuns(body)[0] ?? null);
+          if (!result.ok) {
+            data.ci = failed(data.ci, result.reason);
+            return;
+          }
+          older[path] = result.summary;
+        }
+        data.ci = fresh(buildCiInfo(branch, runs.summary, t.workflowFiles, older), ctx.now);
+      }),
+  );
+};
+
 /** Waves in priority order; each story adds its own. */
-export const GITHUB_WAVES: Wave[] = [repoWave];
+export const GITHUB_WAVES: Wave[] = [repoWave, ciWave];
 
 export async function fetchPortfolioGithub(
   targets: GithubTarget[],

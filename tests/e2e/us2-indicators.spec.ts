@@ -23,7 +23,8 @@ test("the portfolio shows both percentages with their names and bases", async ()
   await page.goto("/");
   const demo = row("Proyecto Demo Nivel 3");
   // The column header gives the name; the number never separates from its % (no-break space).
-  expect(await demo.getByTestId("conformity").textContent()).toBe("100\u00a0% · 28 de 28");
+  // Phase 4: before Actualizar there is no GitHub data, so 3.2 is out of the base and it says why.
+  expect(await demo.getByTestId("conformity").textContent()).toBe("100\u00a0% · 28 de 28 (3.2 sin evaluar: sin datos recientes de GitHub)");
   expect(await demo.getByTestId("progress").textContent()).toBe("100\u00a0% · 2 de 2 tareas");
 });
 

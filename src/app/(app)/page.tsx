@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrAbsent } from "@/components/portfolio/absent";
 import { PortfolioCharts } from "@/components/charts/portfolio-charts";
 import { PortfolioTable } from "@/components/portfolio/portfolio-table";
+import { ConformityLegend } from "@/components/github/conformity-legend";
+import { GithubAlerts, GithubStatus } from "@/components/github/github-status";
 import { RefreshButton } from "@/components/portfolio/refresh-button";
 import { getPortfolio } from "@/lib/portfolio/snapshot";
 import type { PortfolioReading } from "@/lib/portfolio/types";
@@ -20,6 +22,7 @@ const dateTime = new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeSty
 
 export default async function PortfolioPage() {
   const portfolio = await getPortfolio();
+  const now = new Date();
   const { root, standard, projects, warnings } = portfolio;
 
   return (
@@ -34,6 +37,7 @@ export default async function PortfolioPage() {
             </time>{" "}
             · Estándar soportado: {portfolio.supportedStandardVersions.join(", ")}
           </p>
+          <GithubStatus portfolio={portfolio} now={now} />
         </div>
         <RefreshButton />
       </header>
@@ -65,6 +69,8 @@ export default async function PortfolioPage() {
         </Alert>
       ) : null}
 
+      <GithubAlerts portfolio={portfolio} now={now} />
+
       {warnings.map((warning) => (
         <Alert key={warning.detail}>
           <AlertTitle>Identificador duplicado</AlertTitle>
@@ -78,7 +84,12 @@ export default async function PortfolioPage() {
 
       {projects.length > 0 ? <PortfolioCharts portfolio={portfolio} /> : null}
 
-      {projects.length > 0 ? <PortfolioTable projects={projects} /> : null}
+      {projects.length > 0 ? (
+        <div className="grid gap-2">
+          <PortfolioTable projects={projects} now={now} />
+          <ConformityLegend />
+        </div>
+      ) : null}
 
       <Card data-testid="standard">
         <CardHeader>

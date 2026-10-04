@@ -5,8 +5,6 @@ import { taskCheckboxes } from "./markdown";
 import type { SpecFolder } from "./project-files";
 import { phaseConcluded, type ParsedRoadmap } from "./v1_0/roadmap";
 
-/** Checks pending only because this phase cannot evaluate them (not applicable, FR-009). */
-const DEFERRED_TO_LATER_PHASE = new Set(["3.2"]);
 
 const percent = (part: number, whole: number) => Math.round((part / whole) * 100);
 
@@ -16,11 +14,17 @@ export const NOT_EVALUATED_REASON = {
   no_version: "sin versión del estándar",
 } as const;
 
-/** Conformidad: checks passed over applicable ones; "Depende de X" counts as not met. */
+/**
+ * Conformidad: checks passed over applicable ones; "Depende de X" counts as not met. 3.2 is
+ * applicable only when it was evaluated with GitHub data (phase 4, FR-016): base 29, or 28 with
+ * the reason (FR-017).
+ */
 export function conformity(conformance: ConformanceResult): Indicators["conformity"] {
   if (conformance.evaluation === "unsupported_version") return { absent: NOT_EVALUATED_REASON.unsupported_version };
   if (conformance.evaluation === "no_version") return { absent: NOT_EVALUATED_REASON.no_version };
-  const applicable = conformance.checks.filter((check) => !DEFERRED_TO_LATER_PHASE.has(check.id));
+  const c32 = conformance.checks.find((check) => check.id === "3.2");
+  const out32 = c32?.status === "not_evaluated";
+  const applicable = conformance.checks.filter((check) => !(out32 && check.id === "3.2"));
   if (applicable.length === 0) return { absent: "sin verificaciones aplicables" };
   const passed = applicable.filter((check) => check.status === "pass").length;
   return {
@@ -28,6 +32,7 @@ export function conformity(conformance: ConformanceResult): Indicators["conformi
     passed,
     applicable: applicable.length,
     missing: applicable.filter((check) => check.status !== "pass").map((check) => check.id),
+    check32: out32 ? { included: false, reason: c32.detail ?? "sin datos recientes de GitHub" } : { included: true },
   };
 }
 

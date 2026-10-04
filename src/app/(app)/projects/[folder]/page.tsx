@@ -7,6 +7,7 @@ import { ManifestCard } from "@/components/portfolio/manifest-card";
 import { ReadErrors } from "@/components/portfolio/read-errors";
 import { RoadmapTable } from "@/components/portfolio/roadmap-table";
 import { RepositoryCard } from "@/components/portfolio/repository-card";
+import { GithubCard } from "@/components/github/github-card";
 import { getPortfolio } from "@/lib/portfolio/snapshot";
 
 // T040: detail of one project (US2, contracts/ui.md "GET /projects/[folder]").
@@ -42,6 +43,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[fold
         <ManifestCard project={project} />
         <RepositoryCard git={project.git} />
       </div>
+      <GithubCard project={project} now={new Date()} />
       <HistoryCard project={project} />
       <ReadErrors errors={project.readErrors} />
     </section>

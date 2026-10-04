@@ -190,14 +190,14 @@ Conformidad con su texto exacto; con el GitHub simulado apagado, el motivo.
 
 ### Pruebas de US1 (escribir primero, deben fallar)
 
-- [ ] T016 [P] [US1] Pruebas en `tests/unit/github/summarize.test.ts` del resumen de ejecuciones
+- [X] T016 [P] [US1] Pruebas en `tests/unit/github/summarize.test.ts` del resumen de ejecuciones
   (consultas 2 y 2b):
   - `latest`, aunque esté en curso;
   - `latestCompletedAny`;
   - `perWorkflow` solo para los archivos que cumplen 3.1, emparejados por `path`;
   - consulta 2b cuando un workflow no aparece entre las 50;
   - solo `conclusion: "success"` cumple.
-- [ ] T017 [P] [US1] Pruebas de 3.2 en 1.0 y 1.1 en `tests/unit/standard/check-3-2.test.ts`:
+- [X] T017 [P] [US1] Pruebas de 3.2 en 1.0 y 1.1 en `tests/unit/standard/check-3-2.test.ts`:
   - **Resultado**: pasa con la última ejecución terminada en verde y falla en rojo, con su
     detalle (workflow y fecha); una ejecución en curso no decide.
   - **Datos guardados**: un dato de 2 días se usa ("CI de hace 2 días"); uno de 7 días o más da
@@ -205,7 +205,7 @@ Conformidad con su texto exacto; con el GitHub simulado apagado, el motivo.
   - **Motivos de no evaluación**: "requiere token", "token de GitHub no válido o vencido", "el
     remoto no es de GitHub" y "sin remoto".
   - **Nivel**: con 3.2 evaluada, el nivel 3 no es provisional; si 3.2 falla, el nivel es 2.
-- [ ] T018 [P] [US1] Pruebas de la base en `tests/unit/standard/indicators.test.ts` y
+- [X] T018 [P] [US1] Pruebas de la base en `tests/unit/standard/indicators.test.ts` y
   `tests/unit/format.test.ts` (filas "Conformidad sin 3.2" y "Secuencia de actualizaciones" de
   `contracts/github-ui.md`):
   - **Texto exacto**: "100 % · 28 de 28 (3.2 sin evaluar: <motivo>)" para cada motivo de FR-017, y
@@ -217,7 +217,7 @@ Conformidad con su texto exacto; con el GitHub simulado apagado, el motivo.
 
     Fuera de la leyenda nunca aparece "cambió".
   - **`check32`**: describe el estado actual, nunca un cambio.
-- [ ] T019 [P] [US1] E2E en `tests/e2e/us1-github-ci.spec.ts`:
+- [X] T019 [P] [US1] *(Escrita antes de la interfaz; no pudo correr en rojo porque la compilación de Next revisa los tipos de las pruebas, que importaban módulos aún inexistentes. El rojo de US1 lo dieron las 35 pruebas unitarias.)* E2E en `tests/e2e/us1-github-ci.spec.ts`:
   - columna CI con su semáforo (rombo) y el texto, en los cinco estados;
   - tarjeta GitHub del detalle con la CI;
   - Conformidad con su texto, y la leyenda fija una sola vez bajo la tabla;
@@ -229,19 +229,19 @@ Conformidad con su texto exacto; con el GitHub simulado apagado, el motivo.
 
 ### Implementación de US1
 
-- [ ] T020 [US1] Resumen de ejecuciones en `src/lib/github/summarize.ts` y oleada 2 (consultas 2 y
+- [X] T020 [US1] Resumen de ejecuciones en `src/lib/github/summarize.ts` y oleada 2 (consultas 2 y
   2b) en `src/lib/github/fetch-portfolio.ts` (T016).
-- [ ] T021 [US1] 3.2 en el motor (T017):
+- [X] T021 [US1] 3.2 en el motor (T017):
   - **`src/lib/standard/rules.ts`**: `ciRule: "latest_any"` en 1.0 y 1.1.
   - **`src/lib/standard/v1_0/level3.ts`**: 3.2 con los datos de GitHub, con la regla de los 7 días
     y los motivos de FR-017.
   - **`src/lib/standard/v1_0/evaluate.ts` y `src/lib/standard/evaluate.ts`**: reciben y pasan el
     argumento `github`.
   - **`GITHUB_PHASE_REASON`** se elimina.
-- [ ] T022 [US1] Base y texto de la Conformidad (T018):
+- [X] T022 [US1] Base y texto de la Conformidad (T018):
   - **`src/lib/standard/indicators.ts`**: `applicable` 28 o 29 y `check32`.
   - **`src/lib/format.ts`**: `conformityText`.
-- [ ] T023 [US1] Tablero (`contracts/github-ui.md`):
+- [X] T023 [US1] *(Hecha: el semáforo de CI reutiliza los tonos de `tokens.css`, que ya tienen su prueba de contraste AA, y se distingue por la forma: extremos en punta con `clip-path`, `data-shape="diamond"`. La lógica del semáforo está en `src/lib/github/ci-state.ts`. También se ajustaron `us1-portfolio`, `us2-indicators`, `us3-visual`, `us5-standard-1-1` y `us2-conformance` por la fusión Tipo/Cliente, Roadmap al detalle, el texto de la Conformidad y el semáforo nuevo.)* Tablero (`contracts/github-ui.md`):
   - **Semáforo de CI**: en `src/components/status/traffic-light.tsx`, `kind: "ci"` con forma de
     rombo. Sus tokens van en `src/app/tokens.css`, con la prueba de contraste en
     `tests/unit/visual/contrast.test.ts`.
@@ -251,14 +251,14 @@ Conformidad con su texto exacto; con el GitHub simulado apagado, el motivo.
   - **Pruebas de fases anteriores**: se ajustan las que dependen de las columnas:
     `tests/e2e/us1-portfolio.spec.ts`, `review-tables-charts.spec.ts`, `us3-roadmap.spec.ts` y
     `us2-indicators.spec.ts`.
-- [ ] T024 [US1] Detalle y encabezado:
+- [X] T024 [US1] Detalle y encabezado:
   - **Tarjeta GitHub**: `src/components/github/github-card.tsx`, con repo, aviso de discrepancia
     de `repo`, CI por workflow y origen de los datos. Va en `src/app/(app)/projects/[folder]/page.tsx`.
   - **Estado de GitHub**: `src/components/github/github-status.tsx`, con antigüedad, límite,
     token, vencimiento y avisos de 14 días o menos, de token no válido y de límite. Va en
     `src/app/(app)/page.tsx`.
   - **Leyenda**: la leyenda fija también en `src/components/portfolio/indicators.tsx` (T019).
-- [ ] T025 [US1] Parada: `npm test`, `npm run lint`, `npm run typecheck`,
+- [X] T025 [US1] Parada: `npm test`, `npm run lint`, `npm run typecheck`,
   `npx supabase db reset && npm run db:test` y `npm run test:e2e` en verde; commit y push de la
   rama.
 

@@ -10,12 +10,12 @@ describe("level 3 on the conforming fixture", () => {
     expect(check(baseFiles(), id)).toMatchObject({ id, level: 3, status: "pass" });
   });
 
-  it("3.2 is not evaluated in this phase", () => {
+  it("without GitHub data 3.2 is not evaluated, saying why (phase 4: check-3-2.test.ts)", () => {
     expect(check(baseFiles(), "3.2")).toEqual({
       id: "3.2",
       level: 3,
       status: "not_evaluated",
-      detail: "Se evaluará con GitHub en la Fase 4",
+      detail: "sin datos recientes de GitHub",
     });
   });
 });

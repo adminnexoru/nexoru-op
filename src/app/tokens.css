@@ -58,6 +58,14 @@
   border-style: dashed;
 }
 
+/* Phase 4: CI of the default branch, a stretched diamond (pointed ends): different from the pill
+   and the dashed square even in grayscale. The border would be clipped, so it has none. */
+.traffic-light--ci {
+  border: 0;
+  padding: 0.125rem 0.75rem;
+  clip-path: polygon(0.5rem 0, calc(100% - 0.5rem) 0, 100% 50%, calc(100% - 0.5rem) 100%, 0.5rem 100%, 0 50%);
+}
+
 .traffic-light__label {
   opacity: 0.8;
 }

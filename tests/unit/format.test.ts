@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import {
   commitsInWeeks,
+  CONFORMITY_LEGEND,
   conformityCellText,
   conformityText,
   count,
@@ -48,8 +49,13 @@ describe("texts with counts", () => {
     expect(progressText({ absent: "sin roadmap" })).toBe("Avance ausente: sin roadmap");
   });
 
-  it("Conformidad keeps its base", () => {
-    expect(conformityText({ percent: 100, passed: 28, applicable: 28, missing: [] })).toBe(`Conformidad 100${NBSP}% · 28 de 28`);
+  it("Conformidad keeps its base and says the state of 3.2 in the same place", () => {
+    expect(conformityText({ percent: 100, passed: 28, applicable: 28, missing: [], check32: { included: false, reason: "sin datos recientes de GitHub" } })).toBe(
+      `Conformidad 100${NBSP}% · 28 de 28 (3.2 sin evaluar: sin datos recientes de GitHub)`,
+    );
+    expect(conformityText({ percent: 97, passed: 28, applicable: 29, missing: ["3.2"], check32: { included: true } })).toBe(
+      `Conformidad 97${NBSP}% · 28 de 29 (incluye 3.2)`,
+    );
   });
 
   it("projects and commits", () => {
@@ -62,7 +68,9 @@ describe("texts with counts", () => {
 
 describe("table cells (the column header gives the name)", () => {
   it("do not repeat the name and keep the number with its %", () => {
-    expect(conformityCellText({ percent: 93, passed: 26, applicable: 28, missing: ["1.11", "2.6"] })).toBe(`93${NBSP}% · 26 de 28`);
+    expect(
+      conformityCellText({ percent: 93, passed: 26, applicable: 28, missing: ["1.11", "2.6"], check32: { included: false, reason: "requiere token" } }),
+    ).toBe(`93${NBSP}% · 26 de 28 (3.2 sin evaluar: requiere token)`);
     expect(progressCellText({ percent: 78, done: 25, total: 32, manualPhasesExcluded: 1, phasesCompleted: 2, phasesTotal: 5 })).toBe(
       `78${NBSP}% · 25 de 32 tareas`,
     );
@@ -96,5 +104,29 @@ describe("week labels", () => {
     expect(weekLabel("2026-09-14")).toBe("14 sep");
     expect(weekLabel("2026-01-05")).toBe("5 ene");
     expect(weekLabel("2026-12-28")).toBe("28 dic");
+  });
+});
+
+// T018 (004-github-readonly, FR-017, contracts/github-ui.md): one exact text per reason.
+describe("Conformidad without 3.2", () => {
+  it.each(["sin datos recientes de GitHub", "requiere token", "token de GitHub no válido o vencido", "el remoto no es de GitHub", "sin remoto"])(
+    "%s",
+    (reason) => {
+      expect(conformityCellText({ percent: 100, passed: 28, applicable: 28, missing: [], check32: { included: false, reason } })).toBe(
+        `100${NBSP}% · 28 de 28 (3.2 sin evaluar: ${reason})`,
+      );
+    },
+  );
+
+  it("with 3.2 evaluated", () => {
+    expect(conformityCellText({ percent: 97, passed: 28, applicable: 29, missing: ["3.2"], check32: { included: true } })).toBe(
+      `97${NBSP}% · 28 de 29 (incluye 3.2)`,
+    );
+  });
+
+  it("the fixed legend is the only text that says the base changed", () => {
+    expect(CONFORMITY_LEGEND).toBe(
+      "La Conformidad incluye la verificación 3.2 (CI de la rama principal) desde la Fase 4: la base es 29 cuando 3.2 se evalúa y 28 cuando no se puede evaluar; la base cambió de 28 a 29 por la activación de 3.2",
+    );
   });
 });

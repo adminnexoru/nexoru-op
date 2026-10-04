@@ -5,6 +5,7 @@ import { declaredLevel, TrafficLight } from "@/components/status/traffic-light";
 import { Absent, OrAbsent } from "./absent";
 import { BranchBadge } from "./branch-badge";
 import { daysText, phaseLabel } from "@/lib/format";
+import { ciState } from "@/lib/github/ci-state";
 import { IndicatorCell } from "./indicators";
 import { LevelBadge } from "./level-badge";
 
@@ -14,14 +15,13 @@ function manifestNote(project: ProjectReading): string | null {
   return project.manifestProblem.reason === "missing" ? "sin PROJECT.md" : "PROJECT.md ilegible";
 }
 
-export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
+export function PortfolioTable({ projects, now }: { projects: ProjectReading[]; now: Date }) {
   return (
     <Table data-testid="portfolio-table">
       <TableHeader>
         <TableRow>
           <TableHead>Proyecto</TableHead>
           <TableHead>Tipo</TableHead>
-          <TableHead>Cliente</TableHead>
           <TableHead>Fase</TableHead>
           <TableHead>Estado declarado</TableHead>
           <TableHead>Fecha objetivo</TableHead>
@@ -30,7 +30,7 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
           <TableHead>Conformidad</TableHead>
           <TableHead>Avance</TableHead>
           <TableHead>Actividad</TableHead>
-          <TableHead>Roadmap</TableHead>
+          <TableHead>CI</TableHead>
           <TableHead>Rama</TableHead>
         </TableRow>
       </TableHeader>
@@ -46,8 +46,13 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
                 </Link>
                 {note ? <div className="text-xs text-muted-foreground">{note}</div> : null}
               </TableCell>
-              <TableCell><OrAbsent value={manifest?.tipo} /></TableCell>
-              <TableCell><OrAbsent value={manifest?.cliente} /></TableCell>
+              <TableCell>
+                {/* Phase 4: Tipo and Cliente share a column; the client only for producto-cliente. */}
+                <OrAbsent value={manifest?.tipo} />
+                {manifest?.tipo === "producto-cliente" && manifest.cliente ? (
+                  <div className="text-xs text-muted-foreground">{manifest.cliente}</div>
+                ) : null}
+              </TableCell>
               <TableCell>{manifest?.fase ? phaseLabel(manifest.fase) : <Absent />}</TableCell>
               <TableCell>
                 {declaredLevel(manifest?.estado) ? (
@@ -78,7 +83,7 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
                 )}
               </TableCell>
               <TableCell>
-                <OrAbsent value={project.roadmapStatus} />
+                <TrafficLight kind="ci" {...ciState(project.github, now)} labelHidden />
               </TableCell>
               <TableCell><BranchBadge git={project.git} /></TableCell>
             </TableRow>

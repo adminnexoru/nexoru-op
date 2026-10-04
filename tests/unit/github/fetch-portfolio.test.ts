@@ -156,3 +156,33 @@ describe("carryOverGithub (automatic re-read, no queries)", () => {
     expect(carried.github["level3-demo"].repoInfo.value).toBeNull();
   });
 });
+
+// T020 (US1): wave 2, CI of the default branch.
+describe("wave 2: CI", () => {
+  it("reads the runs of the default branch and asks 2b only for workflows absent from them", async () => {
+    const { fake, client } = setup();
+    const state = await fetchPortfolioGithub(
+      [target("multi-workflow", { workflowFiles: [".github/workflows/ci.yml", ".github/workflows/e2e.yml", ".github/workflows/lint.yml"] })],
+      null,
+      { client, now: NOW },
+    );
+    const ci = state.github["multi-workflow"].ci;
+    expect(ci.status).toBe("ok");
+    expect(ci.value?.perWorkflow.map((w) => [w.path, w.latestCompleted?.conclusion])).toEqual([
+      [".github/workflows/ci.yml", "failure"],
+      [".github/workflows/e2e.yml", "success"],
+      [".github/workflows/lint.yml", "success"],
+    ]);
+    const paths = fake.requests.map((r) => r.path);
+    expect(paths).toContain("/repos/example-org/multi-workflow/actions/runs?branch=main&per_page=50&exclude_pull_requests=true");
+    expect(paths).toContain("/repos/example-org/multi-workflow/actions/workflows/lint.yml/runs?branch=main&status=completed&per_page=1");
+    expect(paths.filter((p) => p.includes("/actions/workflows/"))).toHaveLength(1);
+  });
+
+  it("without the repository data it does not ask and keeps the reason", async () => {
+    const { fake, client } = setup(null);
+    const state = await fetchPortfolioGithub([target("feature-branch")], null, { client, now: NOW });
+    expect(state.github["feature-branch"].ci).toMatchObject({ status: "unavailable", reason: "requiere token" });
+    expect(fake.requests.filter((r) => r.path.includes("/actions/"))).toHaveLength(0);
+  });
+});
