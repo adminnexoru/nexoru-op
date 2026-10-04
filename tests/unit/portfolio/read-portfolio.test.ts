@@ -30,7 +30,7 @@ describe("portfolio", () => {
     expect(folders).not.toContain("nexoru-governance");
     expect(folders).toContain("level3-demo");
     // 18 projects of phase 2 + 5 of phase 3; ignored-copy is skipped by .nexoruignore (US5).
-    expect(folders).toHaveLength(23);
+    expect(folders).toHaveLength(24);
     expect(folders).not.toContain("ignored-copy");
     expect([...folders].sort()).toEqual(folders);
     expect(reading.root).toEqual({ status: "ok" });

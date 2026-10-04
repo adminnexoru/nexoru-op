@@ -12,6 +12,7 @@ const repo: GitInfo = {
   hasUncommittedChanges: false,
   uncommittedChangesReason: null,
   originRepo: "example-org/demo",
+  originKind: "github",
 };
 
 describe("value of the repository card (the label is the row title)", () => {

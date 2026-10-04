@@ -48,13 +48,13 @@ contrato; nunca se debilita la prueba.
 
 **Purpose**: que ninguna prueba pueda llegar al GitHub real y que existan datos simulados.
 
-- [ ] T001 Salvaguarda de Vitest:
+- [X] T001 Salvaguarda de Vitest:
   - **Prueba primero**: `tests/unit/github/block-github.test.ts` comprueba que un
     `fetch("https://api.github.com/…")` y un `fetch("https://github.com/…")` dentro de una prueba
     lanzan el error "GitHub real bloqueado en pruebas". Debe fallar.
   - **Implementación**: `tests/unit/setup/block-github.ts` envuelve `globalThis.fetch`, y se
     registra en `vitest.config.ts` (`setupFiles`).
-- [ ] T002 Salvaguardas de entorno:
+- [X] T002 Salvaguardas de entorno:
   - **Pruebas primero** en `tests/unit/env-guard.test.ts`:
     - `assertTestEnv` falla si `GITHUB_TOKEN` tiene un valor que no empieza con `test-`;
     - `GITHUB_API_ORIGIN` solo se acepta como `http://127.0.0.1:<puerto>` y solo en el entorno de
@@ -64,7 +64,7 @@ contrato; nunca se debilita la prueba.
     - en `scripts/env-guard.ts`;
     - en `src/lib/env.server.ts`, con `GITHUB_TOKEN` y `GITHUB_API_ORIGIN` opcionales en el esquema
       `zod`.
-- [ ] T003 [P] Datos simulados de GitHub en `tests/fixtures/github/`:
+- [X] T003 [P] *(Hecha: el escenario está en TypeScript, `tests/fixtures/github/data.ts`, en vez de archivos JSON; así el mismo escenario genera las respuestas de las 6 rutas con fechas relativas a `now`.)* Datos simulados de GitHub en `tests/fixtures/github/`:
   - respuestas JSON ficticias de las 6 rutas del catálogo (`contracts/github-client.md`) para repos
     `example-org/*`;
   - casos de CI en verde, en rojo, en curso, sin ejecuciones, con varios workflows y con un
@@ -78,14 +78,14 @@ contrato; nunca se debilita la prueba.
       429 con `retry-after`, 500, retraso y red caída;
     - cabeceras `x-ratelimit-*` y `GitHub-Authentication-Token-Expiration` con fecha programable
       (para el aviso de 14 días o menos).
-- [ ] T004 [P] Remotos de GitHub en el portafolio ficticio: en `tests/fixtures/build-portfolio.ts` y
+- [X] T004 [P] Remotos de GitHub en el portafolio ficticio: en `tests/fixtures/build-portfolio.ts` y
   `tests/fixtures/portfolio/`, los proyectos con repo git reciben `origin` apuntando a
   `https://github.com/example-org/<nombre>.git`, con `git remote add`, sin red.
   - Se añaden un proyecto con remoto que no es de GitHub (`https://gitlab.example.com/…`) y uno sin
     remoto.
   - Se actualiza `tests/fixtures/portfolio/README.md`.
   - Se ajustan las pruebas de las fases anteriores que dependan del número de proyectos.
-- [ ] T005 [P] `.env.example`:
+- [X] T005 [P] `.env.example`:
   - `GITHUB_TOKEN`, con el comentario "token fine-grained de solo lectura; solo en .env.op.local;
     ver specs/004-github-readonly/quickstart.md";
   - `GITHUB_API_ORIGIN`, con el comentario "solo pruebas E2E; nunca en uso".
@@ -98,7 +98,7 @@ contrato; nunca se debilita la prueba.
 
 ### Pruebas primero (deben fallar)
 
-- [ ] T006 [P] Pruebas del cliente en `tests/unit/github/client.test.ts`, todas las filas de
+- [X] T006 [P] Pruebas del cliente en `tests/unit/github/client.test.ts`, todas las filas de
   "Pruebas obligatorias" de `contracts/github-client.md`:
   - **Métodos**: `POST`, `PUT`, `PATCH`, `DELETE` y `HEAD` lanzan `method_not_allowed` y el `fetch`
     simulado no recibe nada.
@@ -112,12 +112,12 @@ contrato; nunca se debilita la prueba.
     por petición se cumple.
   - **Token**: no aparece en los errores ni en la consola capturada (`vi.spyOn(console, …)`).
   - **Vencimiento**: `GitHub-Authentication-Token-Expiration` se convierte en ISO.
-- [ ] T007 [P] Revisión de código en `tests/unit/security/review.test.ts`:
+- [X] T007 [P] Revisión de código en `tests/unit/security/review.test.ts`:
   - solo `src/lib/github/client.ts` contiene `fetch(` hacia GitHub;
   - ningún archivo `"use client"` importa `@/lib/github`;
   - el código no contiene métodos HTTP distintos de `GET` hacia GitHub;
   - `next.config` no activa `logging.fetches`.
-- [ ] T008 [P] Pruebas de las oleadas en `tests/unit/github/fetch-portfolio.test.ts`:
+- [X] T008 [P] Pruebas de las oleadas en `tests/unit/github/fetch-portfolio.test.ts`:
   - **Orden**: por prioridad (repo → CI → PRs → alertas), con concurrencia máxima 3.
   - **Plazo de 8 s**: con respuestas lentas, lo pendiente queda `unavailable` ("tiempo agotado").
   - **Fusión con lo anterior**: una falla conserva `value` y `fetchedAt` anteriores con `reason`.
@@ -125,7 +125,7 @@ contrato; nunca se debilita la prueba.
     consultas (`applies`).
   - **Discrepancia de repo**: `repoMismatch` cuando `PROJECT.md` declara otro `repo`.
   - Aquí solo se prueba la oleada 1; las demás las prueba cada historia.
-- [ ] T009 [P] Pruebas del índice en `tests/unit/portfolio/snapshot.test.ts`:
+- [X] T009 [P] Pruebas del índice en `tests/unit/portfolio/snapshot.test.ts`:
   - `FORMAT_VERSION` 3; un índice de formato 2 se descarta y se vuelve a leer;
   - **`localOnly`** (relectura a los 10 minutos) no llama al cliente de GitHub y conserva
     `github`, `githubStatus` y `githubCache`;
@@ -134,7 +134,7 @@ contrato; nunca se debilita la prueba.
 
 ### Implementación
 
-- [ ] T010 Tipos `zod` en `src/lib/github/types.ts`, según `data-model.md`:
+- [X] T010 Tipos `zod` en `src/lib/github/types.ts`, según `data-model.md`:
   - **`GithubData`**: `applies: "yes" | "no_remote" | "not_github"`.
   - **`Fetched<T>`**: `status: "ok" | "unavailable" | "not_evaluated"`; `value` "el último valor
     bueno, aunque sea de una consulta anterior".
@@ -143,7 +143,7 @@ contrato; nunca se debilita la prueba.
   - **`CiInfo`**, **`CiRun`** y **`PullInfo`**.
   - **`GithubStatus`**: sin el valor del token, solo `tokenPresent`.
   - **`GithubCache`**: clave = ruta sin origen.
-- [ ] T011 Cliente `src/lib/github/client.ts` (`server-only`), según `contracts/github-client.md`:
+- [X] T011 Cliente `src/lib/github/client.ts` (`server-only`), según `contracts/github-client.md`:
   - `githubGet(route, options)` y la función interna `request(method, route)`;
   - el origen y su override de pruebas;
   - el catálogo de rutas;
@@ -152,12 +152,12 @@ contrato; nunca se debilita la prueba.
   - el límite;
   - el vencimiento del token;
   - errores sin cabeceras (T006, T007).
-- [ ] T012 Oleadas en `src/lib/github/fetch-portfolio.ts`:
+- [X] T012 Oleadas en `src/lib/github/fetch-portfolio.ts`:
   - `fetchPortfolioGithub(projects, previous, deps)` con plazo global de 8 s (`AbortSignal`),
     concurrencia 3 y oleadas registrables por prioridad;
   - **oleada 1**: consulta 1 (repo);
   - fusión con los datos anteriores (T008).
-- [ ] T013 Índice y flujo de lectura:
+- [X] T013 Índice y flujo de lectura:
   - **`src/lib/portfolio/types.ts`**: `FORMAT_VERSION = 3`, más `github`, `githubStatus` y
     `githubCache`.
   - **`src/lib/portfolio/read-portfolio.ts`**: lee lo local, luego GitHub (si el modo lo pide) y
@@ -166,7 +166,7 @@ contrato; nunca se debilita la prueba.
   - **`src/lib/portfolio/snapshot.ts`**: modos `withGitHub` y `localOnly`.
   - **`src/lib/portfolio/actions.ts`**: Actualizar usa `withGitHub`; `getPortfolio` usa
     `localOnly` al vencer los 10 minutos (T009).
-- [ ] T014 GitHub simulado para E2E:
+- [X] T014 *(Hecha con un ajuste: la consulta a GitHub ocurre dentro del servidor de la app, así que la parte "sin simulado no se consulta el GitHub real" es la función pura `githubClientFor`, probada en `tests/unit/env-guard.test.ts`; la E2E `github-safeguard.spec.ts` comprueba que la app solo llega al simulado, solo con GET, rutas del catálogo y el token ficticio, y que abrir el tablero no consulta GitHub. El simulado escucha en el puerto fijo 4010 y cambia de modo por `POST /__state`.)* GitHub simulado para E2E:
   - **Servidor**: `tests/e2e/fake-github.ts`, un servidor `node:http` en `127.0.0.1` con un puerto
     libre que sirve las respuestas de `tests/fixtures/github/`, con escenarios conmutables por
     archivo de estado (normal, apagado, límite agotado).
@@ -174,7 +174,7 @@ contrato; nunca se debilita la prueba.
     recibe `GITHUB_API_ORIGIN` y `GITHUB_TOKEN=test-token-NO-REAL-0000`.
   - **Prueba de la salvaguarda**: en `tests/e2e/github-safeguard.spec.ts`, con el origen real
     forzado en el entorno de pruebas, Actualizar no consulta nada y muestra "no disponible".
-- [ ] T015 Ejecutar `npm test`, `npm run lint` y `npm run typecheck` hasta verde.
+- [X] T015 Ejecutar `npm test`, `npm run lint` y `npm run typecheck` hasta verde.
 
 **Checkpoint**: cliente, oleadas e índice listos; ninguna prueba sale a la red.
 

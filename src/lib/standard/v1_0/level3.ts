@@ -1,5 +1,6 @@
 // T025: level 3 checks 3.1–3.8 (standard/conformance.md v1.0). 3.2 needs GitHub (phase 4).
 import { ROADMAP_STATES, type Check } from "@/lib/portfolio/types";
+import type { ProjectFiles } from "../project-files";
 import { parseYaml } from "../frontmatter";
 import { sectionText } from "../markdown";
 import { check, dependsOn, fail, fromIssues, pass, type Context } from "./context";
@@ -14,16 +15,23 @@ function triggers(on: unknown): string[] {
   return [];
 }
 
+/** Workflow files that satisfy 3.1 (triggered by push and pull_request), as .github/workflows/<name>. */
+export function ciWorkflowPaths(files: Pick<ProjectFiles, "workflows">): string[] {
+  return files.workflows
+    .filter(({ content }) => {
+      if (!content.ok) return false;
+      const parsed = parseYaml(content.text);
+      if (!parsed.ok || !parsed.value || typeof parsed.value !== "object") return false;
+      const names = triggers((parsed.value as Record<string, unknown>).on);
+      return names.includes("push") && names.includes("pull_request");
+    })
+    .map(({ name }) => `.github/workflows/${name}`);
+}
+
 function ciCheck(ctx: Context): Check {
   const { workflows } = ctx.files;
   if (workflows.length === 0) return fail("3.1", "No hay flujos de CI en .github/workflows/");
-  const ok = workflows.some(({ content }) => {
-    if (!content.ok) return false;
-    const parsed = parseYaml(content.text);
-    if (!parsed.ok || !parsed.value || typeof parsed.value !== "object") return false;
-    const names = triggers((parsed.value as Record<string, unknown>).on);
-    return names.includes("push") && names.includes("pull_request");
-  });
+  const ok = ciWorkflowPaths(ctx.files).length > 0;
   return ok ? pass("3.1") : fail("3.1", "Ningún flujo de .github/workflows/ se dispara con push y pull_request");
 }
 

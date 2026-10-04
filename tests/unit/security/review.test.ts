@@ -70,3 +70,34 @@ describe("interface", () => {
     expect(fetchers).toEqual(["src/lib/password.ts"]);
   });
 });
+
+// T007 (004-github-readonly, contracts/github-client.md): a single read-only door to GitHub.
+describe("GitHub", () => {
+  const client = "src/lib/github/client.ts";
+
+  it("only client.ts calls fetch toward GitHub; password.ts keeps its own HIBP fetch", () => {
+    // The client receives fetch by injection (tests use the fake) and calls it as fetchImpl(.
+    const fetchers = source.filter(({ text }) => /\b(fetch|fetchImpl)\(/.test(text)).map(({ path }) => path).sort();
+    expect(readFileSync(client, "utf8")).toMatch(/\bfetchImpl\(/);
+    expect(fetchers).toEqual([client, "src/lib/password.ts"].sort());
+    expect(readFileSync("src/lib/password.ts", "utf8")).not.toMatch(/github/i);
+  });
+
+  it("no browser component imports the GitHub module", () => {
+    const browser = source.filter(({ text }) => /^\s*["']use client["']/m.test(text));
+    for (const { path, text } of browser) expect(text, path).not.toMatch(/@\/lib\/github/);
+  });
+
+  it("the client only sends GET and no other file names an HTTP write method toward GitHub", () => {
+    const text = readFileSync(client, "utf8");
+    expect(text).toMatch(/method: "GET"/);
+    expect(text).not.toMatch(/method: "(POST|PUT|PATCH|DELETE)"/);
+    for (const { path, text: other } of source.filter(({ text: t }) => /github/i.test(t))) {
+      expect(other, path).not.toMatch(/method:\s*["'](POST|PUT|PATCH|DELETE)["']/);
+    }
+  });
+
+  it("next.config does not log fetches", () => {
+    expect(readFileSync("next.config.ts", "utf8")).not.toMatch(/fetches/);
+  });
+});

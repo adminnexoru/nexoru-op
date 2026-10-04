@@ -1,9 +1,10 @@
 // T017: result of a portfolio reading, stored in the regenerable index (data-model §2).
 // The zod schemas validate the index when it is loaded back (FR-013).
 import { z } from "zod";
+import { githubCacheSchema, githubDataSchema, githubStatusSchema } from "@/lib/github/types";
 
 /** Version of the payload format stored in portfolio_snapshots.format_version. */
-export const FORMAT_VERSION = 2;
+export const FORMAT_VERSION = 3;
 
 export const ROADMAP_STATES = ["completa", "implementada-sin-validar", "en-curso", "bloqueada", "pendiente"] as const;
 export const roadmapStateSchema = z.enum(ROADMAP_STATES);
@@ -36,6 +37,8 @@ export const gitInfoSchema = z.object({
   /** Why hasUncommittedChanges is null in a repository (phase 3, contracts/git-history.md). */
   uncommittedChangesReason: z.string().nullable(),
   originRepo: z.string().nullable(),
+  /** Whether origin exists and is GitHub (phase 4: "no aplica" for none and other). */
+  originKind: z.enum(["github", "other", "none"]),
 });
 export type GitInfo = z.infer<typeof gitInfoSchema>;
 
@@ -186,6 +189,8 @@ export const projectReadingSchema = z.object({
   conformance: conformanceResultSchema,
   indicators: indicatorsSchema,
   readErrors: z.array(problemSchema),
+  /** Phase 4: GitHub data of the project (specs/004-github-readonly data-model.md). */
+  github: githubDataSchema,
 });
 export type ProjectReading = z.infer<typeof projectReadingSchema>;
 
@@ -217,5 +222,9 @@ export const portfolioReadingSchema = z.object({
   activityByWeek: z.array(weekActivitySchema),
   /** Folders skipped by .nexoruignore; never shown (FR-031). */
   ignoredCount: z.number(),
+  /** Phase 4: last query to GitHub, rate limit and token (never its value). */
+  githubStatus: githubStatusSchema,
+  /** Phase 4: ETag and summary per query, for conditional requests. */
+  githubCache: githubCacheSchema,
 });
 export type PortfolioReading = z.infer<typeof portfolioReadingSchema>;

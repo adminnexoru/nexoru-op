@@ -88,7 +88,10 @@ function initRepo(dir: string, folder: string): void {
   git(dir, "add", "-A");
   git(dir, "commit", "-q", "-m", "Fixture commit");
   if (folder === "no-origin") return;
-  git(dir, "remote", "add", "origin", `https://github.com/example-org/${folder}.git`);
+  // gitlab-remote: a remote that is not GitHub (specs/004-github-readonly FR-010).
+  const origin =
+    folder === "gitlab-remote" ? `https://gitlab.example.com/example-org/${folder}.git` : `https://github.com/example-org/${folder}.git`;
+  git(dir, "remote", "add", "origin", origin);
   // Simulates a cloned repo without network: origin/main and origin/HEAD point to main.
   git(dir, "update-ref", "refs/remotes/origin/main", "HEAD");
   git(dir, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main");

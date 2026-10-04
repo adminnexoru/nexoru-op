@@ -38,7 +38,7 @@ const failing: Case[] = [
   ["1.7", "fecha_objetivo before fecha_inicio", project("fecha_objetivo: 2027-12-15", "fecha_objetivo: 2025-12-15"), /fecha_objetivo/],
   ["1.7", "empty urls with a Nexoru subdomain", project("despliegue: local", "despliegue: nexoru-subdominio\nurls: []"), /urls/],
   ["1.7", "repo differs from origin", (f) => (f.git.originRepo = "example-org/otro"), /origin es example-org\/otro/],
-  ["1.7", "not a git repository", (f) => (f.git = { ...f.git, isRepo: false, originRepo: null }), /no es repositorio git/],
+  ["1.7", "not a git repository", (f) => (f.git = { ...f.git, isRepo: false, originRepo: null, originKind: "none" }), /no es repositorio git/],
   ["1.7", "no origin remote", (f) => (f.git.originRepo = null), /sin remoto origin/],
   ["1.7", "Total differs from costo_mensual_usd", project("costo_mensual_usd: 12", "costo_mensual_usd: 13"), /Total/],
   ["1.7", "map file missing", (f) => (f.mapExists = false), /mapa_funcional/],

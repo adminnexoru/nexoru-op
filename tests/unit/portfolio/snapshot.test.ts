@@ -2,6 +2,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { isStale, parseSnapshot, STALE_AFTER_MS } from "@/lib/portfolio/snapshot-format";
 import { readPortfolio } from "@/lib/portfolio/read-portfolio";
+import { buildReading } from "@/lib/portfolio/refresh";
+import { createGithubClient } from "@/lib/github/client";
+import { createFakeGithub } from "../../fixtures/github/fake-github";
 import { FORMAT_VERSION, type PortfolioReading } from "@/lib/portfolio/types";
 import { buildFixturePortfolio, removeFixturePortfolio } from "../../fixtures/build-portfolio";
 
@@ -39,3 +42,42 @@ describe("parseSnapshot", () => {
     expect(parseSnapshot({ format_version: FORMAT_VERSION, payload: [] })).toBeNull();
   });
 });
+
+// T009 (004-github-readonly, research R10): format 3 and the two refresh modes.
+describe("GitHub in the index", () => {
+  const TOKEN = "test-token-NO-REAL-0000";
+
+  it("uses format 3; a format 2 index is read again", () => {
+    expect(FORMAT_VERSION).toBe(3);
+    expect(parseSnapshot({ format_version: 2, payload: JSON.parse(JSON.stringify(reading)) })).toBeNull();
+  });
+
+  it("Actualizar (withGitHub) queries GitHub; the automatic re-read (localOnly) never does and keeps the stored data", async () => {
+    const fake = createFakeGithub();
+    const client = createGithubClient({ fetch: fake.fetch, origin: "http://127.0.0.1:4010", token: TOKEN });
+    const withGitHub = await buildReading(root, { mode: "withGitHub", previous: null, client });
+    expect(fake.requests.length).toBeGreaterThan(0);
+    expect(withGitHub.githubStatus.fetchedAt).not.toBeNull();
+    expect(withGitHub.projects.find((p) => p.folder === "level3-demo")?.github.repoInfo.status).toBe("ok");
+
+    const asked = fake.requests.length;
+    const localOnly = await buildReading(root, { mode: "localOnly", previous: withGitHub, client });
+    expect(fake.requests.length).toBe(asked);
+    expect(localOnly.githubStatus).toEqual(withGitHub.githubStatus);
+    expect(localOnly.githubCache).toEqual(withGitHub.githubCache);
+    expect(localOnly.projects.find((p) => p.folder === "level3-demo")?.github).toEqual(
+      withGitHub.projects.find((p) => p.folder === "level3-demo")?.github,
+    );
+  });
+
+  it("never stores the token, and the reading survives the jsonb round trip", async () => {
+    const fake = createFakeGithub({ tokenExpiration: "2026-12-01 00:00:00 UTC" });
+    const client = createGithubClient({ fetch: fake.fetch, origin: "http://127.0.0.1:4010", token: TOKEN });
+    const stored = await buildReading(root, { mode: "withGitHub", previous: null, client });
+    const json = JSON.stringify(stored);
+    expect(json).not.toContain(TOKEN);
+    expect(json).not.toContain("SECRETO-FICTICIO");
+    expect(parseSnapshot({ format_version: FORMAT_VERSION, payload: JSON.parse(json) })).toEqual(stored);
+  });
+});
+

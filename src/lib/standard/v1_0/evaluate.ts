@@ -3,6 +3,7 @@
 import type { Check, ConformanceResult, Indicators, Manifest, Problem, RoadmapPhase } from "@/lib/portfolio/types";
 import { conformity, progress } from "../indicators";
 import type { ProjectFiles } from "../project-files";
+import type { GithubData } from "@/lib/github/types";
 import { buildContext } from "./context";
 import { findings } from "./findings";
 import { level1 } from "./level1";
@@ -44,8 +45,13 @@ export function computeLevel(checks: Check[]): Pick<ConformanceResult, "level" |
   return { level, provisional, failures: checks.filter((c) => c.level === next && c.status === "fail") };
 }
 
-export function evaluateProject(files: ProjectFiles, evaluationDate: string, rules: StandardRules = RULES["1.0"]): ProjectEvaluation {
-  const ctx = buildContext(files, evaluationDate, rules);
+export function evaluateProject(
+  files: ProjectFiles,
+  evaluationDate: string,
+  rules: StandardRules = RULES["1.0"],
+  github: GithubData | null = null,
+): ProjectEvaluation {
+  const ctx = buildContext(files, evaluationDate, rules, github);
   const checks = [...level1(ctx), ...level2(ctx), ...level3(ctx)];
 
   let manifestProblem: Problem | null = null;

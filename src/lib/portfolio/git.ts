@@ -99,6 +99,7 @@ const NOT_A_REPO: GitInfo = {
   hasUncommittedChanges: null,
   uncommittedChangesReason: null,
   originRepo: null,
+  originKind: "none",
 };
 
 /** One fixed `rev-parse` for the four paths a reading needs (fewer git processes). */
@@ -177,6 +178,7 @@ export async function readGitInfo(
       hasUncommittedChanges: status.value,
       uncommittedChangesReason: status.reason,
       originRepo: origin.ok ? normalizeGithubRemote(origin.stdout) : null,
+      originKind: !origin.ok || !origin.stdout.trim() ? "none" : normalizeGithubRemote(origin.stdout) ? "github" : "other",
     },
     versionedEnvFiles: files.ok
       ? files.stdout
