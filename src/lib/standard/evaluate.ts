@@ -12,7 +12,7 @@ import { RULES, type StandardRules } from "./rules";
 import { isSupportedVersion } from "./versions";
 
 function notEvaluated(evaluation: "unsupported_version" | "no_version"): ConformanceResult {
-  return { standardVersion: null, evaluation, level: null, provisional: false, checks: [], failures: [], warnings: [], findings: [], newerStandardNotice: null };
+  return { standardVersion: null, evaluation, level: null, provisional: false, checks: [], failures: [], warnings: [], findings: [], newerStandardNotice: null, visibility: null };
 }
 
 /**

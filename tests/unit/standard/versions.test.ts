@@ -23,6 +23,7 @@ describe("evaluateProject by version", () => {
       warnings: [],
       findings: [],
       newerStandardNotice: null,
+      visibility: null,
     });
     expect(result.manifest).toMatchObject({ id: "level3-demo", version_estandar: "2.0" });
     expect(result.roadmap).not.toBeNull();

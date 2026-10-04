@@ -33,6 +33,25 @@ function RunLine({ run, label }: { run: CiRun | null; label: string }) {
   );
 }
 
+/** Explanation of the visibility result of standard 1.2 (repo-visibility.md "Visibilidad declarada"). */
+function visibilityResultText(project: ProjectReading): string {
+  const finding = (code: string) => project.conformance.findings.find((f) => f.code === code)?.detail ?? "";
+  switch (project.conformance.visibility) {
+    case "aceptada":
+      return "aceptada: declarada en PROJECT.md";
+    case "requiere-decision":
+      return finding("visibility_decision_required");
+    case "discrepancia":
+      return `discrepancia: ${finding("visibility_mismatch")}`;
+    case "sin-declarar (interno)":
+      return "sin declarar (proyecto interno): no se exige";
+    case "no_evaluado":
+      return `no evaluado: ${finding("visibility_mismatch")}`;
+    default:
+      return "";
+  }
+}
+
 export function GithubCard({ project, now }: { project: ProjectReading; now: Date }) {
   const { github } = project;
   return (
@@ -54,6 +73,17 @@ export function GithubCard({ project, now }: { project: ProjectReading; now: Dat
                 <span className="font-mono">{github.repo}</span>.
               </p>
             ) : null}
+            <section className="grid gap-1">
+              <p>
+                Visibilidad:{" "}
+                {github.repoInfo.value ? (github.repoInfo.value.visibility === "publico" ? "público" : "privado") : `no disponible: ${github.repoInfo.reason}`}
+              </p>
+              {project.conformance.visibility ? (
+                <p data-testid="visibility-result" className="text-muted-foreground">
+                  {visibilityResultText(project)}
+                </p>
+              ) : null}
+            </section>
             <section className="grid gap-1">
               <h3 className="font-medium">CI de la rama principal{github.ci.value ? ` (${github.ci.value.branch})` : ""}</h3>
               <div>

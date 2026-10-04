@@ -68,11 +68,12 @@ describe("findings", () => {
     expect(finding(baseFiles(), "yaml_comments")).toMatchObject({ status: "not_found" });
   });
 
-  it("leaves the findings that need GitHub, a secret scanner or the project code as not evaluated", () => {
+  it("leaves the findings that need a secret scanner or the project code as not evaluated", () => {
+    // Phase 4: the visibility of a producto-nexoru repo in 1.0 has no finding without GitHub data
+    // (only producto-cliente in a public repo is one): visibility.test.ts.
     const { findings } = evaluate(baseFiles()).conformance;
     expect(findings.filter((f) => f.status === "not_evaluated").map((f) => [f.code, f.severity])).toEqual([
       ["secret_history", "critical"],
-      ["repo_visibility", "high"],
       ["env_example_coverage", "medium"],
     ]);
   });

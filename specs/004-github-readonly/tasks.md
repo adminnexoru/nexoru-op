@@ -325,7 +325,7 @@ visibilidad, su resultado y sus hallazgos según FR-019 y FR-020.
 
 ### Pruebas de US2 (escribir primero, deben fallar)
 
-- [ ] T033 [P] [US2] Pruebas en `tests/unit/standard/visibility.test.ts`:
+- [X] T033 [P] [US2] Pruebas en `tests/unit/standard/visibility.test.ts`:
   - **1.0 y 1.1**: solo el hallazgo alto "`producto-cliente` en un repo público"; `visibility`
     es `null`.
   - **1.2**:
@@ -339,7 +339,7 @@ visibilidad, su resultado y sus hallazgos según FR-019 y FR-020.
   - **Sin dato de GitHub**: `no_evaluado` con el motivo; con un dato guardado de menos de 7 días,
     se usa.
   - **Nivel**: ningún caso lo cambia.
-- [ ] T034 [P] [US2] E2E en `tests/e2e/us2-github-visibility.spec.ts`:
+- [X] T034 [P] [US2] *(Se corrió en rojo después de escribir la interfaz, contra los dos componentes sin US2: falló la primera prueba; el caso del repo privado sin token queda en las pruebas unitarias, porque la batería E2E siempre lleva el token ficticio.)* E2E en `tests/e2e/us2-github-visibility.spec.ts`:
   - "público" o "privado" bajo el nombre de cada proyecto en la tabla;
   - el resultado y su explicación en la tarjeta GitHub;
   - los hallazgos en el panel de conformidad;
@@ -347,14 +347,14 @@ visibilidad, su resultado y sus hallazgos según FR-019 y FR-020.
 
 ### Implementación de US2
 
-- [ ] T035 [US2] Evaluación de visibilidad (T033):
+- [X] T035 [US2] *(Hecha: además de `repo_visibility` (`producto-cliente` público), dos códigos nuevos de hallazgo, `visibility_decision_required` y `visibility_mismatch`; el dato de GitHub se usa con la misma regla de 7 días y motivos que 3.2, en `usableGithub`. Se eliminó `GITHUB_PHASE_REASON`.)* Evaluación de visibilidad (T033):
   - **`src/lib/standard/v1_0/findings.ts`**: la evaluación.
   - **`ConformanceResult.visibility`**: en `src/lib/portfolio/types.ts`.
   - **Datos de entrada**: la oleada 1 ya trae `RepoInfo`.
-- [ ] T036 [US2] Interfaz:
+- [X] T036 [US2] Interfaz:
   - visibilidad bajo el nombre en `src/components/portfolio/portfolio-table.tsx`;
   - sección de visibilidad en `src/components/github/github-card.tsx` (T034).
-- [ ] T037 [US2] Parada: pruebas en verde; commit y push.
+- [X] T037 [US2] Parada: pruebas en verde; commit y push.
 
 ---
 

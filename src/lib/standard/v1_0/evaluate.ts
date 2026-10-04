@@ -7,7 +7,7 @@ import type { GithubData } from "@/lib/github/types";
 import { newerStandardNotice } from "../versions";
 import { buildContext, type Context } from "./context";
 import { VISIBILIDAD_VALUES } from "./manifest";
-import { findings } from "./findings";
+import { findings, visibility } from "./findings";
 import { level1 } from "./level1";
 import { level2, specWarnings } from "./level2";
 import { level3 } from "./level3";
@@ -85,6 +85,7 @@ export function evaluateProject(
     warnings: [...manifestWarnings(ctx), ...specWarnings(ctx)],
     findings: findings(ctx),
     newerStandardNotice: newerStandardNotice(rules.version),
+    visibility: visibility(ctx).result,
   };
 
   return {

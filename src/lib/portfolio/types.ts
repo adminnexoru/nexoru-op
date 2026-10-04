@@ -100,6 +100,8 @@ export const findingSchema = z.object({
     "repo_visibility",
     "operacion_pending_phases",
     "construction_roadmap_concluded",
+    "visibility_decision_required",
+    "visibility_mismatch",
   ]),
   status: z.enum(["found", "not_found", "not_evaluated"]),
   detail: z.string().nullable(),
@@ -117,6 +119,8 @@ export const conformanceResultSchema = z.object({
   findings: z.array(findingSchema),
   /** Phase 4 (FR-028): informative notice of a newer supported version; not a finding. */
   newerStandardNotice: z.string().nullable(),
+  /** Phase 4 (standard 1.2, repo-visibility.md): result of the declared visibility; null in 1.0 and 1.1. */
+  visibility: z.enum(["aceptada", "requiere-decision", "discrepancia", "sin-declarar (interno)", "no_evaluado"]).nullable(),
 });
 export type ConformanceResult = z.infer<typeof conformanceResultSchema>;
 

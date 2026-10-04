@@ -18,6 +18,8 @@ export const FINDING_LABEL: Record<Finding["code"], string> = {
   yaml_comments: "Comentarios YAML en el frontmatter",
   operacion_pending_phases: "`operacion` con fases pendientes en el roadmap",
   construction_roadmap_concluded: "`construccion` o `especificacion` con el roadmap concluido",
+  visibility_decision_required: "Visibilidad sin decisión del Dueño",
+  visibility_mismatch: "Visibilidad declarada distinta de la real",
 };
 
 export const PROBLEM_LABEL: Record<Problem["reason"], string> = {

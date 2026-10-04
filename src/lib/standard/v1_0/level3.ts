@@ -1,15 +1,12 @@
 // T025: level 3 checks 3.1–3.8 (standard/conformance.md v1.0). 3.2 needs GitHub (phase 4).
 import { ROADMAP_STATES, type Check } from "@/lib/portfolio/types";
 import { ciConclusionLabel } from "@/lib/format";
-import type { CiInfo } from "@/lib/github/types";
+import type { CiInfo, Fetched, GithubData } from "@/lib/github/types";
 import type { ProjectFiles } from "../project-files";
 import { parseYaml } from "../frontmatter";
 import { sectionText } from "../markdown";
 import { check, dependsOn, fail, fromIssues, pass, type Context } from "./context";
 import { ROADMAP_HEADER } from "./roadmap";
-
-/** Until US2 the visibility finding still waits for its GitHub rule (findings.ts). */
-export const GITHUB_PHASE_REASON = "Se evaluará con GitHub en la Fase 4";
 
 const DAY_MS = 86_400_000;
 /** Stored GitHub data of this age or older does not decide 3.2 (FR-015). */
@@ -27,23 +24,32 @@ const localDay = (iso: string) => new Date(iso).toLocaleDateString("en-CA");
 const daysBetween = (from: string, to: string) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS);
 
 /**
+ * A GitHub datum usable for the evaluation (phase 4): present and younger than 7 days; otherwise
+ * the fixed reason why not (FR-017), shared by 3.2 and the visibility findings.
+ */
+export function usableGithub<T>(ctx: Context, pick: (github: GithubData) => Fetched<T>): { ok: true; value: T } | { ok: false; reason: string } {
+  const github = ctx.github;
+  if (github?.applies === "no_remote") return { ok: false, reason: CHECK_32_REASONS.noRemote };
+  if (github?.applies === "not_github") return { ok: false, reason: CHECK_32_REASONS.notGithub };
+  const datum = github ? pick(github) : null;
+  if (!datum?.value || !datum.fetchedAt) {
+    if (datum?.reason === "requiere token") return { ok: false, reason: CHECK_32_REASONS.token };
+    if (datum?.reason === "el token de GitHub no es válido") return { ok: false, reason: CHECK_32_REASONS.invalidToken };
+    return { ok: false, reason: CHECK_32_REASONS.stale };
+  }
+  if (daysBetween(localDay(datum.fetchedAt), ctx.date) >= STALE_GITHUB_DAYS) return { ok: false, reason: CHECK_32_REASONS.stale };
+  return { ok: true, value: datum.value };
+}
+
+/**
  * 3.2 with the GitHub data (phase 4, research R8). Not evaluated, with a fixed reason, when there is
  * no usable CI data; stored data younger than 7 days is used.
  */
 function check32(ctx: Context): Check {
-  const github = ctx.github;
-  if (github?.applies === "no_remote") return check("3.2", "not_evaluated", CHECK_32_REASONS.noRemote);
-  if (github?.applies === "not_github") return check("3.2", "not_evaluated", CHECK_32_REASONS.notGithub);
-  const ci = github?.ci;
-  if (!ci?.value || !ci.fetchedAt) {
-    if (ci?.reason === "requiere token") return check("3.2", "not_evaluated", CHECK_32_REASONS.token);
-    if (ci?.reason === "el token de GitHub no es válido") return check("3.2", "not_evaluated", CHECK_32_REASONS.invalidToken);
-    return check("3.2", "not_evaluated", CHECK_32_REASONS.stale);
-  }
-  if (daysBetween(localDay(ci.fetchedAt), ctx.date) >= STALE_GITHUB_DAYS) return check("3.2", "not_evaluated", CHECK_32_REASONS.stale);
-
-  if (ctx.rules.ciRule === "each_workflow") return eachWorkflow(ctx, ci.value);
-  const { branch, latestCompletedAny } = ci.value;
+  const usable = usableGithub(ctx, (github) => github.ci);
+  if (!usable.ok) return check("3.2", "not_evaluated", usable.reason);
+  if (ctx.rules.ciRule === "each_workflow") return eachWorkflow(ctx, usable.value);
+  const { branch, latestCompletedAny } = usable.value;
   if (!latestCompletedAny) return fail("3.2", `Sin ejecuciones de CI terminadas en ${branch}`);
   if (latestCompletedAny.conclusion === "success") return pass("3.2");
   return fail(

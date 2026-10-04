@@ -46,6 +46,12 @@ export function PortfolioTable({ projects, now }: { projects: ProjectReading[]; 
                   {manifest?.nombre ?? project.folder}
                 </Link>
                 {note ? <div className="text-xs text-muted-foreground">{note}</div> : null}
+                {project.github.repoInfo.value ? (
+                  // Phase 4 (US2): the visibility of the repo, from the last GitHub data.
+                  <div data-testid="visibility" className="text-xs text-muted-foreground">
+                    {project.github.repoInfo.value.visibility === "publico" ? "público" : "privado"}
+                  </div>
+                ) : null}
               </TableCell>
               <TableCell>
                 {/* Phase 4: Tipo and Cliente share a column; the client only for producto-cliente. */}
