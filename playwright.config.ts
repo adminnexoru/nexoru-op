@@ -32,6 +32,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
+  // B-013: with both Supabase stacks running on this machine (6 GiB of memory), server responses
+  // reached 2.5–3.5 s during the suite; 10 s per assertion instead of the default 5 s.
+  expect: { timeout: 10_000 },
   use: {
     baseURL: "http://127.0.0.1:3000",
     trace: "retain-on-failure",

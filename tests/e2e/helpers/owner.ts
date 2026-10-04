@@ -45,8 +45,10 @@ export async function activateOwner(page: Page): Promise<ActivatedOwner> {
   await expect(page.getByRole("heading", { name: "Guarda tus códigos de recuperación" })).toBeVisible();
   const recoveryCodes = (await page.getByTestId("recovery-codes").locator("li").allTextContents()).map((c) => c.trim());
   expect(recoveryCodes).toHaveLength(10);
-  await page.getByRole("button", { name: "Ya los guardé" }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await page.getByRole("link", { name: "Ya los guardé" }).click();
+  // The first visit to "/" with an empty index reads the whole fictitious portfolio (FR-012): it
+  // took 3.5 s under the load of the suite (B-013), so this landing gets more time.
+  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
 
   return { secret, recoveryCodes };
 }

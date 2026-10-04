@@ -432,6 +432,17 @@ el número en el tablero.
 
 ## Phase 8: Cierre
 
+- [X] T056 *(Trabajo no previsto, 2026-10-04: causa de B-013.)* Corregir la navegación "Ya los guardé"
+  de `src/components/auth/enroll-form.tsx` (Fase 1): hoy navega con `onClick` y `router.push("/")`, que
+  solo funciona después de la hidratación. En la corrida del 2026-10-04 la traza mostró que el código
+  TOTP se envió como POST normal (página aún sin hidratar), el servidor devolvió los códigos y el clic en
+  "Ya los guardé" no produjo ninguna petición durante 5 s. Se convierte en un enlace a `/` con aspecto de
+  botón, que funciona con y sin JavaScript.
+  - **Prueba primero**: `tests/e2e/us1-enroll-no-js.spec.ts`, con JavaScript desactivado, recorre la
+    activación y el registro del segundo factor y comprueba que "Ya los guardé" lleva a `/`. Debe fallar
+    antes de la corrección.
+  - Se ajustan las pruebas que buscan "Ya los guardé" como botón.
+
 - [ ] T048 Documentación:
   - **`CLAUDE.md`**: reglas del cliente de GitHub; el token en `.env.op.local`; las salvaguardas
     de pruebas; la estructura con `src/lib/github` y `src/components/github`.
@@ -454,7 +465,7 @@ el número en el tablero.
   Actions, Pull requests y Secret scanning alerts.
   - El Dueño lo pega en `.env.op.local` y reinicia con `npm run op:stop` y `npm run op:start`.
   - Claude da los pasos exactos y nunca ve el valor.
-- [ ] T051 [MANUAL] `visibilidad` y 1.2 (FR-027), desde la sesión de cada proyecto y después de
+- [ ] T051 *(2026-10-04: hecho en `nexoru-op` (`visibilidad: publico`, 1.2 en `PROJECT.md` y el mapa funcional, la razón en "Decisiones clave" y la Fase 4 del roadmap enlazada a `004-github-readonly`, sin la cual fallaba 3.5); el lector lo evalúa con 1.2, nivel 3 provisional y sin fallas. Pendiente `amazon-business-engine`, que hace el Dueño desde su sesión.)* [MANUAL] `visibilidad` y 1.2 (FR-027), desde la sesión de cada proyecto y después de
   verificar que cumplen la 1.2:
   - declarar `visibilidad` en el frontmatter de `PROJECT.md` de `amazon-business-engine` y
     `nexoru-op`, con su fila en `## Decisiones clave`. En `nexoru-op` se declara
