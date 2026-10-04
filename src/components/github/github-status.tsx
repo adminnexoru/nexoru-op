@@ -37,6 +37,8 @@ export function GithubAlerts({ portfolio, now }: { portfolio: PortfolioReading; 
   const expiresAt = status.tokenPresent ? status.tokenExpiresAt : null;
   const daysLeft = expiresAt ? Math.ceil((new Date(expiresAt).getTime() - now.getTime()) / DAY_MS) : null;
   const invalidToken = portfolio.projects.some((p) => p.github.repoInfo.reason === "el token de GitHub no es válido");
+  // US4: only how many repos have open alerts; never anything of the alerts themselves.
+  const withAlerts = portfolio.projects.filter((p) => (p.github.secretAlerts.value ?? 0) > 0).length;
   return (
     <>
       {expiresAt && daysLeft !== null && daysLeft <= EXPIRY_WARNING_DAYS ? (
@@ -52,6 +54,15 @@ export function GithubAlerts({ portfolio, now }: { portfolio: PortfolioReading; 
         <Alert data-testid="github-token-invalid">
           <AlertTitle>El token de GitHub no es válido</AlertTitle>
           <AlertDescription className="max-w-prose">GitHub lo rechazó: revisa que no haya vencido ni se haya revocado.</AlertDescription>
+        </Alert>
+      ) : null}
+      {withAlerts > 0 ? (
+        <Alert data-testid="secret-alerts-banner">
+          <AlertTitle>Alertas de secretos abiertas</AlertTitle>
+          <AlertDescription className="max-w-prose">
+            {withAlerts === 1 ? "1 repo tiene alertas de secretos abiertas" : `${withAlerts} repos tienen alertas de secretos abiertas`} (secret
+            scanning de GitHub). Revísalas en la pestaña Security de cada repo y rota los secretos expuestos.
+          </AlertDescription>
         </Alert>
       ) : null}
       {status.stoppedReason?.startsWith("límite") ? (

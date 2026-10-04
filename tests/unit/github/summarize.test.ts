@@ -1,6 +1,6 @@
 // T016: summary of the CI runs of the default branch (queries 2 and 2b, research R3, data-model).
 import { describe, expect, it } from "vitest";
-import { buildCiInfo, missingWorkflows, pullCi, pullSha, summarizePulls, summarizeRuns } from "@/lib/github/summarize";
+import { buildCiInfo, countAlerts, missingWorkflows, pullCi, pullSha, summarizePulls, summarizeRuns } from "@/lib/github/summarize";
 
 const run = (path: string, status: string, conclusion: string | null, at: string, name = "CI") => ({
   name,
@@ -144,5 +144,18 @@ describe("pullCi", () => {
     [null, "none"],
   ] as const)("%j → %s", (body, expected) => {
     expect(pullCi(body)).toBe(expected);
+  });
+});
+
+// T043 (US4): only the number of open alerts.
+describe("countAlerts", () => {
+  it("returns only how many alerts there are, never any field of them", () => {
+    const body = [
+      { number: 1, state: "open", secret: "SECRETO-FICTICIO", secret_type: "TIPO", html_url: "https://github.example/a/1", locations_url: "https://x/1" },
+      { number: 2, state: "open", secret: "SECRETO-FICTICIO", secret_type: "TIPO", html_url: "https://github.example/a/2", locations_url: "https://x/2" },
+    ];
+    expect(countAlerts(body)).toBe(2);
+    expect(countAlerts([])).toBe(0);
+    expect(countAlerts({ message: "x" })).toBeNull();
   });
 });

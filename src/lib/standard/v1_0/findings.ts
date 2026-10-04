@@ -2,6 +2,7 @@
 // Only names of files are reported, never their contents (FR-004, FR-029).
 import type { ConformanceResult, Finding } from "@/lib/portfolio/types";
 import type { Context } from "./context";
+import { secretAlertsText } from "@/lib/format";
 import { usableGithub } from "./level3";
 import { phaseConcluded, roadmapStatus } from "./roadmap";
 
@@ -81,6 +82,22 @@ export function visibility(ctx: Context): { result: ConformanceResult["visibilit
   };
 }
 
+/**
+ * "Secretos en el historial" with the open alerts of GitHub secret scanning (US4, FR-023). With 0
+ * alerts it is NOT met: secret scanning only detects known patterns (owner, 2026-10-04).
+ */
+function secretHistory(ctx: Context): Finding {
+  const base = { severity: "critical" as const, code: "secret_history" as const };
+  const alerts = ctx.github?.secretAlerts;
+  if (alerts?.status === "not_evaluated") return { ...base, status: "not_evaluated", detail: alerts.reason };
+  const usable = usableGithub(ctx, (github) => github.secretAlerts);
+  if (!usable.ok) return { ...base, status: "not_evaluated", detail: usable.reason };
+  if (usable.value === 0) {
+    return { ...base, status: "not_evaluated", detail: "sin alertas abiertas (secret scanning de GitHub); el secret scanning solo detecta patrones conocidos" };
+  }
+  return { ...base, status: "found", detail: secretAlertsText(usable.value) };
+}
+
 export function findings(ctx: Context): Finding[] {
   const { files } = ctx;
   const envFiles = files.versionedEnvFiles;
@@ -90,12 +107,7 @@ export function findings(ctx: Context): Finding[] {
       : envFiles.length > 0
         ? { severity: "critical", code: "env_versioned", status: "found", detail: envFiles.join(", ") }
         : { severity: "critical", code: "env_versioned", status: "not_found", detail: null },
-    {
-      severity: "critical",
-      code: "secret_history",
-      status: "not_evaluated",
-      detail: "Requiere un escáner de secretos; fuera del alcance de esta fase",
-    },
+    secretHistory(ctx),
     ...visibility(ctx).findings,
     files.envExample
       ? { severity: "medium", code: "env_example_missing", status: "not_found", detail: null }

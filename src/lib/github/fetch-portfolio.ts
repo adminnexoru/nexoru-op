@@ -3,7 +3,7 @@
 // cache and a stop for the whole update when the rate limit runs out. What fails keeps the last
 // good value with its date and says why.
 import { githubRoutes, type GithubClient, type GithubFailure } from "./client";
-import { buildCiInfo, missingWorkflows, pullCi, pullSha, summarizePulls, summarizeRuns } from "./summarize";
+import { buildCiInfo, countAlerts, missingWorkflows, pullCi, pullSha, summarizePulls, summarizeRuns } from "./summarize";
 import type { CiRun, Fetched, GithubCache, GithubData, GithubState, GithubStatus, RepoInfo } from "./types";
 
 export const GITHUB_DEADLINE_MS = 8_000;
@@ -22,7 +22,7 @@ export type GithubTarget = {
   workflowFiles: string[];
 };
 
-type QueryResult<T> = { ok: true; summary: T } | { ok: false; reason: string };
+type QueryResult<T> = { ok: true; summary: T } | { ok: false; reason: string; failure?: GithubFailure };
 
 export type WaveContext = {
   client: GithubClient;
@@ -205,8 +205,43 @@ export const pullsWave: Wave = async (ctx) => {
   await ctx.pool(jobs);
 };
 
+/** Reasons why the open alerts are not evaluated (FR-024, owner 2026-10-04). */
+export const ALERTS_REASONS = {
+  token: "requiere token",
+  disabled: "secret scanning no está activo",
+  forbidden: "el token no tiene permiso de alertas",
+} as const;
+
+const notEvaluated = <T>(previous: Fetched<T>, reason: string): Fetched<T> => ({ status: "not_evaluated", value: null, fetchedAt: previous.fetchedAt, reason });
+
+/** Wave 4 (US4): number of open secret scanning alerts, only with a token. */
+export const alertsWave: Wave = async (ctx) => {
+  const jobs: (() => Promise<void>)[] = [];
+  for (const t of ctx.targets.filter((target) => ctx.github[target.folder].applies === "yes")) {
+    const data = ctx.github[t.folder];
+    if (!ctx.client.hasToken()) {
+      data.secretAlerts = notEvaluated(data.secretAlerts, ALERTS_REASONS.token);
+      continue;
+    }
+    if (!data.repoInfo.value) {
+      data.secretAlerts = failed(data.secretAlerts, data.repoInfo.reason ?? NO_DATA_REASON);
+      continue;
+    }
+    jobs.push(async () => {
+      const [owner, name] = splitRepo(data.repo as string);
+      const result = await ctx.query(githubRoutes.secretAlerts(owner, name), countAlerts);
+      if (result.ok && result.summary !== null) data.secretAlerts = fresh(result.summary, ctx.now);
+      else if (result.ok) data.secretAlerts = failed(data.secretAlerts, "error de GitHub");
+      else if (result.failure === "not_found") data.secretAlerts = notEvaluated(data.secretAlerts, ALERTS_REASONS.disabled);
+      else if (result.failure === "forbidden") data.secretAlerts = notEvaluated(data.secretAlerts, ALERTS_REASONS.forbidden);
+      else data.secretAlerts = failed(data.secretAlerts, result.reason);
+    });
+  }
+  await ctx.pool(jobs);
+};
+
 /** Waves in priority order; each story adds its own. */
-export const GITHUB_WAVES: Wave[] = [repoWave, ciWave, pullsWave];
+export const GITHUB_WAVES: Wave[] = [repoWave, ciWave, pullsWave, alertsWave];
 
 export async function fetchPortfolioGithub(
   targets: GithubTarget[],
@@ -241,7 +276,7 @@ export async function fetchPortfolioGithub(
     const reason = failureText(result.reason, client.hasToken(), client.rateLimit()?.resetAt ?? null);
     if (result.reason === "timeout" && signal.aborted) stoppedReason = "tiempo agotado";
     else if (result.stop) stoppedReason = reason;
-    return { ok: false, reason };
+    return { ok: false, reason, failure: result.reason };
   }
 
   async function pool(jobs: (() => Promise<void>)[]): Promise<void> {

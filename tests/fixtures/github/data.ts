@@ -22,8 +22,8 @@ export type RepoScenario = {
   /** Workflow files whose latest completed run is older than the 50 most recent (query 2b). */
   olderRuns?: Record<string, RunState>;
   pulls?: PullState[];
-  /** Number of open secret scanning alerts; "disabled" answers 404. */
-  alerts?: number | "disabled";
+  /** Open secret scanning alerts; "disabled" answers 404 and "forbidden" 403 (token without the permission). */
+  alerts?: number | "disabled" | "forbidden";
 };
 
 const ci = (conclusion: string | null, daysAgo: number, status: RunState["status"] = "completed"): RunState => ({
@@ -41,7 +41,7 @@ export const GITHUB_SCENARIO: Record<string, RepoScenario> = {
   "level3-demo": { visibility: "public", runs: [ci("success", 1)], pulls: [], alerts: 0 },
   "duplicate-id-a": { visibility: "public", runs: [ci("failure", 2), ci("success", 5)], pulls: [], alerts: 0 },
   "duplicate-id-b": { visibility: "public", runs: [ci(null, 0, "in_progress"), ci("success", 3)], pulls: [], alerts: 0 },
-  "spec-no-tasks": { visibility: "public", runs: [], pulls: [], alerts: 0 },
+  "spec-no-tasks": { visibility: "public", runs: [], pulls: [], alerts: "forbidden" },
   "feature-branch": { visibility: "private", runs: [ci("success", 1)], pulls: [], alerts: "disabled" },
   "roadmap-states": { visibility: "internal", runs: [ci("cancelled", 4)], pulls: [], alerts: "disabled" },
   "env-versioned": {

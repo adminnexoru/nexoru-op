@@ -404,27 +404,29 @@ el número en el tablero.
 
 ### Pruebas de US4 (escribir primero, deben fallar)
 
-- [ ] T043 [P] [US4] Pruebas de alertas en `tests/unit/github/summarize.test.ts`,
+- [X] T043 [P] [US4] Pruebas de alertas en `tests/unit/github/summarize.test.ts`,
   `tests/unit/github/fetch-portfolio.test.ts` y `tests/unit/standard/secret-alerts.test.ts`:
   - **Ruta**: siempre con `hide_secret=true`.
-  - **Qué se guarda**: solo el número; el campo `secret` del simulado nunca llega al índice.
-  - **Motivos de "no evaluado"**: sin token, "requiere token"; 403, "el token no tiene permiso de
-    lectura de alertas de secretos"; 404, "secret scanning no está activo en el repo o el token no
-    tiene acceso".
-  - **Hallazgo**: con 1 o más alertas, crítico "Alertas de secretos abiertas: N", que no cambia el
-    nivel.
-- [ ] T044 [P] [US4] E2E en `tests/e2e/us4-github-alerts.spec.ts`:
+  - **Qué se guarda**: solo el número; el secreto, su tipo, su ubicación y la URL de la alerta del
+    simulado nunca llegan al índice, a los logs ni a la pantalla.
+  - **Motivos de "no evaluado"** (ajuste del Dueño, 2026-10-04): sin token, "requiere token"; 403,
+    "el token no tiene permiso de alertas"; 404, "secret scanning no está activo".
+  - **Hallazgo**: con 1 o más alertas, el crítico "Secretos en el historial" (`secret_history`)
+    queda encontrado, sin cambiar el nivel; con 0 sigue "no evaluado" con la nota de que el secret
+    scanning solo detecta patrones conocidos.
+- [X] T044 [P] [US4] E2E en `tests/e2e/us4-github-alerts.spec.ts`:
   - el aviso del portafolio "N repos tienen alertas de secretos abiertas";
-  - la sección de alertas de la tarjeta GitHub;
+  - la sección de alertas de la tarjeta GitHub: "sin alertas abiertas (secret scanning de GitHub)"
+    con 0, nunca "sin secretos";
   - los motivos.
 
 ### Implementación de US4
 
-- [ ] T045 [US4] Oleada 4 en `src/lib/github/fetch-portfolio.ts`, resumen en
+- [X] T045 [US4] *(Hecha. Al implementarla apareció un defecto en `usableGithub` (US1–US2): trataba el valor 0 como "sin dato"; ahora solo `null` cuenta como ausencia. La consulta devuelve además el tipo de fallo, para distinguir el 404 (secret scanning no activo) del 403 (token sin el permiso).)* Oleada 4 en `src/lib/github/fetch-portfolio.ts`, resumen en
   `src/lib/github/summarize.ts` y hallazgo en `src/lib/standard/v1_0/findings.ts` (T043).
-- [ ] T046 [US4] Interfaz: aviso del portafolio en `src/app/(app)/page.tsx` y sección en
+- [X] T046 [US4] Interfaz: aviso del portafolio en `src/app/(app)/page.tsx` y sección en
   `src/components/github/github-card.tsx` (T044).
-- [ ] T047 [US4] Parada: pruebas en verde; commit y push.
+- [X] T047 [US4] Parada: pruebas en verde; commit y push.
 
 ---
 

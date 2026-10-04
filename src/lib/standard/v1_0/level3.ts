@@ -32,7 +32,7 @@ export function usableGithub<T>(ctx: Context, pick: (github: GithubData) => Fetc
   if (github?.applies === "no_remote") return { ok: false, reason: CHECK_32_REASONS.noRemote };
   if (github?.applies === "not_github") return { ok: false, reason: CHECK_32_REASONS.notGithub };
   const datum = github ? pick(github) : null;
-  if (!datum?.value || !datum.fetchedAt) {
+  if (datum?.value === null || datum?.value === undefined || !datum.fetchedAt) {
     if (datum?.reason === "requiere token") return { ok: false, reason: CHECK_32_REASONS.token };
     if (datum?.reason === "el token de GitHub no es válido") return { ok: false, reason: CHECK_32_REASONS.invalidToken };
     return { ok: false, reason: CHECK_32_REASONS.stale };

@@ -1,6 +1,6 @@
 // T008: GitHub queries of the portfolio in priority waves, within the 8 s deadline, merged with the
 // stored data (research R5, data-model). Wave 1 (repo) here; each story tests its own wave.
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createGithubClient } from "@/lib/github/client";
 import { carryOverGithub, fetchPortfolioGithub, type GithubTarget } from "@/lib/github/fetch-portfolio";
 import { createFakeGithub } from "../../fixtures/github/fake-github";
@@ -220,5 +220,43 @@ describe("wave 3: pull requests", () => {
     const state = await fetchPortfolioGithub([target("feature-branch")], null, { client: anonymous, now: NOW });
     expect(state.github["feature-branch"].pulls).toMatchObject({ status: "unavailable", reason: "requiere token" });
     expect(fake.requests.filter((r) => r.path.includes("/pulls"))).toHaveLength(0);
+  });
+});
+
+// T043 (US4): wave 4, open secret scanning alerts; only their number is kept.
+describe("wave 4: secret scanning alerts", () => {
+  const FIELDS = /SECRETO-FICTICIO|TIPO-DE-SECRETO|Tipo de secreto ficticio|ALERTA-FICTICIA|UBICACION-FICTICIA/;
+
+  it("asks with hide_secret=true and keeps only the number; nothing else of the alerts reaches the state or the logs", async () => {
+    const logs: unknown[] = [];
+    for (const level of ["log", "info", "warn", "error", "debug"] as const) {
+      vi.spyOn(console, level).mockImplementation((...args) => void logs.push(...args));
+    }
+    const { fake, client } = setup();
+    const state = await fetchPortfolioGithub([target("env-versioned"), target("level3-demo")], null, { client, now: NOW });
+    expect(state.github["env-versioned"].secretAlerts).toMatchObject({ status: "ok", value: 2 });
+    expect(state.github["level3-demo"].secretAlerts).toMatchObject({ status: "ok", value: 0 });
+    const asked = fake.requests.filter((r) => r.path.includes("/secret-scanning/alerts"));
+    expect(asked.length).toBeGreaterThan(0);
+    for (const r of asked) expect(r.path).toMatch(/\?state=open&per_page=100&hide_secret=true$/);
+    expect(JSON.stringify(state)).not.toMatch(FIELDS);
+    expect(JSON.stringify(logs.map(String))).not.toMatch(FIELDS);
+    vi.restoreAllMocks();
+  });
+
+  it.each([
+    ["feature-branch", "secret scanning no está activo"],
+    ["spec-no-tasks", "el token no tiene permiso de alertas"],
+  ])("%s: not evaluated, %s", async (folder, reason) => {
+    const { client } = setup();
+    const state = await fetchPortfolioGithub([target(folder)], null, { client, now: NOW });
+    expect(state.github[folder].secretAlerts).toMatchObject({ status: "not_evaluated", value: null, reason });
+  });
+
+  it("without a token it does not ask: requires token", async () => {
+    const { fake, client } = setup(null);
+    const state = await fetchPortfolioGithub([target("level3-demo")], null, { client, now: NOW });
+    expect(state.github["level3-demo"].secretAlerts).toMatchObject({ status: "not_evaluated", reason: "requiere token" });
+    expect(fake.requests.filter((r) => r.path.includes("secret-scanning"))).toHaveLength(0);
   });
 });

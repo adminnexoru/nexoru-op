@@ -108,7 +108,20 @@ export function scenarioResponse(path: string, scenario: Record<string, RepoScen
   }
   if (rest === "/secret-scanning/alerts") {
     if (repo.alerts === "disabled" || repo.alerts === undefined) return { status: 404, body: { message: "Secret scanning is disabled on this repository." } };
-    return ok(Array.from({ length: repo.alerts }, (_, i) => ({ number: i + 1, state: "open", secret: "SECRETO-FICTICIO-NUNCA-GUARDAR" })));
+    if (repo.alerts === "forbidden") return { status: 403, body: { message: "Resource not accessible by personal access token" } };
+    // Everything an alert carries besides its count: the dashboard must never keep any of it.
+    return ok(
+      Array.from({ length: repo.alerts }, (_, i) => ({
+        number: i + 1,
+        state: "open",
+        secret: "SECRETO-FICTICIO-NUNCA-GUARDAR",
+        secret_type: "TIPO-DE-SECRETO-FICTICIO",
+        secret_type_display_name: "Tipo de secreto ficticio",
+        url: `https://api.github.example/alerts/ALERTA-FICTICIA-${i + 1}`,
+        html_url: `https://github.example/alerts/ALERTA-FICTICIA-${i + 1}`,
+        locations_url: `https://api.github.example/alerts/UBICACION-FICTICIA-${i + 1}`,
+      })),
+    );
   }
   return { status: 404, body: { message: "Not Found" } };
 }

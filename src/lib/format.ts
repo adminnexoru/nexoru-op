@@ -73,6 +73,12 @@ const PULL_CI: Record<string, string> = {
 
 export const pullCiLabel = (ci: string) => PULL_CI[ci] ?? ci;
 
+/** Open alerts of GitHub secret scanning, never "sin secretos" (FR-023, owner 2026-10-04). */
+export function secretAlertsText(n: number): string {
+  if (n === 0) return "sin alertas abiertas (secret scanning de GitHub)";
+  return `${n} ${n === 1 ? "alerta abierta" : "alertas abiertas"} (secret scanning de GitHub)`;
+}
+
 /** "1 día", "2 días", "0 días". */
 export function count(n: number, singular: string, plural: string): string {
   return `${n} ${n === 1 ? singular : plural}`;

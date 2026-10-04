@@ -238,11 +238,17 @@ token no tiene permiso y la consulta sin token.
 **Acceptance Scenarios**:
 
 1. **Given** un token con el permiso y un repo con 2 alertas abiertas, **When** se actualiza,
-   **Then** el proyecto muestra "Alertas de secretos abiertas: 2" como hallazgo crítico.
-2. **Given** un repo con 0 alertas abiertas, **When** se actualiza, **Then** muestra "Ninguna".
-3. **Given** un token sin el permiso, o sin token, **When** se actualiza, **Then** muestra "no
-   evaluado: el token no tiene permiso de lectura de alertas de secretos" o "no evaluado: requiere
-   token".
+   **Then** el proyecto muestra "2 alertas abiertas (secret scanning de GitHub)" y el hallazgo
+   crítico "Secretos en el historial" queda encontrado.
+2. **Given** un repo con 0 alertas abiertas, **When** se actualiza, **Then** muestra "sin alertas
+   abiertas (secret scanning de GitHub)", nunca "sin secretos", y el hallazgo "Secretos en el
+   historial" sigue "no evaluado", con la nota de que el secret scanning solo detecta patrones
+   conocidos.
+3. **Given** un repo con el secret scanning desactivado o no disponible (p. ej. un privado de una
+   cuenta personal), **When** se actualiza, **Then** muestra "no evaluado: secret scanning no está
+   activo".
+4. **Given** un token sin el permiso, o sin token, **When** se actualiza, **Then** muestra "no
+   evaluado: el token no tiene permiso de alertas" o "no evaluado: requiere token".
 
 ---
 
@@ -374,10 +380,15 @@ token no tiene permiso y la consulta sin token.
 **Alertas de secretos (US4)**
 
 - **FR-023**: Si el token tiene permiso de lectura de alertas de secret scanning, el sistema DEBE
-  mostrar cuántas alertas abiertas tiene cada repo; con una o más, como hallazgo crítico. Nunca
-  muestra el secreto ni su ubicación.
-- **FR-024**: Sin ese permiso, sin token o si el repo no tiene secret scanning activado, el dato
-  queda "no evaluado" con el motivo.
+  mostrar cuántas alertas abiertas tiene cada repo. Solo guarda el **número**: nunca el secreto, su
+  tipo, su ubicación ni la URL de la alerta, ni en el índice, ni en logs, ni en pantalla (una prueba
+  lo comprueba). Con una o más alertas, el hallazgo crítico "Secretos en el historial" queda
+  encontrado. Con 0 el texto es "sin alertas abiertas (secret scanning de GitHub)", nunca "sin
+  secretos", y ese hallazgo sigue "no evaluado", con la nota de que el secret scanning solo detecta
+  patrones conocidos (ajuste del Dueño, 2026-10-04).
+- **FR-024**: Sin token, el dato queda "no evaluado: requiere token"; con un token sin el permiso,
+  "no evaluado: el token no tiene permiso de alertas"; con el secret scanning desactivado o no
+  disponible en el repo, "no evaluado: secret scanning no está activo".
 
 **Versiones del estándar**
 

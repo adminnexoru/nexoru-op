@@ -1,6 +1,6 @@
 import { TrafficLight } from "@/components/status/traffic-light";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { agoText, capitalize, ciConclusionLabel, daysText, pullCiLabel } from "@/lib/format";
+import { agoText, capitalize, ciConclusionLabel, daysText, pullCiLabel, secretAlertsText } from "@/lib/format";
 import { ciState } from "@/lib/github/ci-state";
 import type { CiRun, Fetched, PullInfo } from "@/lib/github/types";
 import type { ProjectReading } from "@/lib/portfolio/types";
@@ -110,6 +110,15 @@ export function GithubCard({ project, now }: { project: ProjectReading; now: Dat
                 </ul>
               ) : null}
               <Origin data={github.ci} now={now} />
+            </section>
+            <section className="grid gap-1">
+              <h3 className="font-medium">Alertas de secretos</h3>
+              {/* US4: only the number of open alerts; never the secret, its type, location or URL. */}
+              <p data-testid="secret-alerts">
+                {github.secretAlerts.value !== null
+                  ? secretAlertsText(github.secretAlerts.value)
+                  : `${github.secretAlerts.status === "not_evaluated" ? "no evaluado" : "no disponible"}: ${github.secretAlerts.reason}`}
+              </p>
             </section>
             <section className="grid gap-1">
               <h3 className="font-medium">PRs abiertos</h3>

@@ -83,3 +83,8 @@ export function pullCi(body: unknown): PullInfo["ci"] {
   if (runs.some((run) => run.conclusion === "action_required")) return "awaiting_approval";
   return runs.every((run) => PASSING.has(String(run.conclusion))) ? "success" : "failure";
 }
+
+/** Only HOW MANY open alerts there are (FR-023): never the secret, its type, location or URL. */
+export function countAlerts(body: unknown): number | null {
+  return Array.isArray(body) ? body.length : null;
+}

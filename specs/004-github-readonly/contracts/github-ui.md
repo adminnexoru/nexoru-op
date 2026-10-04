@@ -54,7 +54,9 @@ donde aparece "cambió"; no depende de lo que pasó en la última actualización
   curso" si aplica.
 - **PRs abiertos**: número, título (texto), "abierto hace N días" y CI; "borrador" y "desde un
   fork" cuando aplican; "Ninguno" si no hay.
-- **Alertas de secretos**: "Ninguna", "N abiertas" o "no evaluado: motivo".
+- **Alertas de secretos**: "sin alertas abiertas (secret scanning de GitHub)" (nunca "sin
+  secretos"), "N alertas abiertas (secret scanning de GitHub)" o "no evaluado: motivo". Nunca el
+  secreto, su tipo, su ubicación ni la URL de la alerta.
 - **Origen de los datos**: "Datos de GitHub de hace X" y "desactualizado" si tienen 7 días o más.
 
 ## Conformidad y nivel en el detalle
