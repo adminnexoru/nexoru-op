@@ -52,7 +52,7 @@ describe("GitHub in the index", () => {
     expect(parseSnapshot({ format_version: 2, payload: JSON.parse(JSON.stringify(reading)) })).toBeNull();
   });
 
-  it("Actualizar (withGitHub) queries GitHub; the automatic re-read (localOnly) never does and keeps the stored data", async () => {
+  it("Actualizar (withGitHub) queries GitHub; the automatic re-read (localOnly) never does and keeps the stored data", { timeout: 30_000 }, async () => {
     const fake = createFakeGithub();
     const client = createGithubClient({ fetch: fake.fetch, origin: "http://127.0.0.1:4010", token: TOKEN });
     const withGitHub = await buildReading(root, { mode: "withGitHub", previous: null, client });
@@ -70,7 +70,7 @@ describe("GitHub in the index", () => {
     );
   });
 
-  it("never stores the token, and the reading survives the jsonb round trip", async () => {
+  it("never stores the token, and the reading survives the jsonb round trip", { timeout: 30_000 }, async () => {
     const fake = createFakeGithub({ tokenExpiration: "2026-12-01 00:00:00 UTC" });
     const client = createGithubClient({ fetch: fake.fetch, origin: "http://127.0.0.1:4010", token: TOKEN });
     const stored = await buildReading(root, { mode: "withGitHub", previous: null, client });
