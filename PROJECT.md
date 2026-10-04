@@ -18,9 +18,10 @@ stack:
 servicios:
   - have-i-been-pwned
 costo_mensual_usd: 0
-siguiente_hito: "Fase 4: especificar los datos de GitHub en solo lectura (CI, visibilidad y PRs) con /speckit-specify"
+siguiente_hito: "Fase 4: cerrar 004-github-readonly (historias US1 a US4 construidas; falta validación con el portafolio real, PR y merge)"
 mapa_funcional: docs/mapa-funcional.md
-version_estandar: "1.1"
+version_estandar: "1.2"
+visibilidad: publico
 ---
 
 # Nexoru Op
@@ -53,14 +54,14 @@ version_estandar: "1.1"
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 no tiene spec y lleva estado manual.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 (`004-github-readonly`) se deriva de su `tasks.md`.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
 | 1 | Acceso seguro del Dueño, bitácora y puesta en marcha local | 001-user-access | — | |
 | 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | — | |
 | 3 | Historial de git, indicadores de conformidad y avance, identidad visual y gráficos | 003-git-history-insights | 2026-10-25 | |
-| 4 | Datos de GitHub en solo lectura (CI, visibilidad, PRs) | — | 2026-11-08 | pendiente |
+| 4 | Datos de GitHub en solo lectura (CI, visibilidad, PRs) | 004-github-readonly | 2026-11-08 | |
 
 ## Decisiones clave
 
@@ -77,7 +78,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | La app, la base de datos y Supabase Studio escuchan solo en `127.0.0.1` (Docker configurado con `{"ip": "127.0.0.1"}`) | Docker publica por defecto en todas las interfaces: la base (`postgres`/`postgres`) y Studio (sin contraseña) quedarían accesibles desde la red local |
 | La bitácora se consulta desde Supabase Studio del entorno de uso | Con un solo usuario no justifica una pantalla propia (B-007) |
 | Se conservan en la base los roles y la matriz de permisos ya construidos | Están probados; quitarlos cuesta más que mantenerlos y se retoman con B-003 |
-| Repo público | Tipo `interno` sin datos sensibles; permite rulesets y CI gratuitos. La constitución v2.0.0 retiró el número de WhatsApp y la lista de productos, que siguen en el historial de git |
+| Repo público (`visibilidad: publico`) | Tipo `interno` sin datos sensibles ni de clientes; permite rulesets y CI gratuitos. Se declara en el manifiesto aunque el estándar 1.2 no lo exige para `interno`, para dejar registrada la decisión del Dueño. La constitución v2.0.0 retiró el número de WhatsApp y la lista de productos, que siguen en el historial de git |
 | Una sola puerta al disco del portafolio (`safe-fs.ts`) con catálogo cerrado de rutas del estándar, rutas reales dentro de `PROJECTS_ROOT` y lista de nombres de secretos | El portafolio contiene repos con secretos locales; un lector sin límites los expondría (principio XIII) |
 | Git solo con comandos fijos de solo lectura, sin shell y con el prefijo v2 (Fase 3): `core.fsmonitor`, filtros `clean`, firmas, ganchos, submódulos y mantenimiento desactivados, `GIT_OPTIONAL_LOCKS=0` y `--no-optional-locks`; si el repo tiene `.git/info/attributes`, no se ejecuta `status` y se muestra "no evaluado" | Un `.git/config` o un filtro de atributos puede hacer que git ejecute un programa del repo (se comprobó en la Fase 3 con `filter.clean`), y `git status` normal reescribe `.git/index`; así no se ejecuta nada del repo ni cambia ningún archivo |
 | Reglas de conformidad como código puro y probado, por versión del estándar (`src/lib/standard/v1_0/`); solo se evalúan versiones soportadas | Una versión nueva del estándar es una carpeta nueva, no condiciones repartidas; evaluar con otra versión daría resultados falsos (principio XIV) |
