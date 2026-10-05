@@ -493,9 +493,9 @@ el número en el tablero.
     integraciones; el token en `.env.op.local`.
   - **`specs/backlog.md`**: lo que se haya sacrificado.
   - **`/home/fili/proyectos/CLAUDE.md`**: la fila de Nexoru Op.
-- [ ] T054 Con la autorización del Dueño: PR de `004-github-readonly` hacia `main` con descripción
+- [X] T054 *(Hecha el 2026-10-04: PR #5 con la CI en verde.)* Con la autorización del Dueño: PR de `004-github-readonly` hacia `main` con descripción
   en español; esperar la CI en verde.
-- [ ] T055 [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"; Claude confirma con
+- [X] T055 *(Hecha el 2026-10-04: merge del PR #5 por el Dueño, merge commit `ef35115`; CI de `main` en verde, ejecución 37250949793.)* [MANUAL] Revisar y hacer merge del PR con "Create a merge commit"; Claude confirma con
   `gh` la CI de `main`.
 
 ---

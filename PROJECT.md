@@ -19,7 +19,7 @@ servicios:
   - have-i-been-pwned
   - github-api
 costo_mensual_usd: 0
-siguiente_hito: "Fase 4: merge del PR de 004-github-readonly; después, decisión del Dueño sobre la Fase 5 (backlog B-012, B-014) o el cambio de fase"
+siguiente_hito: "Fase 5: especificar Operabilidad (B-014 y clasificación de las vulnerabilidades de npm audit) con /speckit-specify"
 mapa_funcional: docs/mapa-funcional.md
 version_estandar: "1.2"
 visibilidad: publico
@@ -55,7 +55,7 @@ visibilidad: publico
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 (`004-github-readonly`) se deriva de su `tasks.md` y cierra con el merge de su PR a `main`.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 (`004-github-readonly`) cerró el 2026-10-04 con el merge del PR #5 a `main`. La Fase 5 no tiene spec y lleva estado manual.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
@@ -63,6 +63,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | — | |
 | 3 | Historial de git, indicadores de conformidad y avance, identidad visual y gráficos | 003-git-history-insights | 2026-10-25 | |
 | 4 | Datos de GitHub en solo lectura (CI, visibilidad, PRs) | 004-github-readonly | 2026-11-08 | |
+| 5 | Operabilidad: desactivar los servicios de Supabase sin uso en ambos entornos, midiendo la memoria antes y después (B-014), y clasificar las 8 vulnerabilidades altas de `npm audit` (cuáles aplican al código que corre, cuáles se resuelven actualizando y cuáles se aceptan con su razón) | — | 2026-10-17 | pendiente |
 
 ## Decisiones clave
 
@@ -129,7 +130,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 ## Pendientes conocidos
 
 - Backlog en `specs/backlog.md`: B-001 a B-014. En particular, B-008 (validar los procedimientos manuales de recuperación), B-009 (`op:backup` / `op:restore`, opcional) B-012 (alertas de discrepancia entre el estado declarado y la evidencia), B-013 (vigilar fallos intermitentes de las E2E) y B-014 (desactivar servicios de Supabase sin uso). B-010 (look and feel de `nexoru-onboarding`) y B-011 (`.nexoruignore`) se construyeron en la Fase 3.
-- **Decisión del Dueño tras el merge de la Fase 4**: con la Fase 4 completa el roadmap queda concluido y `fase: construccion` da el hallazgo medio de cierre del estándar. Opciones: agregar una Fase 5 al roadmap (p. ej. B-012 o B-014) o cambiar de fase según `lifecycle.md`.
+- **Fase 5 (Operabilidad)**: definida por el Dueño el 2026-10-04 tras el merge de la Fase 4; falta su spec (`/speckit-specify`).
 
 ## Evidencia de validación
 
@@ -141,6 +142,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | Todo escucha solo en `127.0.0.1` (FR-033) | `ss -ltn`: app (3000, 3200) y las dos instancias de Supabase (5432x, 5532x) solo en `127.0.0.1`; desde la IP de red y desde otro dispositivo no responden (2026-09-28) |
 | Bitácora inmutable y consultable desde Studio (FR-028, FR-038) | La consulta del quickstart devuelve los eventos del entorno de uso; un `update` falla con `audit_events is append-only` (2026-09-28) |
 | CSP con nonce | La app de uso responde con `script-src 'self' 'nonce-…' 'strict-dynamic'`, sin `'unsafe-eval'`; las E2E fallan ante cualquier violación de CSP y no hubo ninguna |
+| Cierre de la Fase 4 en `main` | PR #5 fusionado por el Dueño el 2026-10-04 (merge commit `ef35115`); CI de `main` en verde (ejecución 37250949793) |
 | Cierre de la Fase 3 en `main` | PR #3 fusionado por el Dueño el 2026-10-03 (merge commit `0e1359a`); CI de `main` en verde (ejecución 37095999987) |
 | Fase 2: lector seguro, git, conformidad v1.0, portafolio, detalle, roadmap y versiones | CI en verde en el PR #2 y, tras el merge, en `main` (ejecución 36940235574, commit `46a673d`, 2026-10-01). En local, rama `002-portfolio-conformance`, 2026-10-01: Vitest 281/281 (una prueba por verificación de conformidad, enlaces fuera de la raíz, `.env`, FIFO, archivo > 1 MB, `core.fsmonitor` malicioso), pgTAP 88/88 y Playwright 38/38, con un portafolio ficticio |
 | Solo lectura sobre el portafolio real (SC-007) | Entorno de uso, 2026-10-01: antes y después de pulsar Actualizar, fechas de modificación y tamaño de 5206 archivos de `/home/fili/proyectos` idénticos y `git status` de los 7 repos sin cambios |
@@ -158,8 +160,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 
 ## Siguiente hito
 
-Fase 4: merge del PR de `004-github-readonly`.
+Fase 5: Operabilidad. Fecha objetivo: 2026-10-17.
 
-1. **Hecho:** historias US1 a US4 y estándar 1.2, validadas con el portafolio real; `visibilidad` y 1.2 declarados en `amazon-business-engine` y `nexoru-op`.
-2. **Siguiente:** revisión y merge del PR por el Dueño (T055), con la CI de `main` en verde.
-3. **Después:** decisión del Dueño sobre la Fase 5 (backlog B-012, B-014) o el cambio de fase (ver Pendientes conocidos).
+1. **Hecho:** Fase 4 cerrada (PR #5, merge `ef35115`, CI de `main` en verde).
+2. **Siguiente:** `/speckit-specify` de la Fase 5 con sus dos objetivos: desactivar los servicios de Supabase sin uso en ambos entornos, midiendo la memoria antes y después (B-014), y clasificar las 8 vulnerabilidades altas de `npm audit` (aplican al código que corre, se resuelven actualizando o se aceptan con su razón).
