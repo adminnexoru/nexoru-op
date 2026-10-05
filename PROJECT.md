@@ -149,6 +149,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | Todo escucha solo en `127.0.0.1` (FR-033) | `ss -ltn`: app (3000, 3200) y las dos instancias de Supabase (5432x, 5532x) solo en `127.0.0.1`; desde la IP de red y desde otro dispositivo no responden (2026-09-28) |
 | Bitácora inmutable y consultable desde Studio (FR-028, FR-038) | La consulta del quickstart devuelve los eventos del entorno de uso; un `update` falla con `audit_events is append-only` (2026-09-28) |
 | CSP con nonce | La app de uso responde con `script-src 'self' 'nonce-…' 'strict-dynamic'`, sin `'unsafe-eval'`; las E2E fallan ante cualquier violación de CSP y no hubo ninguna |
+| Cierre del roadmap | Proyecto cerrado el 2026-10-04 con 4 fases; fecha objetivo original 2026-11-08 (35 días antes) |
 | Cierre de la Fase 4 en `main` | PR #5 fusionado por el Dueño el 2026-10-04 (merge commit `ef35115`); CI de `main` en verde (ejecución 37250949793) |
 | Cierre de la Fase 3 en `main` | PR #3 fusionado por el Dueño el 2026-10-03 (merge commit `0e1359a`); CI de `main` en verde (ejecución 37095999987) |
 | Fase 2: lector seguro, git, conformidad v1.0, portafolio, detalle, roadmap y versiones | CI en verde en el PR #2 y, tras el merge, en `main` (ejecución 36940235574, commit `46a673d`, 2026-10-01). En local, rama `002-portfolio-conformance`, 2026-10-01: Vitest 281/281 (una prueba por verificación de conformidad, enlaces fuera de la raíz, `.env`, FIFO, archivo > 1 MB, `core.fsmonitor` malicioso), pgTAP 88/88 y Playwright 38/38, con un portafolio ficticio |
