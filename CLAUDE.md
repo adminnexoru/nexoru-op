@@ -65,6 +65,18 @@ No te saltes pasos. Si un artefacto previo no existe o está desactualizado, vue
   existe `.git/info/attributes` no se ejecuta `status` ("no evaluado"). Nunca `fetch`, `pull`,
   `push` ni ningún comando que escriba en `.git`. Un comando nuevo exige su prueba en
   `tests/unit/portfolio/git-hardening.test.ts`.
+- **GitHub en solo lectura** (Fase 4, `specs/004-github-readonly/contracts/github-client.md`): toda
+  petición a GitHub pasa por `src/lib/github/client.ts`, que solo hace `GET` a `https://api.github.com`
+  con un catálogo cerrado de 6 rutas, sin reintentos, y rechaza en código cualquier otro método.
+  Las alertas de secretos se piden con `hide_secret=true` y solo se guarda su número. El token es
+  opcional, fine-grained y de solo lectura, vive **solo** en `.env.op.local` (constitución v2.0.1),
+  viaja solo en la cabecera `Authorization` y nunca llega al navegador, al índice, a los logs ni a la
+  pantalla. **Nunca abras, leas ni muestres `.env.op.local`** (decisión del Dueño, 2026-10-04): da los
+  pasos para que el Dueño lo edite.
+- **Pruebas sin GitHub real**: Vitest bloquea cualquier petición a `api.github.com` o `github.com`
+  (`tests/unit/setup/block-github.ts`); en pruebas el cliente solo acepta el GitHub simulado en
+  `127.0.0.1` (`GITHUB_API_ORIGIN`, rechazado en el entorno de uso) y solo tokens ficticios `test-…`.
+  Los datos simulados están en `tests/fixtures/github/` (repos `example-org/*`).
 - **Interfaz sin estilos en línea**: la CSP bloquea los atributos `style`; todo va por clases. Los
   tokens de diseño están en `src/app/tokens.css` y sus decisiones en `docs/identidad-visual.md`. Los
   gráficos son SVG generados en el servidor, sin librería ni JavaScript. Los textos con números
@@ -91,10 +103,11 @@ un entorno puede tocar el otro (`scripts/env-guard.ts`):
   datos que chocan con los fixtures de pgTAP.
 - Estructura: `src/app` (páginas: `/` portafolio y `/projects/[folder]` detalle), `src/lib` (auth,
   Supabase, IP, contraseñas), `src/lib/portfolio` (lector seguro, git, lectura del portafolio e
-  índice, historial de git e `.nexoruignore`), `src/lib/standard` (reglas puras de conformidad: un
+  índice, historial de git e `.nexoruignore`), `src/lib/github` (cliente de solo lectura, consultas por
+  oleadas, resúmenes y tipos), `src/lib/standard` (reglas puras de conformidad: un
   motor en `v1_0/` con reglas por versión en `rules.ts`, e indicadores), `src/lib/charts` (datos de
   los gráficos), `src/lib/format.ts`, `src/components/portfolio`, `src/components/status`
-  (semáforos), `src/components/charts`, `src/app/tokens.css`, `src/proxy.ts` (CSP con nonce y sesión), `supabase/migrations`
+  (semáforos), `src/components/charts`, `src/components/github` (tarjeta, estado y leyenda de GitHub), `src/app/tokens.css`, `src/proxy.ts` (CSP con nonce y sesión), `supabase/migrations`
   (esquema, RLS y funciones, compartido por los dos entornos), `supabase/tests` (pgTAP),
   `tests/unit` (Vitest), `tests/e2e` (Playwright), `tests/fixtures/portfolio` (portafolio ficticio),
   `scripts/` (bootstrap y `op:*`).
@@ -102,6 +115,11 @@ un entorno puede tocar el otro (`scripts/env-guard.ts`):
   Las pruebas generan solas una copia temporal del portafolio ficticio (`nexoru-op-fixture-*`) y
   `assertTestProjectsRoot` impide que lean cualquier otra carpeta; no la pongas en `.env.local`.
   Las carpetas listadas en `PROJECTS_ROOT/.nexoruignore` (estándar 1.1) no se leen ni se muestran.
+- Estándar: se soportan las versiones 1.0, 1.1 y 1.2 con reglas por versión en `rules.ts`
+  (3.2 con la CI de GitHub; en 1.2, el campo `visibilidad` y la CI de cada workflow).
+- Las consultas a GitHub ocurren solo al pulsar Actualizar (plazo de 8 s, 3 a la vez, ETag); la
+  relectura automática a los 10 minutos reutiliza los datos guardados. Un dato de GitHub con 7 días
+  o más no se usa para evaluar.
 - Regla de la base de datos: toda tabla con RLS y toda mutación sensible mediante función
   `security definer` que escribe su evento en la bitácora en la misma transacción.
   Excepción documentada: `save_portfolio_snapshot` guarda el índice regenerable del portafolio sin

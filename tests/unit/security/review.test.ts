@@ -101,3 +101,51 @@ describe("GitHub", () => {
     expect(readFileSync("next.config.ts", "utf8")).not.toMatch(/fetches/);
   });
 });
+
+// T049 (004-github-readonly): security review of phase 4, kept as permanent tests.
+describe("GitHub review (phase 4)", () => {
+  const client = readFileSync("src/lib/github/client.ts", "utf8");
+
+  it("secret scanning alerts are always asked with hide_secret=true (builder and route catalog)", () => {
+    // Once in the route builder and once in the catalog pattern (where "?" is escaped).
+    expect(client.match(/secret-scanning\/alerts\\*\?state=open&per_page=100&hide_secret=true/g)?.length).toBe(2);
+    expect(client).not.toMatch(/hide_secret=false/);
+  });
+
+  it("the only network requests are the GitHub client (injected fetch) and the password check", () => {
+    const requesters = source.filter(({ text }) => /\b(fetch|fetchImpl)\(/.test(text)).map(({ path }) => path).sort();
+    expect(requesters).toEqual(["src/lib/github/client.ts", "src/lib/password.ts"]);
+  });
+
+  it("the CSP adds no origin: the browser never talks to GitHub", () => {
+    expect(readFileSync("src/proxy.ts", "utf8")).not.toMatch(/github/i);
+  });
+
+  it("the token is read only on the server and never logged", () => {
+    const readers = source.filter(({ text }) => /GITHUB_TOKEN/.test(text)).map(({ path }) => path).sort();
+    expect(readers).toEqual(["src/lib/env.server.ts", "src/lib/portfolio/snapshot.ts"]);
+    for (const { path, text } of source) expect(text, path).not.toMatch(/console\.\w+\([^)]*(token|GITHUB_TOKEN)/i);
+  });
+
+  it("runtime dependencies did not change in phase 4 (a new one needs the plan's justification)", () => {
+    const pkg = JSON.parse(readFileSync("package.json", "utf8")) as { dependencies: Record<string, string> };
+    expect(Object.keys(pkg.dependencies).sort()).toEqual([
+      "@fontsource/inter",
+      "@supabase/ssr",
+      "@supabase/supabase-js",
+      "class-variance-authority",
+      "cn",
+      "input-otp",
+      "lucide-react",
+      "next",
+      "radix-ui",
+      "react",
+      "react-dom",
+      "server-only",
+      "shadcn",
+      "tw-animate-css",
+      "yaml",
+      "zod",
+    ]);
+  });
+});

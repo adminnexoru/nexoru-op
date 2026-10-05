@@ -19,19 +19,25 @@ escucha solo en `127.0.0.1`.
     vida y actividad de git por semana, cada uno con su tabla "Ver datos";
   - una tabla con cada proyecto de `PROJECTS_ROOT`: datos de su `PROJECT.md`, semáforo de estado
     declarado, nivel de conformidad (0 a 3), Conformidad y Avance en porcentaje, semáforo de
-    actividad de git, estado del roadmap (activo o concluido) y rama actual;
-  - `nexoru-governance` aparte, como estándar (se soportan las versiones 1.0 y 1.1).
+    actividad de git, CI de la rama principal (GitHub), PRs abiertos y rama actual; bajo el nombre,
+    si el repo es público o privado;
+  - `nexoru-governance` aparte, como estándar (se soportan las versiones 1.0, 1.1 y 1.2);
+  - en el encabezado, la antigüedad de los datos de GitHub, las consultas restantes y el
+    vencimiento del token.
 
   El portafolio se vuelve a leer al abrirlo si la última lectura tiene más de 10 minutos, o con el
-  botón **Actualizar**. Las carpetas listadas en `PROJECTS_ROOT/.nexoruignore` no se muestran.
+  botón **Actualizar**, que es el único que consulta GitHub (en solo lectura). Las carpetas listadas en
+  `PROJECTS_ROOT/.nexoruignore` no se muestran.
 - **Detalle (`/projects/<carpeta>`):**
   - indicadores con su cálculo;
   - conformidad: fallas para subir de nivel, advertencias, hallazgos (p. ej. un `.env` versionado)
-    y verificaciones que todavía no se evalúan (las que necesitan GitHub);
+    y verificaciones que no se pudieron evaluar, con su motivo;
   - roadmap con el estado derivado de `tasks.md`;
   - manifiesto completo y repositorio;
   - historial de git: último commit, 12 semanas de actividad, adelanto y atraso frente a la rama
     principal, antigüedad de las referencias remotas y días en la fase frente a `fase_desde`;
+  - GitHub: visibilidad y su resultado (estándar 1.2), CI por workflow, PRs abiertos con su CI y
+    número de alertas de secretos abiertas;
   - errores de lectura.
 
 Todo se lee en solo lectura: el dashboard nunca ejecuta `fetch` ni escribe en los repositorios.
@@ -55,7 +61,8 @@ npm run op:stop             # detiene todo sin borrar datos
 ```
 
 Variables en `.env.op.local` (ver `.env.example`), incluida `PROJECTS_ROOT=/home/fili/proyectos`
-(la carpeta del portafolio; sin ella el dashboard avisa que falta). Guía completa, procedimientos de recuperación y
+(la carpeta del portafolio; sin ella el dashboard avisa que falta) y, opcional, `GITHUB_TOKEN` (cómo
+crearlo con permisos mínimos: [specs/004-github-readonly/quickstart.md](specs/004-github-readonly/quickstart.md)). Guía completa, procedimientos de recuperación y
 consulta de la bitácora: [specs/001-user-access/quickstart.md](specs/001-user-access/quickstart.md).
 
 ## Desarrollo y pruebas (entorno de pruebas)

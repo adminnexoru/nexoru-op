@@ -443,7 +443,7 @@ el número en el tablero.
     antes de la corrección.
   - Se ajustan las pruebas que buscan "Ya los guardé" como botón.
 
-- [ ] T048 Documentación:
+- [X] T048 Documentación:
   - **`CLAUDE.md`**: reglas del cliente de GitHub; el token en `.env.op.local`; las salvaguardas
     de pruebas; la estructura con `src/lib/github` y `src/components/github`.
   - **`docs/identidad-visual.md`**: el rombo de la CI.
@@ -451,7 +451,7 @@ el número en el tablero.
   - **`.env.example`**: revisión.
   - **`specs/004-github-readonly/quickstart.md`**: revisar que los pasos del token y los escenarios
     coinciden con lo construido (FR-025).
-- [ ] T049 Revisión de seguridad, convertida en pruebas permanentes en
+- [X] T049 Revisión de seguridad, convertida en pruebas permanentes en
   `tests/unit/security/review.test.ts`:
   - solo `GET`;
   - solo `client.ts` consulta GitHub;
@@ -460,12 +460,12 @@ el número en el tablero.
   - la CSP es idéntica a la de la Fase 3 (la prueba de cabeceras no cambia);
   - sin dependencias nuevas;
   - `npm audit` sin vulnerabilidades nuevas respecto de la Fase 3.
-- [ ] T050 [MANUAL] Crear el token (quickstart, Parte 2): fine-grained, de solo lectura, *Only
+- [X] T050 *(Hecha por el Dueño el 2026-10-04: token fine-grained de solo lectura, solo los 6 repos del portafolio, 90 días; el encabezado muestra el vencimiento y las consultas restantes.)* [MANUAL] Crear el token (quickstart, Parte 2): fine-grained, de solo lectura, *Only
   select repositories* con los 6 repos del portafolio, vencimiento a 90 días y permisos Metadata,
   Actions, Pull requests y Secret scanning alerts.
   - El Dueño lo pega en `.env.op.local` y reinicia con `npm run op:stop` y `npm run op:start`.
   - Claude da los pasos exactos y nunca ve el valor.
-- [ ] T051 *(2026-10-04: hecho en `nexoru-op` (`visibilidad: publico`, 1.2 en `PROJECT.md` y el mapa funcional, la razón en "Decisiones clave" y la Fase 4 del roadmap enlazada a `004-github-readonly`, sin la cual fallaba 3.5); el lector lo evalúa con 1.2, nivel 3 provisional y sin fallas. Pendiente `amazon-business-engine`, que hace el Dueño desde su sesión.)* [MANUAL] `visibilidad` y 1.2 (FR-027), desde la sesión de cada proyecto y después de
+- [X] T051 *(2026-10-04: hecho en `nexoru-op` (`visibilidad: publico`, 1.2 en `PROJECT.md` y el mapa funcional, la razón en "Decisiones clave" y la Fase 4 del roadmap enlazada a `004-github-readonly`, sin la cual fallaba 3.5); el lector lo evalúa con 1.2, nivel 3 provisional y sin fallas. `amazon-business-engine` lo hizo el Dueño desde su sesión (`visibilidad: publico`, 1.2). En el índice de uso los dos quedan en 1.2, nivel 3 sin provisional y visibilidad `aceptada`.)* [MANUAL] `visibilidad` y 1.2 (FR-027), desde la sesión de cada proyecto y después de
   verificar que cumplen la 1.2:
   - declarar `visibilidad` en el frontmatter de `PROJECT.md` de `amazon-business-engine` y
     `nexoru-op`, con su fila en `## Decisiones clave`. En `nexoru-op` se declara
@@ -475,13 +475,13 @@ el número en el tablero.
 
   Cada cambio va en su propio commit en su repo. Claude verifica después, en solo lectura, que el
   dashboard los evalúa con 1.2 y que su visibilidad es `aceptada`.
-- [ ] T052 [MANUAL] Validación con el portafolio real: escenarios 1–12 de la Parte 3 de
+- [X] T052 *(Validada el 2026-10-04 por el Dueño: escenarios 1–12, 3b y 4b OK. Índice de uso: ABE y `nexoru-op` en 1.2, nivel 3 sin provisional, visibilidad `aceptada`, Conformidad 29 de 29; `conversa-experiencias` con alertas "no evaluado: secret scanning no está activo"; estándar local 1.2; token presente y 4997 consultas restantes. Escenario 11: cero apariciones de patrones de token en `.op/app.log` y en el índice, y ningún tipo, ubicación ni URL de alertas. Escenario 12, repetido con la pila de uso arriba: huella de 1441 archivos (contenido y fecha), 66 metadatos de `.git` y el `git status` de los 6 repos idéntica antes y después de pulsar Actualizar (`6c145555171813d7` en ambas; lectura guardada a las 00:28:26 UTC).)* [MANUAL] Validación con el portafolio real: escenarios 1–12 de la Parte 3 de
   `quickstart.md`.
   - Claude toma las huellas de solo lectura (escenario 12).
   - Claude compara la CI, la visibilidad y los PRs con `gh` en solo lectura (escenarios 3, 5 y 6).
   - Claude comprueba que el token no aparece en la página, en `.op/app.log` ni en el índice
     (escenario 11).
-- [ ] T053 Al cerrar la fase:
+- [X] T053 Al cerrar la fase:
   - **`PROJECT.md`**:
     - roadmap con la Fase 4 enlazada a `004-github-readonly` y `Estado manual` vacío;
     - decisiones clave;

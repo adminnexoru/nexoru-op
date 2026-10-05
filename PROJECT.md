@@ -17,8 +17,9 @@ stack:
   - docker
 servicios:
   - have-i-been-pwned
+  - github-api
 costo_mensual_usd: 0
-siguiente_hito: "Fase 4: cerrar 004-github-readonly (historias US1 a US4 construidas; falta validación con el portafolio real, PR y merge)"
+siguiente_hito: "Fase 4: merge del PR de 004-github-readonly; después, decisión del Dueño sobre la Fase 5 (backlog B-012, B-014) o el cambio de fase"
 mapa_funcional: docs/mapa-funcional.md
 version_estandar: "1.2"
 visibilidad: publico
@@ -42,7 +43,7 @@ visibilidad: publico
 
 ## Alcance
 
-**Incluye:** acceso seguro del Dueño (contraseña y TOTP obligatorio), bitácora de auditoría (consultable desde Supabase Studio del entorno de uso), puesta en marcha local con entornos de uso y de pruebas separados, lectura segura del portafolio, evaluación de conformidad con el estándar (1.0 y 1.1), historial de git con semáforo de actividad, indicadores de Conformidad y Avance, gráficos del portafolio, la identidad visual de `nexoru-onboarding` y, en la Fase 4, los datos de GitHub en solo lectura.
+**Incluye:** acceso seguro del Dueño (contraseña y TOTP obligatorio), bitácora de auditoría (consultable desde Supabase Studio del entorno de uso), puesta en marcha local con entornos de uso y de pruebas separados, lectura segura del portafolio, evaluación de conformidad con el estándar (1.0, 1.1 y 1.2), historial de git con semáforo de actividad, indicadores de Conformidad y Avance, gráficos del portafolio, la identidad visual de `nexoru-onboarding` y los datos de GitHub en solo lectura (CI de la rama principal, visibilidad, PRs abiertos y número de alertas de secretos).
 
 **Fuera de alcance:**
 - Cualquier acción hacia afuera: correos, WhatsApp, notificaciones, escrituras en proyectos, git o GitHub (principio XII: un sistema de información que actúa deja de ser neutral).
@@ -54,7 +55,7 @@ visibilidad: publico
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 (`004-github-readonly`) se deriva de su `tasks.md`.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 (`004-github-readonly`) se deriva de su `tasks.md` y cierra con el merge de su PR a `main`.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
@@ -82,10 +83,16 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | Una sola puerta al disco del portafolio (`safe-fs.ts`) con catálogo cerrado de rutas del estándar, rutas reales dentro de `PROJECTS_ROOT` y lista de nombres de secretos | El portafolio contiene repos con secretos locales; un lector sin límites los expondría (principio XIII) |
 | Git solo con comandos fijos de solo lectura, sin shell y con el prefijo v2 (Fase 3): `core.fsmonitor`, filtros `clean`, firmas, ganchos, submódulos y mantenimiento desactivados, `GIT_OPTIONAL_LOCKS=0` y `--no-optional-locks`; si el repo tiene `.git/info/attributes`, no se ejecuta `status` y se muestra "no evaluado" | Un `.git/config` o un filtro de atributos puede hacer que git ejecute un programa del repo (se comprobó en la Fase 3 con `filter.clean`), y `git status` normal reescribe `.git/index`; así no se ejecuta nada del repo ni cambia ningún archivo |
 | Reglas de conformidad como código puro y probado, por versión del estándar (`src/lib/standard/v1_0/`); solo se evalúan versiones soportadas | Una versión nueva del estándar es una carpeta nueva, no condiciones repartidas; evaluar con otra versión daría resultados falsos (principio XIV) |
-| Mientras GitHub no se consulte (Fase 4), la verificación 3.2 queda "no evaluada" y el nivel 3 se muestra como provisional | No se presenta como cumplido lo que no se verificó |
+| La verificación 3.2 se evalúa con la CI de GitHub (Fase 4); sin datos de GitHub recientes queda "no evaluada", el nivel 3 se muestra provisional y la Conformidad dice en la misma celda que su base es 28 y por qué | No se presenta como cumplido lo que no se verificó, y una falla de GitHub no se lee como retroceso (la frase "la base cambió de 28 a 29" solo vive en una leyenda fija) |
 | La correspondencia fila–servicio de la tabla de costos (1.10) se compara normalizada (minúsculas, espacios a guiones) | El estándar 1.0 no la definía y `amazon-business-engine` usa nombres legibles; el estándar 1.1.0 la incorporó con esa misma regla |
 | Índice regenerable en una sola fila `jsonb`, que se vuelve a leer si tiene más de 10 minutos o con Actualizar; guardarlo no deja evento de bitácora | Solo se consulta completo; no es una acción sobre la cuenta |
 | Cada proyecto se lee tal como está en disco, con aviso si no está en su rama principal o tiene cambios sin commit | Decisión del Dueño (clarify de la Fase 2): datos reales y aviso de cuándo desconfiar |
+| Un único cliente de GitHub (`src/lib/github/client.ts`): solo `GET` a `api.github.com`, catálogo cerrado de 6 rutas, sin reintentos, rechaza en código cualquier otro método | Principio XII: el dashboard nunca puede escribir en GitHub; una prueba lo demuestra y otra prueba que ningún otro archivo hace peticiones a GitHub |
+| Token opcional, fine-grained, de solo lectura, con acceso solo a los repos seleccionados y vencimiento de 90 días; vive en `.env.op.local` (constitución v2.0.1) | Mínimo privilegio: si se filtra, solo expone esos repos; el dashboard avisa 14 días antes de que venza |
+| GitHub se consulta solo con Actualizar: plazo de 8 s, 3 peticiones a la vez, por prioridad (repo, CI, PRs, alertas), con ETag; la relectura automática reutiliza lo guardado; un dato de 7 días o más no evalúa | Lo local nunca se bloquea por GitHub, se respeta el límite de consultas y un dato viejo no se presenta como actual |
+| De las alertas de secretos solo se guarda el número (`hide_secret=true`); con 0 alertas el hallazgo "Secretos en el historial" sigue "no evaluado" | El secret scanning solo detecta patrones conocidos: 0 alertas no prueba que no haya secretos |
+| La CI de cada PR se lee de las ejecuciones de Actions de su commit | Evita pedir los permisos Checks y Commit statuses |
+| Pruebas con un GitHub simulado; cualquier petición al GitHub real hace fallar la prueba y los tokens de prueba son ficticios | Ninguna prueba depende de la red ni puede filtrar un token real |
 | Dependencia nueva: `yaml` 2.x (sin dependencias, sin costo) | YAML 1.2 con acceso a nodos y comentarios, necesario para las verificaciones 1.2, 1.5, 1.6 y 3.1 |
 | El historial de git se calcula en cada lectura y solo vive en el índice regenerable; no hay tabla de historial | Git ya es la fuente de verdad; guardar series en la base sería capturar lo derivable |
 | Semáforo de actividad: verde hasta 5 días sin commits, ámbar de 6 a 15 y rojo con más de 15; neutro en `pausado`, `operacion` y `retirado` | Decisión del Dueño (clarify de la Fase 3); en esas fases la inactividad es esperada |
@@ -94,13 +101,14 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | Días en la fase desde el historial de `PROJECT.md`, comparados con `fase_desde`: si el historial empieza al crearse el campo, solo es una cota y el resultado es "no verificable" (opción A) | Decisión del Dueño en la Fase 3: evita marcar como discrepancia una fecha anterior a la creación de `PROJECT.md` |
 | Identidad visual de `nexoru-onboarding` (tema oscuro, tokens en `src/app/tokens.css`, Inter empaquetada con `@fontsource/inter`, OFL-1.1) | Decisión del Dueño (B-010) para todos los sistemas salvo `conversa-experiencias`; la fuente local evita depender de la red |
 | Gráficos como SVG generados en el servidor, sin librería ni JavaScript, cada uno con su tabla "Ver datos" | Compatibles con la CSP sin `style` en línea y accesibles; ninguna librería gratuita cumplía las dos cosas sin excepciones |
-| Soporte del estándar 1.1 (hallazgos de cierre, roadmap activo o concluido, `retirado`) y de `.nexoruignore` junto con el 1.0 | Los proyectos pueden seguir en 1.0; las carpetas que no son proyectos se excluyen sin leerlas |
+| Soporte del estándar 1.0, 1.1 y 1.2 con reglas por versión; en 1.2, 3.2 con la última ejecución de cada workflow que cumple 3.1 y el campo `visibilidad` comparado con GitHub | Cada proyecto se evalúa con las reglas que declara; un aviso informativo (no un hallazgo) señala la versión más nueva |
 
 ## Costo mensual
 
 | Servicio | USD/mes | Nota |
 |---|---|---|
 | Have I Been Pwned (`have-i-been-pwned`) | — | Sin costo. API pública de consulta k-anonymity |
+| API de GitHub (`github-api`) | — | Sin costo. Solo lectura, con token fine-grained (5.000 consultas por hora) o anónima (60) |
 | Supabase local (Docker) | — | Sin costo |
 | GitHub (repo público y Actions) | — | Sin costo |
 | **Total** | **0** | |
@@ -110,19 +118,18 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 - **Riesgo de calidad:** los procedimientos manuales de recuperación (2FA perdido sin códigos y contraseña olvidada) están documentados pero no se han validado con la cuenta real (backlog B-008).
 - **Dependencia:** Docker y Node.js 24 en la máquina del Dueño. Supabase se arranca siempre con `npm run db:start` / `npm run op:start`, que crean su red de Docker solo en `127.0.0.1` (la opción `ip` de `daemon.json` no la cubre).
 - **Riesgo de calidad:** las dos pilas de Supabase local (uso y pruebas) consumen unos 2–3 GB de memoria cada una; la de pruebas se puede detener cuando no se usa.
-- **Dependencia:** la conformidad se evalúa con el Estándar de Proyecto Nexoru 1.0 y 1.1 (`nexoru-governance`); cada versión nueva del estándar puede requerir actualizar el dashboard (principio XIV).
+- **Dependencia:** la conformidad se evalúa con el Estándar de Proyecto Nexoru 1.0, 1.1 y 1.2 (`nexoru-governance`); cada versión nueva del estándar puede requerir actualizar el dashboard (principio XIV).
 - **Riesgo de calidad:** el repo es público; la constitución anterior, con el número comercial de WhatsApp y la lista de productos, sigue visible en el historial de git.
-- **Riesgo de calidad:** `npm audit` reporta 8 vulnerabilidades altas anteriores a la Fase 3, de `braces` en herramientas de desarrollo (shadcn y `eslint-config-next`); no llegan a la app en ejecución.
+- **Riesgo de calidad:** `npm audit` reporta 8 vulnerabilidades altas anteriores a la Fase 3, de `braces` en herramientas de desarrollo (shadcn y `eslint-config-next`); no llegan a la app en ejecución. Sin cambios en la Fase 4 (ninguna dependencia nueva).
 - **Riesgo de calidad:** en los proyectos cuyo historial de `PROJECT.md` empieza con la fase actual, los días en la fase salen de `fase_desde` y no se pueden verificar con git (hoy `amazon-business-engine` y `nexoru-op`).
-- **Riesgo de calidad:** al activar la verificación 3.2 en la Fase 4, la base de Conformidad pasa de 28 a 29 y los porcentajes pueden bajar sin que el proyecto empeore.
+- **Dependencia:** el token de GitHub vence cada 90 días; el dashboard avisa con 14 días de anticipación y, al vencer, los repos privados quedan "no disponible" y 3.2 deja de evaluarse en ellos hasta reemplazarlo en `.env.op.local`. Un repo nuevo se debe añadir al token.
+- **Riesgo de calidad:** con las dos pilas de Supabase en marcha, la máquina de 6,2 GiB queda sin memoria y la batería E2E se vuelve lenta e intermitente (B-013); conviene correrla con la pila de uso detenida mientras se aplica B-014 (desactivar los servicios de Supabase que no se usan).
+- **Riesgo de calidad:** el secret scanning de GitHub no está disponible en repos privados de una cuenta personal sin el producto de pago (hoy `conversa-experiencias`), y en los públicos solo detecta patrones conocidos.
 
 ## Pendientes conocidos
 
-- Backlog en `specs/backlog.md`: B-001 a B-012. En particular, B-008 (validar los procedimientos manuales de recuperación), B-009 (`op:backup` / `op:restore`, opcional) y B-012 (alertas de discrepancia entre el estado declarado y la evidencia). B-010 (look and feel de `nexoru-onboarding`) y B-011 (`.nexoruignore`) se construyeron en la Fase 3.
-- **Para la Fase 4 (spec y plan)**: al activar la verificación 3.2 (CI de `main` en GitHub), la base
-  de Conformidad pasará de 28 a 29 verificaciones aplicables y los porcentajes pueden bajar sin que
-  el proyecto empeore. La Fase 4 debe mostrar ese cambio de base de forma explícita (contrato
-  `specs/003-git-history-insights/contracts/indicators-ui.md`).
+- Backlog en `specs/backlog.md`: B-001 a B-014. En particular, B-008 (validar los procedimientos manuales de recuperación), B-009 (`op:backup` / `op:restore`, opcional) B-012 (alertas de discrepancia entre el estado declarado y la evidencia), B-013 (vigilar fallos intermitentes de las E2E) y B-014 (desactivar servicios de Supabase sin uso). B-010 (look and feel de `nexoru-onboarding`) y B-011 (`.nexoruignore`) se construyeron en la Fase 3.
+- **Decisión del Dueño tras el merge de la Fase 4**: con la Fase 4 completa el roadmap queda concluido y `fase: construccion` da el hallazgo medio de cierre del estándar. Opciones: agregar una Fase 5 al roadmap (p. ej. B-012 o B-014) o cambiar de fase según `lifecycle.md`.
 
 ## Evidencia de validación
 
@@ -143,11 +150,16 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | `.nexoruignore` con el portafolio real (T050) | Validado por el Dueño el 2026-10-02: una carpeta de prueba aparece, desaparece al listarla en `.nexoruignore` y se borra al final |
 | Validación con el portafolio real (quickstart Fase 3, escenarios 1–10 y 9b) | Validada por el Dueño el 2026-10-02 en el entorno de uso: `amazon-business-engine` y `nexoru-op` evaluados con 1.1 (nivel 3 provisional, sin fallas); días sin actividad iguales a `git log -1 --branches`; Conformidad y Avance iguales al cálculo a mano (61/71 y 191/195); semáforos distinguibles en escala de grises; lectura completa en 276 ms (SC-005) |
 | Solo lectura sobre el portafolio real en la Fase 3 (SC-006) | Entorno de uso, 2026-10-02: contenido y fecha de modificación de 1776 archivos (sin `node_modules`, `.next` ni `.temp`) y metadatos de `.git` de cada repo idénticos antes y después de Actualizar, salvo el log del servidor de uso (`.op/app.log`, ignorado por git); `git status` de todos los repos sin cambios |
+| Fase 4: datos de GitHub en solo lectura (CI y 3.2, visibilidad, PRs, alertas) y estándar 1.2 | En local, rama `004-github-readonly`, 2026-10-04, con un GitHub simulado: Vitest 574/574 (cliente solo GET con catálogo cerrado, token ausente de errores, logs e índice, oleadas con plazo y límite, reglas 3.2 y visibilidad por versión, solo el número de alertas), pgTAP 90/90 y Playwright 106/106 (incluye título de PR con `<script>`, borrador, forks y activación sin JavaScript) |
+| Salvaguardas demostradas (2026-10-04) | Un GET real a `api.github.com` en una prueba falla con "GitHub real bloqueado en pruebas"; sin la salvaguarda la prueba lo detecta; el cliente cambiado a POST hace fallar 3 pruebas |
+| Validación con el portafolio real (quickstart Fase 4, escenarios 1–12, 3b y 4b) | Validada por el Dueño el 2026-10-04 en el entorno de uso, con token: `amazon-business-engine` y `nexoru-op` en 1.2, nivel 3 sin provisional, visibilidad `aceptada`, Conformidad 29 de 29; CI, visibilidad y PRs iguales a `gh`; sin token, los privados "requiere token"; el token no aparece en la página, en `.op/app.log` ni en el índice |
+| Solo lectura sobre el portafolio real en la Fase 4 (SC-003) | Entorno de uso, 2026-10-04: contenido y fecha de 1441 archivos, 66 metadatos de `.git` y el `git status` de los 6 repos idénticos antes y después de Actualizar (huella `6c145555171813d7` en ambas) |
 | Lectura de 50 proyectos (SC-006) | Prueba unitaria: 50 copias de un proyecto ficticio con repo git se leen en menos de 10 s |
 
 ## Siguiente hito
 
-Fase 4: datos de GitHub en solo lectura (CI, visibilidad y PRs).
+Fase 4: merge del PR de `004-github-readonly`.
 
-1. **Hecho:** Fase 3 cerrada (PR #3, merge `0e1359a`, CI de `main` en verde).
-2. **Siguiente:** `/speckit-specify` de la Fase 4. Debe activar la verificación 3.2 (CI de `main`), con lo que el nivel 3 deja de ser provisional, y mostrar de forma explícita el cambio de base de Conformidad de 28 a 29. Fecha objetivo: 2026-11-08.
+1. **Hecho:** historias US1 a US4 y estándar 1.2, validadas con el portafolio real; `visibilidad` y 1.2 declarados en `amazon-business-engine` y `nexoru-op`.
+2. **Siguiente:** revisión y merge del PR por el Dueño (T055), con la CI de `main` en verde.
+3. **Después:** decisión del Dueño sobre la Fase 5 (backlog B-012, B-014) o el cambio de fase (ver Pendientes conocidos).

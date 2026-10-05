@@ -103,6 +103,11 @@ datos densos, y la decoración resta legibilidad.
      Íconos: círculo con check (Verde), círculo con exclamación (Ámbar) y círculo con X (Rojo).
    - **Actividad** (días sin commits) es un **cuadrado de borde discontinuo**. Íconos de reloj:
      Activo (≤ 5 días), Lento (6–15 días) e Inactivo (> 15 días).
+   - **CI de la rama principal** (Fase 4) es un **rombo**: una píldora con los extremos en punta
+     (`clip-path`, sin borde), `data-shape="diamond"`. Usa los mismos tonos (ya con contraste AA):
+     Éxito (verde), En curso (ámbar), Falla (rojo; el texto dice el resultado real, p. ej.
+     "Cancelada") y No disponible o No aplica (gris). Íconos de insignia (check, X, menos) y de
+     carga. Así se distingue de los otros dos en escala de grises.
 3. **Neutro.** La actividad es gris, con el texto "Sin seguimiento" y el número de días, en las
    fases `pausado`, `operacion` y `retirado`.
 4. **Igual en todas partes.** Los mismos colores, formas e íconos en el tablero, el detalle y los
