@@ -3,13 +3,12 @@ id: nexoru-op
 nombre: Nexoru Op
 tipo: interno
 cliente: Nexoru
-fase: construccion
-fase_desde: 2026-09-26
+fase: operacion
+fase_desde: 2026-10-04
 estado: verde
 despliegue: local
 repo: adminnexoru/nexoru-op
 fecha_inicio: 2026-09-26
-fecha_objetivo: 2026-11-08
 stack:
   - nextjs
   - typescript
@@ -19,7 +18,7 @@ servicios:
   - have-i-been-pwned
   - github-api
 costo_mensual_usd: 0
-siguiente_hito: "Fase 5: especificar Operabilidad (B-014 y clasificación de las vulnerabilidades de npm audit) con /speckit-specify"
+siguiente_hito: "Incremento planeado de prioridad alta: Operabilidad (B-014 y clasificación de las vulnerabilidades de npm audit)"
 mapa_funcional: docs/mapa-funcional.md
 version_estandar: "1.2"
 visibilidad: publico
@@ -55,7 +54,7 @@ visibilidad: publico
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 (`004-github-readonly`) cerró el 2026-10-04 con el merge del PR #5 a `main`. La Fase 5 no tiene spec y lleva estado manual.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 (`004-github-readonly`) cerró el 2026-10-04 con el merge del PR #5 a `main`. Con la Fase 4 el roadmap quedó concluido y el proyecto pasó a `operacion` el 2026-10-04; los siguientes incrementos están en `## Incrementos planeados`.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
@@ -63,12 +62,20 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | — | |
 | 3 | Historial de git, indicadores de conformidad y avance, identidad visual y gráficos | 003-git-history-insights | 2026-10-25 | |
 | 4 | Datos de GitHub en solo lectura (CI, visibilidad, PRs) | 004-github-readonly | 2026-11-08 | |
-| 5 | Operabilidad: desactivar los servicios de Supabase sin uso en ambos entornos, midiendo la memoria antes y después (B-014), y clasificar las 8 vulnerabilidades altas de `npm audit` (cuáles aplican al código que corre, cuáles se resuelven actualizando y cuáles se aceptan con su razón) | — | 2026-10-17 | pendiente |
+
+## Incrementos planeados
+
+| Incremento | Objetivo | Prioridad | Referencia |
+|---|---|---|---|
+| Operabilidad | Desactivar los servicios de Supabase sin uso en ambos entornos, midiendo la memoria antes y después, y clasificar las 8 vulnerabilidades altas de `npm audit` (cuáles aplican al código que corre, cuáles se resuelven actualizando y cuáles se aceptan con su razón) | alta | B-014 |
+| Soporte del estándar 1.3 e historial de ciclos de vida | Evaluar proyectos con el estándar 1.3 (incluida esta sección) y mostrar el historial de ciclos de vida de cada proyecto | media | — |
 
 ## Decisiones clave
 
 | Decisión | Razón |
 |---|---|
+| `version_estandar` se mantiene en `"1.2"` hasta que el dashboard soporte la 1.3, aunque `PROJECT.md` ya usa la sección `## Incrementos planeados` de la 1.3 | El dashboard solo evalúa versiones soportadas: declarar 1.3 dejaría a `nexoru-op` sin evaluar. Subir a 1.3 es parte del incremento "Soporte del estándar 1.3" |
+| Pasar a `operacion` el 2026-10-04, sin fase nueva en el roadmap (decisión del Dueño) | Con la Fase 4 el roadmap quedó concluido y el dashboard está desplegado en local; el trabajo siguiente se planea como incrementos y se abre como fase cuando se comprometa |
 | Dashboard local, de solo lectura y para un solo usuario (constitución v2.0.0) | El valor está en ver el estado real del portafolio sin captura manual ni riesgo operativo; no justifica nube ni multiusuario |
 | Los archivos de cada proyecto son la fuente de verdad; la base solo guarda autenticación, bitácora e índice regenerable | Aplica la regla central (a) del estándar: lo derivable no se captura a mano |
 | Sin envío de correo ni notificaciones | Principio XII; se eliminó `nodemailer` y todo lo que dependía de él |
@@ -130,7 +137,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 ## Pendientes conocidos
 
 - Backlog en `specs/backlog.md`: B-001 a B-014. En particular, B-008 (validar los procedimientos manuales de recuperación), B-009 (`op:backup` / `op:restore`, opcional) B-012 (alertas de discrepancia entre el estado declarado y la evidencia), B-013 (vigilar fallos intermitentes de las E2E) y B-014 (desactivar servicios de Supabase sin uso). B-010 (look and feel de `nexoru-onboarding`) y B-011 (`.nexoruignore`) se construyeron en la Fase 3.
-- **Fase 5 (Operabilidad)**: definida por el Dueño el 2026-10-04 tras el merge de la Fase 4; falta su spec (`/speckit-specify`).
+- **Incrementos planeados** (`## Incrementos planeados`): Operabilidad (prioridad alta: B-014 y la clasificación de `npm audit`) y Soporte del estándar 1.3 e historial de ciclos de vida (prioridad media). Abrir uno lo regresa a `construccion` según `lifecycle.md`.
 
 ## Evidencia de validación
 
@@ -160,7 +167,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 
 ## Siguiente hito
 
-Fase 5: Operabilidad. Fecha objetivo: 2026-10-17.
+Incremento planeado de prioridad alta: Operabilidad (sin fecha comprometida mientras no se abra).
 
-1. **Hecho:** Fase 4 cerrada (PR #5, merge `ef35115`, CI de `main` en verde).
-2. **Siguiente:** `/speckit-specify` de la Fase 5 con sus dos objetivos: desactivar los servicios de Supabase sin uso en ambos entornos, midiendo la memoria antes y después (B-014), y clasificar las 8 vulnerabilidades altas de `npm audit` (aplican al código que corre, se resuelven actualizando o se aceptan con su razón).
+1. **Hecho:** Fase 4 cerrada (PR #5, merge `ef35115`, CI de `main` en verde); el proyecto pasó a `operacion` el 2026-10-04.
+2. **Siguiente:** cuando el Dueño lo abra, Operabilidad entra al roadmap como Fase 5 con su spec y su fecha: desactivar los servicios de Supabase sin uso en ambos entornos, midiendo la memoria antes y después (B-014), y clasificar las 8 vulnerabilidades altas de `npm audit`.
