@@ -1,7 +1,9 @@
 // T033: reads the whole portfolio: every non-hidden folder of PROJECTS_ROOT, nexoru-governance
 // apart as the standard, 8 projects at a time, one failure never stopping the others (FR-001, FR-008).
 import { isNewerThanSupported, parseChangelogVersion, SUPPORTED_STANDARD_VERSIONS } from "@/lib/standard/versions";
-import { readProject, unreadableProject } from "./read-project";
+import { carryOverGithub, type GithubTarget } from "@/lib/github/fetch-portfolio";
+import type { GithubState } from "@/lib/github/types";
+import { finishProject, githubTarget, readProjectLocal, unreadableProject, type LocalProject } from "./read-project";
 import { openRoot, STANDARD_FOLDER, type SafeRoot } from "./safe-fs";
 import { weeklyActivity } from "./history";
 import { parseNexoruIgnore } from "./ignore";
@@ -56,7 +58,19 @@ function sumWeeks(projects: ProjectReading[], now: Date): WeekActivity[] {
   return weeks;
 }
 
-export async function readPortfolio(projectsRoot: string | undefined, now = new Date()): Promise<PortfolioReading> {
+/**
+ * Phase 4: GitHub data for the projects. Actualizar queries GitHub; the automatic re-read and the
+ * tests without GitHub keep the stored data (specs/004-github-readonly research R10).
+ */
+export type GithubProvider = (targets: GithubTarget[]) => Promise<GithubState>;
+const noGithub: GithubProvider = async (targets) => carryOverGithub(targets, null);
+const pickStatus = ({ githubStatus, githubCache }: GithubState) => ({ githubStatus, githubCache });
+
+export async function readPortfolio(
+  projectsRoot: string | undefined,
+  now = new Date(),
+  options: { github?: GithubProvider } = {},
+): Promise<PortfolioReading> {
   const base = { readAt: now.toISOString(), supportedStandardVersions: [...SUPPORTED_STANDARD_VERSIONS] };
   const opened = await openRoot(projectsRoot);
   if (opened.status !== "ok") {
@@ -68,6 +82,7 @@ export async function readPortfolio(projectsRoot: string | undefined, now = new 
       warnings: [],
       activityByWeek: weeklyActivity([], now),
       ignoredCount: 0,
+      ...pickStatus(await (options.github ?? noGithub)([])),
     };
   }
 
@@ -78,14 +93,19 @@ export async function readPortfolio(projectsRoot: string | undefined, now = new 
   const ignored = parseNexoruIgnore(ignoreFile.ok ? ignoreFile.text : null);
   const projectFolders = folders.filter((folder) => folder !== STANDARD_FOLDER && !ignored.has(folder));
   const date = localDate(now);
-  const projects = await mapLimit(
-    projectFolders,
-    CONCURRENCY,
-    (folder) =>
-      readProject(root, folder, date, now).catch((error: unknown) => {
-        console.error(`portfolio: could not read ${folder}:`, error instanceof Error ? error.name : "unknown error");
-        return unreadableProject(folder, date);
-      }),
+  const locals = await mapLimit(projectFolders, CONCURRENCY, (folder) =>
+    readProjectLocal(root, folder).catch((error: unknown): LocalProject | string => {
+      console.error(`portfolio: could not read ${folder}:`, error instanceof Error ? error.name : "unknown error");
+      return folder;
+    }),
+  );
+  const unreadableTarget = (folder: string): GithubTarget => ({ folder, originKind: "none", originRepo: null, manifestRepo: null, workflowFiles: [] });
+  const targets = locals.map((local) => (typeof local === "string" ? unreadableTarget(local) : githubTarget(local)));
+  const github = await (options.github ?? noGithub)(targets);
+  const projects = locals.map((local) =>
+    typeof local === "string"
+      ? unreadableProject(local, date, github.github[local])
+      : finishProject(local, date, now, github.github[local.folder]),
   );
 
   return {
@@ -96,5 +116,7 @@ export async function readPortfolio(projectsRoot: string | undefined, now = new 
     warnings: duplicateIds(projects),
     activityByWeek: sumWeeks(projects, now),
     ignoredCount: folders.filter((folder) => folder !== STANDARD_FOLDER && ignored.has(folder)).length,
+    githubStatus: github.githubStatus,
+    githubCache: github.githubCache,
   };
 }

@@ -29,10 +29,11 @@ test("every traffic light has its label, visible text and a decorative icon", as
   const lights = page.locator("[data-testid^='traffic-light-']");
   expect(await lights.count()).toBeGreaterThan(10);
   for (const light of await lights.all()) {
-    await expect(light).toContainText(/Estado declarado|Actividad/);
+    // Phase 4 adds the CI traffic light ("CI: Éxito").
+    await expect(light).toContainText(/Estado declarado|Actividad|CI/);
     await expect(light.locator("svg[aria-hidden='true']")).toHaveCount(1);
-    // textContent: some traffic lights are inside closed "Ver datos" tables.
-    expect(((await light.textContent()) ?? "").replace(/\s/g, "").length).toBeGreaterThan(8);
+    // textContent: some traffic lights are inside closed "Ver datos" tables. Label and visible text.
+    expect((await light.textContent()) ?? "").toMatch(/^(Estado declarado|Actividad|CI):\s*\S.{2,}/);
   }
 });
 

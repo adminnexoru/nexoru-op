@@ -56,12 +56,13 @@ test("a versioned .env is a critical finding that names the file and never shows
   await expect(page.locator("body")).not.toContainText("TEXTO-DE-ENV-FICTICIO");
 });
 
-test("level 3 is provisional and 3.2 is not evaluated in this phase; spec contents are never shown", async () => {
+test("before Actualizar level 3 is provisional and 3.2 is not evaluated, saying why; spec contents are never shown", async () => {
   await openProject("level3-demo");
   await expect(page.getByTestId("level")).toHaveText("3 (provisional)");
   const notEvaluated = page.getByTestId("not-evaluated");
   await expect(notEvaluated).toContainText("3.2");
-  await expect(notEvaluated).toContainText("Se evaluará con GitHub en la Fase 4");
+  // Phase 4: without GitHub data (the index is empty until Actualizar), with its fixed reason.
+  await expect(notEvaluated).toContainText("sin datos recientes de GitHub");
   await expect(page.locator("body")).not.toContainText("TEXTO-DE-SPEC-FICTICIO");
 });
 

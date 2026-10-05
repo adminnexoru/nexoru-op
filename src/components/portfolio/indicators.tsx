@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { conformityCellText, conformityText, progressCellText, progressText } from "@/lib/format";
 import type { Indicators } from "@/lib/portfolio/types";
+import { ConformityLegend } from "@/components/github/conformity-legend";
 
 // T034: Conformidad and Avance always with their name and base (FR-013); absent values with their
 // reason, never 0 %. Plain text only.
@@ -27,9 +28,10 @@ export function IndicatorsCard({ indicators }: { indicators: Indicators }) {
         <section className="grid gap-1">
           <h3 className="font-medium">{conformityText(conformity)}</h3>
           <p className="max-w-prose text-muted-foreground">
-            Verificaciones del estándar cumplidas sobre las aplicables. No cuentan las que se evaluarán con GitHub (3.2); las
-            que dependen de otra que falló cuentan como no cumplidas.
+            Verificaciones del estándar cumplidas sobre las aplicables; las que dependen de otra que falló cuentan como no
+            cumplidas.
           </p>
+          <ConformityLegend />
           {"missing" in conformity && conformity.missing.length > 0 ? (
             <p className="max-w-prose">Verificaciones que faltan: {conformity.missing.join(", ")}</p>
           ) : null}

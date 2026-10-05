@@ -29,12 +29,12 @@ describe("portfolio", () => {
     const folders = reading.projects.map((p) => p.folder);
     expect(folders).not.toContain("nexoru-governance");
     expect(folders).toContain("level3-demo");
-    // 18 projects of phase 2 + 5 of phase 3; ignored-copy is skipped by .nexoruignore (US5).
-    expect(folders).toHaveLength(23);
+    // 18 projects of phase 2 + 5 of phase 3 + 7 of phase 4; ignored-copy is skipped by .nexoruignore (US5).
+    expect(folders).toHaveLength(30);
     expect(folders).not.toContain("ignored-copy");
     expect([...folders].sort()).toEqual(folders);
     expect(reading.root).toEqual({ status: "ok" });
-    expect(reading.supportedStandardVersions).toEqual(["1.0", "1.1"]);
+    expect(reading.supportedStandardVersions).toEqual(["1.0", "1.1", "1.2"]);
   });
 
   it("shows nexoru-governance apart as the standard", () => {
@@ -178,12 +178,13 @@ describe("performance (SC-006)", () => {
 // T046: the standard found in nexoru-governance (FR-027).
 describe("standard version found in nexoru-governance", () => {
   it("flags a CHANGELOG newer than the supported versions", { timeout: 30_000 }, async () => {
-    const { root: copy } = await buildFixturePortfolio({ standardVersion: "1.2.0" });
+    // Phase 4 supports 1.2, so the newer one is 1.3.
+    const { root: copy } = await buildFixturePortfolio({ standardVersion: "1.3.0" });
     try {
       expect((await readPortfolio(copy)).standard).toEqual({
         folder: "nexoru-governance",
         found: true,
-        version: "1.2",
+        version: "1.3",
         newerThanSupported: true,
       });
     } finally {

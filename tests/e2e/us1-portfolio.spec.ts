@@ -34,7 +34,8 @@ test("shows every project with the data of its PROJECT.md", async () => {
 
   const demo = row("Proyecto Demo Nivel 3");
   await expect(demo).toContainText("producto-nexoru");
-  await expect(demo).toContainText("Nexoru");
+  // Phase 4: Tipo and Cliente share a column; the client shows only for producto-cliente.
+  await expect(demo).not.toContainText("Nexoru");
   await expect(demo).toContainText("Construcción");
   await expect(demo).toContainText("Estado declarado: Verde");
   await expect(demo).toContainText("2027-12-15");
@@ -42,8 +43,9 @@ test("shows every project with the data of its PROJECT.md", async () => {
   await expect(demo).toContainText("3 (provisional)");
   await expect(demo).toContainText("main");
 
-  // 23 project folders plus the header row (duplicate ids are both listed; ignored-copy is in .nexoruignore).
-  await expect(page.getByTestId("portfolio-table").getByRole("row")).toHaveCount(24);
+  // 30 project folders plus the header row (duplicate ids are both listed; ignored-copy is in .nexoruignore;
+  // phase 4 added gitlab-remote, multi-workflow and five standard-1-2-*).
+  await expect(page.getByTestId("portfolio-table").getByRole("row")).toHaveCount(31);
 });
 
 test("a project without PROJECT.md is listed by folder, level 0 and absent data", async () => {

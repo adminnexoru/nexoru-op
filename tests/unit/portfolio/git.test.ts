@@ -33,6 +33,7 @@ describe("readGitInfo", () => {
       hasUncommittedChanges: false,
       uncommittedChangesReason: null,
       originRepo: "example-org/level3-demo",
+      originKind: "github",
     });
     expect(versionedEnvFiles).toEqual([]);
   });

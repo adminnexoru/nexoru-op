@@ -2,6 +2,7 @@
 // XIV). A project that declares another version, or none, is not evaluated with rules that are not
 // its own: its manifest and roadmap are still shown. Without a readable manifest there is no
 // version to read, and level 0 is true with any version, so it is evaluated with 1.0.
+import type { GithubData } from "@/lib/github/types";
 import type { ConformanceResult } from "@/lib/portfolio/types";
 import { NOT_EVALUATED_REASON } from "./indicators";
 import { parseFrontmatter } from "./frontmatter";
@@ -11,7 +12,7 @@ import { RULES, type StandardRules } from "./rules";
 import { isSupportedVersion } from "./versions";
 
 function notEvaluated(evaluation: "unsupported_version" | "no_version"): ConformanceResult {
-  return { standardVersion: null, evaluation, level: null, provisional: false, checks: [], failures: [], warnings: [], findings: [] };
+  return { standardVersion: null, evaluation, level: null, provisional: false, checks: [], failures: [], warnings: [], findings: [], newerStandardNotice: null, visibility: null };
 }
 
 /**
@@ -23,12 +24,13 @@ function withConformance(result: ProjectEvaluation, conformance: ConformanceResu
   return { ...result, conformance, indicators: { conformity: { absent: reason }, progress: { absent: reason } } };
 }
 
-export function evaluateProject(files: ProjectFiles, evaluationDate: string): ProjectEvaluation {
+/** Phase 4: `github` feeds 3.2 and the GitHub findings; null when there is no GitHub data. */
+export function evaluateProject(files: ProjectFiles, evaluationDate: string, github: GithubData | null = null): ProjectEvaluation {
   const fm = files.project.ok ? parseFrontmatter(files.project.text) : null;
   const declared = fm?.status === "ok" ? fm.data.version_estandar : undefined;
   const rules: StandardRules =
     typeof declared === "string" && isSupportedVersion(declared) ? RULES[declared as StandardRules["version"]] : RULES["1.0"];
-  const result = evaluateV1_0(files, evaluationDate, rules);
+  const result = evaluateV1_0(files, evaluationDate, rules, github);
   if (fm?.status !== "ok") return result;
 
   if (declared === undefined || declared === null || declared === "") return withConformance(result, notEvaluated("no_version"));

@@ -32,7 +32,21 @@ FIFO, archivo grande, `.env` versionado) y esa copia es el `PROJECTS_ROOT` de la
 | `standard-1-1-retirado` | 1.1, `fase: retirado`, sin `fecha_objetivo`, roadmap concluido | Sin fallas; actividad neutra |
 | `standard-1-1-operacion` | 1.1, `fase: operacion`, una fase pendiente | Hallazgo medio `operacion_pending_phases`; actividad neutra |
 | `standard-1-1-construccion` | 1.1, `fase: construccion`, roadmap concluido | Hallazgo medio `construction_roadmap_concluded` |
+| `gitlab-remote` | Remoto `origin` en `gitlab.example.com` (Fase 4) | Nivel 0; falla 1.7 "sin remoto origin en GitHub"; datos de GitHub "no aplica" |
+| `standard-1-2-interno` | 1.2, `interno`, sin `visibilidad` (Fase 4) | Resultado de visibilidad `sin-declarar (interno)`, sin hallazgo |
+| `standard-1-2-nexoru` | 1.2, `producto-nexoru`, `visibilidad: publico`, repo público | Visibilidad `aceptada` |
+| `standard-1-2-sin-decision` | 1.2, `producto-nexoru`, sin `visibilidad` | `requiere-decision`, hallazgo alto |
+| `standard-1-2-cliente` | 1.2, `producto-cliente`, `visibilidad: publico`, repo público | `aceptada`, más el hallazgo alto de `producto-cliente` público |
+| `standard-1-2-discrepancia` | 1.2, `producto-nexoru`, `visibilidad: privado`, repo público | `discrepancia`, hallazgo alto |
+| `multi-workflow` | 1.2 con tres workflows que cumplen 3.1 (CI en rojo, E2E en verde, Lint con su última ejecución fuera de las 50 recientes) | 3.2 falla nombrando CI; nivel 2 tras Actualizar |
 | `ignored-copy` | Listada en `.nexoruignore` de la raíz | No aparece en ninguna parte |
 
 Los textos `TEXTO-DE-SPEC-FICTICIO` y `TEXTO-DE-ENV-FICTICIO` sirven para comprobar que la
 interfaz nunca muestra contenido de specs ni de archivos `.env` (FR-019, FR-004).
+
+## GitHub simulado (Fase 4)
+
+Las respuestas de GitHub de estos proyectos están en `tests/fixtures/github/data.ts` (escenario
+por repo `example-org/<carpeta>`) y las sirve `tests/fixtures/github/fake-github.ts`, en memoria
+para Vitest y detrás de un servidor en `127.0.0.1` para Playwright. Ninguna prueba consulta el
+GitHub real: `tests/unit/setup/block-github.ts` lo bloquea.

@@ -23,7 +23,11 @@ export const FIELDS: Record<keyof Manifest, Kind> = {
   siguiente_hito: "text",
   mapa_funcional: "text",
   version_estandar: "text",
+  visibilidad: "text",
 };
+
+/** Allowed values of the optional `visibilidad` field (standard 1.2.0). */
+export const VISIBILIDAD_VALUES = ["publico", "privado"];
 
 /** Enumerated fields; `fase` depends on the version of the standard. */
 export function enums(rules: StandardRules): Partial<Record<keyof Manifest, readonly string[]>> {
@@ -54,12 +58,15 @@ export function readManifest(data: Record<string, unknown>): Manifest {
   const manifest = {} as Record<string, unknown>;
   for (const [field, kind] of Object.entries(FIELDS)) {
     manifest[field] = hasValidType(data[field], kind) ? data[field] : null;
+    // Optional field of 1.2: another value counts as not declared (and gives a warning).
+    if (field === "visibilidad" && !VISIBILIDAD_VALUES.includes(String(manifest[field]))) manifest[field] = null;
   }
   return manifest as Manifest;
 }
 
 /** Whether a field is mandatory for this manifest (project-manifest.md, "Campos"). */
 export function isRequired(field: keyof Manifest, data: Record<string, unknown>, rules: StandardRules): boolean {
+  if (field === "visibilidad") return false;
   if (field === "urls") return DEPLOYMENTS_WITH_URLS.includes(String(data.despliegue));
   if (field === "fecha_objetivo") return !rules.phasesWithoutTarget.includes(String(data.fase));
   return true;

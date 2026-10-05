@@ -14,5 +14,7 @@ export default defineConfig({
     include: ["tests/unit/**/*.test.ts"],
     // Builds the fictitious portfolio in a temporary folder (tests/fixtures/build-portfolio.ts).
     globalSetup: ["tests/unit/global-setup.ts"],
+    // Any request to the real GitHub fails the test (specs/004-github-readonly research R7).
+    setupFiles: ["tests/unit/setup/block-github.ts"],
   },
 });

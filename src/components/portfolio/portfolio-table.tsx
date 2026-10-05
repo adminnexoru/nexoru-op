@@ -5,6 +5,8 @@ import { declaredLevel, TrafficLight } from "@/components/status/traffic-light";
 import { Absent, OrAbsent } from "./absent";
 import { BranchBadge } from "./branch-badge";
 import { daysText, phaseLabel } from "@/lib/format";
+import { ciState } from "@/lib/github/ci-state";
+import { SUPPORTED_STANDARD_VERSIONS } from "@/lib/standard/versions";
 import { IndicatorCell } from "./indicators";
 import { LevelBadge } from "./level-badge";
 
@@ -14,14 +16,13 @@ function manifestNote(project: ProjectReading): string | null {
   return project.manifestProblem.reason === "missing" ? "sin PROJECT.md" : "PROJECT.md ilegible";
 }
 
-export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
+export function PortfolioTable({ projects, now }: { projects: ProjectReading[]; now: Date }) {
   return (
     <Table data-testid="portfolio-table">
       <TableHeader>
         <TableRow>
           <TableHead>Proyecto</TableHead>
           <TableHead>Tipo</TableHead>
-          <TableHead>Cliente</TableHead>
           <TableHead>Fase</TableHead>
           <TableHead>Estado declarado</TableHead>
           <TableHead>Fecha objetivo</TableHead>
@@ -30,7 +31,8 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
           <TableHead>Conformidad</TableHead>
           <TableHead>Avance</TableHead>
           <TableHead>Actividad</TableHead>
-          <TableHead>Roadmap</TableHead>
+          <TableHead>CI</TableHead>
+          <TableHead>PRs</TableHead>
           <TableHead>Rama</TableHead>
         </TableRow>
       </TableHeader>
@@ -45,9 +47,20 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
                   {manifest?.nombre ?? project.folder}
                 </Link>
                 {note ? <div className="text-xs text-muted-foreground">{note}</div> : null}
+                {project.github.repoInfo.value ? (
+                  // Phase 4 (US2): the visibility of the repo, from the last GitHub data.
+                  <div data-testid="visibility" className="text-xs text-muted-foreground">
+                    {project.github.repoInfo.value.visibility === "publico" ? "público" : "privado"}
+                  </div>
+                ) : null}
               </TableCell>
-              <TableCell><OrAbsent value={manifest?.tipo} /></TableCell>
-              <TableCell><OrAbsent value={manifest?.cliente} /></TableCell>
+              <TableCell>
+                {/* Phase 4: Tipo and Cliente share a column; the client only for producto-cliente. */}
+                <OrAbsent value={manifest?.tipo} />
+                {manifest?.tipo === "producto-cliente" && manifest.cliente ? (
+                  <div className="text-xs text-muted-foreground">{manifest.cliente}</div>
+                ) : null}
+              </TableCell>
               <TableCell>{manifest?.fase ? phaseLabel(manifest.fase) : <Absent />}</TableCell>
               <TableCell>
                 {declaredLevel(manifest?.estado) ? (
@@ -67,7 +80,15 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
                   <Absent />
                 )}
               </TableCell>
-              <TableCell><LevelBadge project={project} /></TableCell>
+              <TableCell>
+                <LevelBadge project={project} />
+                {project.conformance.newerStandardNotice ? (
+                  // FR-028: the short form of the notice; the full text is in the detail.
+                  <div data-testid="newer-standard" className="text-xs text-muted-foreground" title={project.conformance.newerStandardNotice}>
+                    Estándar {SUPPORTED_STANDARD_VERSIONS[SUPPORTED_STANDARD_VERSIONS.length - 1]} disponible
+                  </div>
+                ) : null}
+              </TableCell>
               <TableCell className="whitespace-nowrap"><IndicatorCell kind="conformity" indicators={project.indicators} /></TableCell>
               <TableCell className="whitespace-nowrap"><IndicatorCell kind="progress" indicators={project.indicators} /></TableCell>
               <TableCell>
@@ -78,7 +99,20 @@ export function PortfolioTable({ projects }: { projects: ProjectReading[] }) {
                 )}
               </TableCell>
               <TableCell>
-                <OrAbsent value={project.roadmapStatus} />
+                <TrafficLight kind="ci" {...ciState(project.github, now)} labelHidden />
+              </TableCell>
+              <TableCell>
+                {/* Phase 4 (US3): open PRs; "—" when GitHub does not apply, "?" with its reason when unavailable. */}
+                {project.github.applies !== "yes" ? (
+                  <span data-testid="pulls-count" className="text-muted-foreground">—</span>
+                ) : project.github.pulls.value ? (
+                  <span data-testid="pulls-count">{project.github.pulls.value.length}</span>
+                ) : (
+                  <span>
+                    <span data-testid="pulls-count" aria-hidden="true">?</span>
+                    <span className="sr-only">PRs no disponibles: {project.github.pulls.reason}</span>
+                  </span>
+                )}
               </TableCell>
               <TableCell><BranchBadge git={project.git} /></TableCell>
             </TableRow>

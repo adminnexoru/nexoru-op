@@ -3,8 +3,11 @@
 import type { Check, ConformanceResult, Indicators, Manifest, Problem, RoadmapPhase } from "@/lib/portfolio/types";
 import { conformity, progress } from "../indicators";
 import type { ProjectFiles } from "../project-files";
-import { buildContext } from "./context";
-import { findings } from "./findings";
+import type { GithubData } from "@/lib/github/types";
+import { newerStandardNotice } from "../versions";
+import { buildContext, type Context } from "./context";
+import { VISIBILIDAD_VALUES } from "./manifest";
+import { findings, visibility } from "./findings";
 import { level1 } from "./level1";
 import { level2, specWarnings } from "./level2";
 import { level3 } from "./level3";
@@ -23,6 +26,19 @@ export interface ProjectEvaluation {
   roadmapStatus: "activo" | "concluido" | null;
   conformance: ConformanceResult;
   indicators: Indicators;
+}
+
+/** Standard 1.2: a visibilidad with a value that is not allowed counts as not declared, with a warning. */
+function manifestWarnings(ctx: Context): Problem[] {
+  const raw = ctx.data?.visibilidad;
+  if (!ctx.rules.visibilityField || raw === undefined || raw === null || raw === "" || VISIBILIDAD_VALUES.includes(String(raw))) return [];
+  return [
+    {
+      path: "PROJECT.md",
+      reason: "invalid_value",
+      detail: `\`visibilidad\` tiene un valor no permitido (${String(raw)}); se toma como no declarada. Valores permitidos: ${VISIBILIDAD_VALUES.join(", ")}`,
+    },
+  ];
 }
 
 export function computeLevel(checks: Check[]): Pick<ConformanceResult, "level" | "provisional" | "failures"> {
@@ -44,8 +60,13 @@ export function computeLevel(checks: Check[]): Pick<ConformanceResult, "level" |
   return { level, provisional, failures: checks.filter((c) => c.level === next && c.status === "fail") };
 }
 
-export function evaluateProject(files: ProjectFiles, evaluationDate: string, rules: StandardRules = RULES["1.0"]): ProjectEvaluation {
-  const ctx = buildContext(files, evaluationDate, rules);
+export function evaluateProject(
+  files: ProjectFiles,
+  evaluationDate: string,
+  rules: StandardRules = RULES["1.0"],
+  github: GithubData | null = null,
+): ProjectEvaluation {
+  const ctx = buildContext(files, evaluationDate, rules, github);
   const checks = [...level1(ctx), ...level2(ctx), ...level3(ctx)];
 
   let manifestProblem: Problem | null = null;
@@ -61,8 +82,10 @@ export function evaluateProject(files: ProjectFiles, evaluationDate: string, rul
     evaluation: "evaluated",
     ...computeLevel(checks),
     checks,
-    warnings: specWarnings(ctx),
+    warnings: [...manifestWarnings(ctx), ...specWarnings(ctx)],
     findings: findings(ctx),
+    newerStandardNotice: newerStandardNotice(rules.version),
+    visibility: visibility(ctx).result,
   };
 
   return {

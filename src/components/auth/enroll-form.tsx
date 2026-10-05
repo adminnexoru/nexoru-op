@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +12,6 @@ import { RecoveryCodesList } from "./recovery-codes-list";
 type Enrollment = { factorId: string; qrCode: string; secret: string };
 
 export function EnrollForm({ enrollment }: { enrollment: Enrollment | null }) {
-  const router = useRouter();
   const [state, action, pending] = useActionState<EnrollState, FormData>(confirmTotp, {});
 
   if (state.recoveryCodes) {
@@ -25,8 +23,9 @@ export function EnrollForm({ enrollment }: { enrollment: Enrollment | null }) {
           volverán a mostrar.
         </p>
         <RecoveryCodesList codes={state.recoveryCodes} />
-        <Button type="button" onClick={() => router.push("/")}>
-          Ya los guardé
+        {/* A link, not onClick: it works before React hydrates (B-013, T056). */}
+        <Button asChild>
+          <Link href="/">Ya los guardé</Link>
         </Button>
       </div>
     );

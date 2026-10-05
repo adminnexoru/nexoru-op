@@ -1,7 +1,7 @@
 import "server-only";
 import { getServerEnv } from "@/lib/env.server";
 import { createClient } from "@/lib/supabase/server";
-import { readPortfolio } from "./read-portfolio";
+import { buildReading, githubClientFor, type RefreshMode } from "./refresh";
 import { isStale, parseSnapshot } from "./snapshot-format";
 import { FORMAT_VERSION, type PortfolioReading } from "./types";
 
@@ -30,9 +30,18 @@ export async function saveSnapshot(reading: PortfolioReading): Promise<void> {
   if (error) throw new Error(`saving the portfolio index failed: ${error.code}`);
 }
 
-/** Reads PROJECTS_ROOT now and stores the result. */
-export async function refreshSnapshot(): Promise<PortfolioReading> {
-  const reading = await readPortfolio(getServerEnv().PROJECTS_ROOT);
+/**
+ * Reads PROJECTS_ROOT now and stores the result. Actualizar (withGitHub) also queries GitHub; the
+ * automatic re-read (localOnly) keeps the stored GitHub data (specs/004-github-readonly FR-005).
+ */
+export async function refreshSnapshot(mode: RefreshMode): Promise<PortfolioReading> {
+  const previous = (await loadSnapshot())?.reading ?? null;
+  const env = getServerEnv();
+  const { client, reason } =
+    mode === "withGitHub"
+      ? githubClientFor({ supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL, override: env.GITHUB_API_ORIGIN, token: env.GITHUB_TOKEN }, globalThis.fetch)
+      : { client: null, reason: undefined };
+  const reading = await buildReading(env.PROJECTS_ROOT, { mode, previous, client, unavailableReason: reason });
   await saveSnapshot(reading);
   return reading;
 }
@@ -41,5 +50,5 @@ export async function refreshSnapshot(): Promise<PortfolioReading> {
 export async function getPortfolio(): Promise<PortfolioReading> {
   const stored = await loadSnapshot();
   if (stored && !isStale(stored.readAt, new Date())) return stored.reading;
-  return refreshSnapshot();
+  return refreshSnapshot("localOnly");
 }

@@ -34,6 +34,7 @@ export function baseFiles(): ProjectFiles {
       hasUncommittedChanges: false,
       uncommittedChangesReason: null,
       originRepo: "example-org/level3-demo",
+      originKind: "github",
     },
     versionedEnvFiles: [],
   };

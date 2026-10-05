@@ -17,7 +17,6 @@ test.afterAll(async () => {
   await page.close();
 });
 
-const row = (name: string) => page.getByRole("row").filter({ has: page.getByRole("link", { name, exact: true }) });
 
 test("folders in .nexoruignore do not appear anywhere", async () => {
   await page.goto("/");
@@ -25,13 +24,14 @@ test("folders in .nexoruignore do not appear anywhere", async () => {
 });
 
 test("both supported versions are shown and there is no newer-standard warning", async () => {
-  await expect(page.getByText("Estándar soportado: 1.0, 1.1")).toBeVisible();
+  await expect(page.getByText("Estándar soportado: 1.0, 1.1, 1.2")).toBeVisible();
   await expect(page.getByTestId("standard-warning")).toHaveCount(0);
 });
 
-test("the roadmap status is shown in the portfolio", async () => {
-  await expect(row("Proyecto standard-1-1-construccion")).toContainText("concluido");
-  await expect(row("Proyecto Demo Nivel 3")).toContainText("activo");
+test("the roadmap status moved from the table to the detail (phase 4, contracts/github-ui.md)", async () => {
+  await expect(page.getByRole("columnheader", { name: "Roadmap" })).toHaveCount(0);
+  await page.goto("/projects/level3-demo");
+  await expect(page.getByTestId("roadmap-status")).toHaveText("Roadmap activo");
 });
 
 test("the detail shows the closure finding and the roadmap status", async () => {

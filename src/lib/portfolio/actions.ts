@@ -14,7 +14,7 @@ export async function refreshPortfolio(): Promise<RefreshState> {
   const { data } = await supabase.auth.getClaims();
   if (data?.claims.aal !== "aal2") return { error: "Tu sesión no es válida. Vuelve a iniciar sesión." };
   try {
-    await refreshSnapshot();
+    await refreshSnapshot("withGitHub");
   } catch (error) {
     // FR-029: no file contents in logs, only the error name.
     console.error("refreshPortfolio failed:", error instanceof Error ? error.message : "unknown error");

@@ -63,3 +63,13 @@ export function assertTestProjectsRoot(root: string | undefined): string {
   }
   return root;
 }
+
+/**
+ * For tests: never a real GitHub token (specs/004-github-readonly research R7). Only an empty value
+ * or a fictitious one that starts with "test-". The value is never echoed.
+ */
+export function assertTestGithubToken(token: string | undefined): void {
+  if (token && !token.startsWith("test-")) {
+    throw new Error("GITHUB_TOKEN parece un token real: las pruebas solo usan tokens ficticios que empiezan con test-.");
+  }
+}

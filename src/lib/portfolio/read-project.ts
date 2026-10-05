@@ -2,6 +2,10 @@
 // evaluates it with its (supported) version of the standard. Only catalog paths are requested.
 import type { FileContent, ProjectFiles, SpecFolder } from "@/lib/standard/project-files";
 import { evaluateProject } from "@/lib/standard/evaluate";
+import { parseFrontmatter } from "@/lib/standard/frontmatter";
+import { ciWorkflowPaths } from "@/lib/standard/v1_0/level3";
+import type { GithubTarget } from "@/lib/github/fetch-portfolio";
+import type { GithubData } from "@/lib/github/types";
 import { readGitHistoryRaw, readGitInfo, readRepoPaths, type GitReading } from "./git";
 import { buildHistory } from "./history";
 import type { SafeRoot } from "./safe-fs";
@@ -16,6 +20,7 @@ const NO_GIT: GitReading = {
     hasUncommittedChanges: null,
     uncommittedChangesReason: null,
     originRepo: null,
+    originKind: "none",
   },
   versionedEnvFiles: null,
   problems: [],
@@ -53,7 +58,29 @@ function frontmatterEndLine(text: string | null): number | null {
   return index === -1 ? null : index + 1;
 }
 
-export async function readProject(root: SafeRoot, folder: string, evaluationDate: string, now: Date): Promise<ProjectReading> {
+/** Phase 4: what a project has read locally, before GitHub is queried and it is evaluated. */
+export type LocalProject = {
+  folder: string;
+  files: ProjectFiles;
+  git: GitReading;
+  rawHistory: Awaited<ReturnType<typeof readGitHistoryRaw>> | null;
+  projectText: string | null;
+};
+
+/** What the GitHub queries need from a local reading (specs/004-github-readonly). */
+export function githubTarget(local: LocalProject): GithubTarget {
+  const fm = local.projectText ? parseFrontmatter(local.projectText) : null;
+  const repo = fm?.status === "ok" ? fm.data.repo : null;
+  return {
+    folder: local.folder,
+    originKind: local.git.info.originKind,
+    originRepo: local.git.info.originRepo,
+    manifestRepo: typeof repo === "string" ? repo : null,
+    workflowFiles: ciWorkflowPaths(local.files),
+  };
+}
+
+export async function readProjectLocal(root: SafeRoot, folder: string): Promise<LocalProject> {
   const projectReal = await root.projectPath(folder);
   // One rev-parse per project, shared by the git data and the history (fewer git processes).
   const repoPaths = projectReal ? await readRepoPaths(projectReal) : null;
@@ -91,22 +118,28 @@ export async function readProject(root: SafeRoot, folder: string, evaluationDate
     versionedEnvFiles: git.versionedEnvFiles,
   };
 
-  const evaluation = evaluateProject(files, evaluationDate);
+  return { folder, files, git, rawHistory, projectText: project.ok ? project.text : null };
+}
+
+/** Evaluates a local reading with its GitHub data. */
+export function finishProject(local: LocalProject, evaluationDate: string, now: Date, github: GithubData): ProjectReading {
+  const { folder, files, git, rawHistory } = local;
+  const evaluation = evaluateProject(files, evaluationDate, github);
   const history =
     git.info.isRepo && rawHistory
       ? buildHistory(
           { ...rawHistory, detachedHead: git.info.branch === null },
           evaluation.manifest,
-          frontmatterEndLine(project.ok ? project.text : null),
+          frontmatterEndLine(local.projectText),
           now,
         )
       : null;
 
-  return { folder, git: git.info, history, ...evaluation, readErrors: readErrors(files, git) };
+  return { folder, git: git.info, history, ...evaluation, readErrors: readErrors(files, git), github };
 }
 
 /** Reading of a project that could not be read at all (FR-008): absent data and the reason. */
-export function unreadableProject(folder: string, evaluationDate: string): ProjectReading {
+export function unreadableProject(folder: string, evaluationDate: string, github: GithubData): ProjectReading {
   const missing = (path: string): FileContent => ({ ok: false, problem: { path, reason: "missing", detail: null } });
   const files: ProjectFiles = {
     folder,
@@ -127,7 +160,8 @@ export function unreadableProject(folder: string, evaluationDate: string): Proje
     folder,
     git: NO_GIT.info,
     history: null,
-    ...evaluateProject(files, evaluationDate),
+    ...evaluateProject(files, evaluationDate, github),
     readErrors: [{ path: null, reason: "unreadable", detail: "No se pudo leer la carpeta del proyecto" }],
+    github,
   };
 }

@@ -1,9 +1,10 @@
 // T017: result of a portfolio reading, stored in the regenerable index (data-model §2).
 // The zod schemas validate the index when it is loaded back (FR-013).
 import { z } from "zod";
+import { githubCacheSchema, githubDataSchema, githubStatusSchema } from "@/lib/github/types";
 
 /** Version of the payload format stored in portfolio_snapshots.format_version. */
-export const FORMAT_VERSION = 2;
+export const FORMAT_VERSION = 3;
 
 export const ROADMAP_STATES = ["completa", "implementada-sin-validar", "en-curso", "bloqueada", "pendiente"] as const;
 export const roadmapStateSchema = z.enum(ROADMAP_STATES);
@@ -22,6 +23,7 @@ export const problemSchema = z.object({
     "git_error",
     "no_checkboxes",
     "unreadable",
+    "invalid_value",
   ]),
   detail: z.string().nullable(),
 });
@@ -36,6 +38,8 @@ export const gitInfoSchema = z.object({
   /** Why hasUncommittedChanges is null in a repository (phase 3, contracts/git-history.md). */
   uncommittedChangesReason: z.string().nullable(),
   originRepo: z.string().nullable(),
+  /** Whether origin exists and is GitHub (phase 4: "no aplica" for none and other). */
+  originKind: z.enum(["github", "other", "none"]),
 });
 export type GitInfo = z.infer<typeof gitInfoSchema>;
 
@@ -61,6 +65,8 @@ export const manifestSchema = z.object({
   siguiente_hito: text,
   mapa_funcional: text,
   version_estandar: text,
+  /** Standard 1.2: publico or privado; null when absent, empty or not allowed. */
+  visibilidad: text,
 });
 export type Manifest = z.infer<typeof manifestSchema>;
 
@@ -94,6 +100,8 @@ export const findingSchema = z.object({
     "repo_visibility",
     "operacion_pending_phases",
     "construction_roadmap_concluded",
+    "visibility_decision_required",
+    "visibility_mismatch",
   ]),
   status: z.enum(["found", "not_found", "not_evaluated"]),
   detail: z.string().nullable(),
@@ -109,6 +117,10 @@ export const conformanceResultSchema = z.object({
   failures: z.array(checkSchema),
   warnings: z.array(problemSchema),
   findings: z.array(findingSchema),
+  /** Phase 4 (FR-028): informative notice of a newer supported version; not a finding. */
+  newerStandardNotice: z.string().nullable(),
+  /** Phase 4 (standard 1.2, repo-visibility.md): result of the declared visibility; null in 1.0 and 1.1. */
+  visibility: z.enum(["aceptada", "requiere-decision", "discrepancia", "sin-declarar (interno)", "no_evaluado"]).nullable(),
 });
 export type ConformanceResult = z.infer<typeof conformanceResultSchema>;
 
@@ -157,7 +169,14 @@ const absentSchema = z.object({ absent: z.string() });
 /** T011/T033: Conformidad and Avance (US2, data-model.md). */
 export const indicatorsSchema = z.object({
   conformity: z.union([
-    z.object({ percent: z.number(), passed: z.number(), applicable: z.number(), missing: z.array(z.string()) }),
+    z.object({
+      percent: z.number(),
+      passed: z.number(),
+      applicable: z.number(),
+      missing: z.array(z.string()),
+      /** Phase 4 (FR-016, FR-017): whether 3.2 is in the base, or why not. The current state only. */
+      check32: z.union([z.object({ included: z.literal(true) }), z.object({ included: z.literal(false), reason: z.string() })]),
+    }),
     absentSchema,
   ]),
   progress: z.union([
@@ -186,6 +205,8 @@ export const projectReadingSchema = z.object({
   conformance: conformanceResultSchema,
   indicators: indicatorsSchema,
   readErrors: z.array(problemSchema),
+  /** Phase 4: GitHub data of the project (specs/004-github-readonly data-model.md). */
+  github: githubDataSchema,
 });
 export type ProjectReading = z.infer<typeof projectReadingSchema>;
 
@@ -217,5 +238,9 @@ export const portfolioReadingSchema = z.object({
   activityByWeek: z.array(weekActivitySchema),
   /** Folders skipped by .nexoruignore; never shown (FR-031). */
   ignoredCount: z.number(),
+  /** Phase 4: last query to GitHub, rate limit and token (never its value). */
+  githubStatus: githubStatusSchema,
+  /** Phase 4: ETag and summary per query, for conditional requests. */
+  githubCache: githubCacheSchema,
 });
 export type PortfolioReading = z.infer<typeof portfolioReadingSchema>;

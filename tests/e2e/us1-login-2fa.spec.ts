@@ -247,7 +247,7 @@ test("a recovery code replaces the lost authenticator and forces a new enrollmen
   await page.getByLabel("Código de 6 dígitos").fill(await freshTotp(newSecret));
   await page.getByRole("button", { name: "Verificar y activar" }).click();
   await expect(page.getByTestId("recovery-codes").locator("li")).toHaveCount(10);
-  await page.getByRole("button", { name: "Ya los guardé" }).click();
+  await page.getByRole("link", { name: "Ya los guardé" }).click();
   await expect(page).toHaveURL(/\/$/);
 
   const { data: used } = await adminClient()
