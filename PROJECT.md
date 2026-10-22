@@ -3,12 +3,13 @@ id: nexoru-op
 nombre: Nexoru Op
 tipo: interno
 cliente: Nexoru
-fase: operacion
-fase_desde: 2026-10-04
+fase: construccion
+fase_desde: 2026-10-22
 estado: verde
 despliegue: local
 repo: adminnexoru/nexoru-op
 fecha_inicio: 2026-09-26
+fecha_objetivo: 2026-10-29
 stack:
   - nextjs
   - typescript
@@ -18,9 +19,9 @@ servicios:
   - have-i-been-pwned
   - github-api
 costo_mensual_usd: 0
-siguiente_hito: "Incremento planeado de prioridad alta: Operabilidad (B-014 y clasificación de las vulnerabilidades de npm audit)"
+siguiente_hito: "Fase 5: soporte del estándar 1.3 (005-standard-1-3), PR y merge; fecha objetivo 2026-10-29"
 mapa_funcional: docs/mapa-funcional.md
-version_estandar: "1.2"
+version_estandar: "1.3"
 visibilidad: publico
 ---
 
@@ -42,7 +43,7 @@ visibilidad: publico
 
 ## Alcance
 
-**Incluye:** acceso seguro del Dueño (contraseña y TOTP obligatorio), bitácora de auditoría (consultable desde Supabase Studio del entorno de uso), puesta en marcha local con entornos de uso y de pruebas separados, lectura segura del portafolio, evaluación de conformidad con el estándar (1.0, 1.1 y 1.2), historial de git con semáforo de actividad, indicadores de Conformidad y Avance, gráficos del portafolio, la identidad visual de `nexoru-onboarding` y los datos de GitHub en solo lectura (CI de la rama principal, visibilidad, PRs abiertos y número de alertas de secretos).
+**Incluye:** acceso seguro del Dueño (contraseña y TOTP obligatorio), bitácora de auditoría (consultable desde Supabase Studio del entorno de uso), puesta en marcha local con entornos de uso y de pruebas separados, lectura segura del portafolio, evaluación de conformidad con el estándar (1.0, 1.1, 1.2 y 1.3), historial de git con semáforo de actividad, indicadores de Conformidad y Avance, gráficos del portafolio, la identidad visual de `nexoru-onboarding` y los datos de GitHub en solo lectura (CI de la rama principal, visibilidad, PRs abiertos y número de alertas de secretos).
 
 **Fuera de alcance:**
 - Cualquier acción hacia afuera: correos, WhatsApp, notificaciones, escrituras en proyectos, git o GitHub (principio XII: un sistema de información que actúa deja de ser neutral).
@@ -54,7 +55,7 @@ visibilidad: publico
 
 ## Roadmap
 
-El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 (`004-github-readonly`) cerró el 2026-10-04 con el merge del PR #5 a `main`. Con la Fase 4 el roadmap quedó concluido y el proyecto pasó a `operacion` el 2026-10-04; los siguientes incrementos están en `## Incrementos planeados`.
+El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las specs vinculadas. La Fase 1 (`001-user-access`) se redefinió el 2026-09-28 (constitución v2.0.0): su `tasks.md` conserva como hechas las tareas del diseño anterior y añade las de la redefinición. La Fase 1 cerró el 2026-09-28 con el merge del PR #1 a `main`. La Fase 2 (`002-portfolio-conformance`) cerró el 2026-10-01 con el merge del PR #2 a `main`. La Fase 3 (`003-git-history-insights`) cerró el 2026-10-03 con el merge del PR #3 a `main`. La Fase 4 (`004-github-readonly`) cerró el 2026-10-04 con el merge del PR #5 a `main`. Con la Fase 4 el roadmap quedó concluido y el proyecto pasó a `operacion` el 2026-10-04. El 2026-10-22 se abrió el incremento de la Fase 5 (`005-standard-1-3`), que se deriva de su `tasks.md`, y el proyecto volvió a `construccion`; los demás incrementos siguen en `## Incrementos planeados`.
 
 | Fase | Objetivo | Specs | Fecha objetivo | Estado manual |
 |---|---|---|---|---|
@@ -62,19 +63,20 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | 2 | Lector seguro del portafolio y conformidad con el estándar | 002-portfolio-conformance | — | |
 | 3 | Historial de git, indicadores de conformidad y avance, identidad visual y gráficos | 003-git-history-insights | 2026-10-25 | |
 | 4 | Datos de GitHub en solo lectura (CI, visibilidad, PRs) | 004-github-readonly | 2026-11-08 | |
+| 5 | Soporte del estándar 1.3: verificación 1.8 de `## Incrementos planeados` y aviso de versión por salto | 005-standard-1-3 | 2026-10-29 | |
 
 ## Incrementos planeados
 
 | Incremento | Objetivo | Prioridad | Referencia |
 |---|---|---|---|
 | Operabilidad | Desactivar los servicios de Supabase sin uso en ambos entornos, midiendo la memoria antes y después, y clasificar las 8 vulnerabilidades altas de `npm audit` (cuáles aplican al código que corre, cuáles se resuelven actualizando y cuáles se aceptan con su razón) | alta | B-014 |
-| Soporte del estándar 1.3 e historial de ciclos de vida | Evaluar proyectos con el estándar 1.3 (incluida esta sección) y mostrar el historial de ciclos de vida de cada proyecto | media | — |
+| Historial de ciclos de vida | Mostrar el historial de ciclos de vida de cada proyecto (aperturas y cierres de incrementos) | media | — |
 
 ## Decisiones clave
 
 | Decisión | Razón |
 |---|---|
-| `version_estandar` se mantiene en `"1.2"` hasta que el dashboard soporte la 1.3, aunque `PROJECT.md` ya usa la sección `## Incrementos planeados` de la 1.3 | El dashboard solo evalúa versiones soportadas: declarar 1.3 dejaría a `nexoru-op` sin evaluar. Subir a 1.3 es parte del incremento "Soporte del estándar 1.3" |
+| Abrir el incremento "Soporte del estándar 1.3" como Fase 5 (2026-10-22) y declarar `version_estandar: "1.3"`; el historial de ciclos de vida queda como incremento planeado (decisión del Dueño) | Con el dashboard capaz de evaluar la 1.3, `nexoru-op` puede declararla sin quedar sin evaluar; se abre solo lo que se compromete para el 2026-10-29 |
 | Pasar a `operacion` el 2026-10-04, sin fase nueva en el roadmap (decisión del Dueño) | Con la Fase 4 el roadmap quedó concluido y el dashboard está desplegado en local; el trabajo siguiente se planea como incrementos y se abre como fase cuando se comprometa |
 | Dashboard local, de solo lectura y para un solo usuario (constitución v2.0.0) | El valor está en ver el estado real del portafolio sin captura manual ni riesgo operativo; no justifica nube ni multiusuario |
 | Los archivos de cada proyecto son la fuente de verdad; la base solo guarda autenticación, bitácora e índice regenerable | Aplica la regla central (a) del estándar: lo derivable no se captura a mano |
@@ -109,7 +111,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 | Días en la fase desde el historial de `PROJECT.md`, comparados con `fase_desde`: si el historial empieza al crearse el campo, solo es una cota y el resultado es "no verificable" (opción A) | Decisión del Dueño en la Fase 3: evita marcar como discrepancia una fecha anterior a la creación de `PROJECT.md` |
 | Identidad visual de `nexoru-onboarding` (tema oscuro, tokens en `src/app/tokens.css`, Inter empaquetada con `@fontsource/inter`, OFL-1.1) | Decisión del Dueño (B-010) para todos los sistemas salvo `conversa-experiencias`; la fuente local evita depender de la red |
 | Gráficos como SVG generados en el servidor, sin librería ni JavaScript, cada uno con su tabla "Ver datos" | Compatibles con la CSP sin `style` en línea y accesibles; ninguna librería gratuita cumplía las dos cosas sin excepciones |
-| Soporte del estándar 1.0, 1.1 y 1.2 con reglas por versión; en 1.2, 3.2 con la última ejecución de cada workflow que cumple 3.1 y el campo `visibilidad` comparado con GitHub | Cada proyecto se evalúa con las reglas que declara; un aviso informativo (no un hallazgo) señala la versión más nueva |
+| Soporte del estándar 1.0, 1.1, 1.2 y 1.3 con reglas por versión; en 1.2, 3.2 con la última ejecución de cada workflow que cumple 3.1 y el campo `visibilidad` comparado con GitHub; en 1.3, la sección opcional `## Incrementos planeados` en la verificación 1.8 | Cada proyecto se evalúa con las reglas que declara; un aviso informativo (no un hallazgo) dice qué agrega la versión más nueva según la versión del proyecto |
 
 ## Costo mensual
 
@@ -126,7 +128,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 - **Riesgo de calidad:** los procedimientos manuales de recuperación (2FA perdido sin códigos y contraseña olvidada) están documentados pero no se han validado con la cuenta real (backlog B-008).
 - **Dependencia:** Docker y Node.js 24 en la máquina del Dueño. Supabase se arranca siempre con `npm run db:start` / `npm run op:start`, que crean su red de Docker solo en `127.0.0.1` (la opción `ip` de `daemon.json` no la cubre).
 - **Riesgo de calidad:** las dos pilas de Supabase local (uso y pruebas) consumen unos 2–3 GB de memoria cada una; la de pruebas se puede detener cuando no se usa.
-- **Dependencia:** la conformidad se evalúa con el Estándar de Proyecto Nexoru 1.0, 1.1 y 1.2 (`nexoru-governance`); cada versión nueva del estándar puede requerir actualizar el dashboard (principio XIV).
+- **Dependencia:** la conformidad se evalúa con el Estándar de Proyecto Nexoru 1.0, 1.1, 1.2 y 1.3 (`nexoru-governance`); cada versión nueva del estándar puede requerir actualizar el dashboard (principio XIV).
 - **Riesgo de calidad:** el repo es público; la constitución anterior, con el número comercial de WhatsApp y la lista de productos, sigue visible en el historial de git.
 - **Riesgo de calidad:** `npm audit` reporta 8 vulnerabilidades altas anteriores a la Fase 3, de `braces` en herramientas de desarrollo (shadcn y `eslint-config-next`); no llegan a la app en ejecución. Sin cambios en la Fase 4 (ninguna dependencia nueva).
 - **Riesgo de calidad:** en los proyectos cuyo historial de `PROJECT.md` empieza con la fase actual, los días en la fase salen de `fase_desde` y no se pueden verificar con git (hoy `amazon-business-engine` y `nexoru-op`).
@@ -137,7 +139,7 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 ## Pendientes conocidos
 
 - Backlog en `specs/backlog.md`: B-001 a B-014. En particular, B-008 (validar los procedimientos manuales de recuperación), B-009 (`op:backup` / `op:restore`, opcional) B-012 (alertas de discrepancia entre el estado declarado y la evidencia), B-013 (vigilar fallos intermitentes de las E2E) y B-014 (desactivar servicios de Supabase sin uso). B-010 (look and feel de `nexoru-onboarding`) y B-011 (`.nexoruignore`) se construyeron en la Fase 3.
-- **Incrementos planeados** (`## Incrementos planeados`): Operabilidad (prioridad alta: B-014 y la clasificación de `npm audit`) y Soporte del estándar 1.3 e historial de ciclos de vida (prioridad media). Abrir uno lo regresa a `construccion` según `lifecycle.md`.
+- **Incrementos planeados** (`## Incrementos planeados`): Operabilidad (prioridad alta: B-014 y la clasificación de `npm audit`) e Historial de ciclos de vida (prioridad media). Abrir uno lo lleva al roadmap como fase nueva según `lifecycle.md`.
 
 ## Evidencia de validación
 
@@ -168,7 +170,8 @@ El estado de cada fase lo calcula el dashboard a partir de `tasks.md` de las spe
 
 ## Siguiente hito
 
-Incremento planeado de prioridad alta: Operabilidad (sin fecha comprometida mientras no se abra).
+Fase 5: soporte del estándar 1.3 (`005-standard-1-3`). Fecha objetivo: 2026-10-29.
 
-1. **Hecho:** Fase 4 cerrada (PR #5, merge `ef35115`, CI de `main` en verde); el proyecto pasó a `operacion` el 2026-10-04.
-2. **Siguiente:** cuando el Dueño lo abra, Operabilidad entra al roadmap como Fase 5 con su spec y su fecha: desactivar los servicios de Supabase sin uso en ambos entornos, midiendo la memoria antes y después (B-014), y clasificar las 8 vulnerabilidades altas de `npm audit`.
+1. **Hecho:** versión 1.3 en el motor, verificación 1.8 de `## Incrementos planeados` y aviso de versión por salto, con pruebas.
+2. **Siguiente:** PR y merge del Dueño; después, comprobar en el dashboard que `nexoru-onboarding` (estándar 1.3) muestra Conformidad y Avance.
+3. **Al concluir la Fase 5:** el proyecto vuelve a `operacion` con `fase_desde` nuevo; el siguiente incremento planeado es Operabilidad (prioridad alta).

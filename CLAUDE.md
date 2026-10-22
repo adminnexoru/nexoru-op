@@ -115,8 +115,9 @@ un entorno puede tocar el otro (`scripts/env-guard.ts`):
   Las pruebas generan solas una copia temporal del portafolio ficticio (`nexoru-op-fixture-*`) y
   `assertTestProjectsRoot` impide que lean cualquier otra carpeta; no la pongas en `.env.local`.
   Las carpetas listadas en `PROJECTS_ROOT/.nexoruignore` (estándar 1.1) no se leen ni se muestran.
-- Estándar: se soportan las versiones 1.0, 1.1 y 1.2 con reglas por versión en `rules.ts`
-  (3.2 con la CI de GitHub; en 1.2, el campo `visibilidad` y la CI de cada workflow).
+- Estándar: se soportan las versiones 1.0, 1.1, 1.2 y 1.3 con reglas por versión en `rules.ts`
+  (3.2 con la CI de GitHub; en 1.2, el campo `visibilidad` y la CI de cada workflow; en 1.3, la
+  sección opcional `## Incrementos planeados` en la verificación 1.8).
 - Las consultas a GitHub ocurren solo al pulsar Actualizar (plazo de 8 s, 3 a la vez, ETag); la
   relectura automática a los 10 minutos reutiliza los datos guardados. Un dato de GitHub con 7 días
   o más no se usa para evaluar.

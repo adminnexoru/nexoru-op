@@ -50,7 +50,7 @@ description: "Lista de tareas de la feature 005-standard-1-3"
 
 ## Phase 3: Registro del incremento y cierre
 
-- [ ] T007 Registrar el incremento en `nexoru-op` con la mecánica de apertura (FR-006):
+- [X] T007 Registrar el incremento en `nexoru-op` con la mecánica de apertura (FR-006):
   - `PROJECT.md`: la fila sale de `## Incrementos planeados` (queda "Historial de ciclos de vida",
     prioridad media) y entra al roadmap como Fase 5 (`005-standard-1-3`, fecha objetivo 2026-10-29);
     `fase: construccion` con `fase_desde` de hoy y `fecha_objetivo` igual a la de la Fase 5;
