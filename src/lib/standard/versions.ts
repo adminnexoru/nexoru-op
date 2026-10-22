@@ -1,6 +1,6 @@
 // T022: versions of the Estándar de Proyecto Nexoru this dashboard can evaluate (constitution XIV).
 
-export const SUPPORTED_STANDARD_VERSIONS = ["1.0", "1.1", "1.2"] as const;
+export const SUPPORTED_STANDARD_VERSIONS = ["1.0", "1.1", "1.2", "1.3"] as const;
 
 export function isSupportedVersion(version: string): boolean {
   return (SUPPORTED_STANDARD_VERSIONS as readonly string[]).includes(version);
@@ -25,10 +25,13 @@ export function isNewerThanSupported(version: string): boolean {
 
 /**
  * Phase 4 (FR-028): informative notice for a project that declares a supported version older than
- * the newest one. Not a finding; it changes neither the level nor Conformidad.
+ * the newest one. Not a finding; it changes neither the level nor Conformidad. It says what the jump
+ * from the project's version adds (005-standard-1-3): from 1.0 or 1.1, the stricter CI and visibility
+ * rules of 1.2 and the optional section of planned increments of 1.3; from 1.2, only that section.
  */
 export function newerStandardNotice(declared: string): string | null {
   const newest = SUPPORTED_STANDARD_VERSIONS[SUPPORTED_STANDARD_VERSIONS.length - 1];
   if (!isSupportedVersion(declared) || compare(declared, newest) >= 0) return null;
-  return `hay una versión más nueva del estándar (${newest}) con reglas más estrictas de CI y visibilidad`;
+  if (compare(declared, "1.2") < 0) return `hay una versión más nueva del estándar (${newest}) con reglas más estrictas de CI y visibilidad, y la sección opcional ## Incrementos planeados`;
+  return `hay una versión más nueva del estándar (${newest}): agrega la sección opcional ## Incrementos planeados`;
 }

@@ -121,6 +121,40 @@ function sectionOrderIssues(body: string): string[] {
   return issues;
 }
 
+const PLANNED = "Incrementos planeados";
+const PLANNED_HEADER = ["Incremento", "Objetivo", "Prioridad", "Referencia"];
+const PRIORITIES = ["alta", "media", "baja"];
+
+/**
+ * Standard 1.3 (005-standard-1-3, conformance.md 1.8): the optional section ## Incrementos
+ * planeados, when present, goes between ## Roadmap and ## Decisiones clave and has the table with
+ * the exact header, with Prioridad in alta, media or baja. Its rows are never phases: the roadmap
+ * is read only from ## Roadmap.
+ */
+function plannedIncrementsIssues(body: string): string[] {
+  const titles = h2Headings(body).map((h) => h.title.toLowerCase());
+  const position = titles.indexOf(PLANNED.toLowerCase());
+  if (position === -1) return [];
+  const issues: string[] = [];
+  const roadmap = titles.indexOf("roadmap");
+  const decisions = titles.indexOf("decisiones clave");
+  if (!(roadmap !== -1 && decisions !== -1 && roadmap < position && position < decisions)) {
+    issues.push(`\`## ${PLANNED}\` debe ir entre \`## Roadmap\` y \`## Decisiones clave\``);
+  }
+  const table = tables(sectionText(body, PLANNED) ?? "").find((t) => t.header.join("|") === PLANNED_HEADER.join("|"));
+  if (!table) {
+    issues.push(`\`## ${PLANNED}\` no tiene la tabla ${PLANNED_HEADER.join(" | ")}`);
+    return issues;
+  }
+  for (const row of table.rows) {
+    const priority = row[2] ?? "";
+    if (!PRIORITIES.includes(priority)) {
+      issues.push(`\`## ${PLANNED}\`: ${row[0] ?? "?"} tiene la prioridad ${priority || "(vacía)"} (permitidas: ${PRIORITIES.join(", ")})`);
+    }
+  }
+  return issues;
+}
+
 /** T057: a row matches a service when its id appears in the normalized name ("Anthropic API" → anthropic-api). */
 export function normalizeServiceName(name: string): string {
   return name.toLowerCase().replace(/\s+/g, "-");
@@ -160,7 +194,7 @@ export function level1(ctx: Context): Check[] {
     checks.push(...["1.3", "1.4", "1.5", "1.6", "1.7"].map((id) => dependsOn(id, "1.2")));
   }
 
-  checks.push(fromIssues("1.8", sectionOrderIssues(body)));
+  checks.push(fromIssues("1.8", [...sectionOrderIssues(body), ...(ctx.rules.plannedIncrements ? plannedIncrementsIssues(body) : [])]));
 
   const summary = sectionText(body, "Resumen ejecutivo");
   const hasMetrics = summary?.split("\n").some((line) => line.trimStart().startsWith("**Métricas de éxito:**")) ?? false;
