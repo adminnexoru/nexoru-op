@@ -34,8 +34,8 @@ incrementos). Motor de conformidad de las Fases 2 a 4 (`src/lib/standard/`).
   comprobación de esa sección.
 - **Aviso de versión más nueva**: con 1.3 soportada, un proyecto 1.0, 1.1 o 1.2 ve un aviso de
   versión más nueva. El texto debe decir qué agrega de verdad cada salto: para 1.0 y 1.1, "reglas
-  más estrictas de CI y visibilidad" (vienen de la 1.2); para 1.2, solo "la sección opcional de
-  incrementos planeados". Decir "reglas más estrictas" a un proyecto 1.2 sería falso.
+  más estrictas de CI y visibilidad" (vienen de la 1.2) y la sección opcional de incrementos
+  planeados (de la 1.3); para 1.2, solo "la sección opcional de incrementos planeados". Decir "reglas más estrictas" a un proyecto 1.2 sería falso.
 - **Alcance del incremento planeado**: la fila planeada en `nexoru-op` era "Soporte del estándar
   1.3 e historial de ciclos de vida". Este incremento abre solo el soporte de la 1.3; el historial
   de ciclos de vida sigue como incremento planeado (prioridad media).
@@ -65,7 +65,8 @@ El Dueño ve evaluados, con nivel, Conformidad y Avance, los proyectos que decla
 2. **Given** un proyecto 1.2, **When** se evalúa, **Then** su resultado no cambia y ve el aviso
    informativo "hay una versión más nueva del estándar (1.3): agrega la sección opcional ## Incrementos planeados".
 3. **Given** un proyecto 1.0 o 1.1, **When** se evalúa, **Then** el aviso dice "hay una versión más
-   nueva del estándar (1.3) con reglas más estrictas de CI y visibilidad".
+   nueva del estándar (1.3) con reglas más estrictas de CI y visibilidad, y la sección opcional
+   ## Incrementos planeados" (ajuste del Dueño al aprobar el diff, 2026-10-22).
 
 ### User Story 2 - Verificación 1.8 de `## Incrementos planeados` (Priority: P1)
 

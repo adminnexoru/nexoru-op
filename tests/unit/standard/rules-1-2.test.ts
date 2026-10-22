@@ -9,10 +9,11 @@ import { isNewerThanSupported, SUPPORTED_STANDARD_VERSIONS } from "@/lib/standar
 import { baseFiles, DATE, replaceIn } from "./helpers";
 
 describe("versions", () => {
-  it("supports 1.0, 1.1 and 1.2; only a later one is newer", () => {
-    expect(SUPPORTED_STANDARD_VERSIONS).toEqual(["1.0", "1.1", "1.2"]);
+  it("supports 1.0 to 1.3 (005-standard-1-3); only a later one is newer", () => {
+    expect(SUPPORTED_STANDARD_VERSIONS).toEqual(["1.0", "1.1", "1.2", "1.3"]);
     expect(isNewerThanSupported("1.2")).toBe(false);
-    expect(isNewerThanSupported("1.3")).toBe(true);
+    expect(isNewerThanSupported("1.3")).toBe(false);
+    expect(isNewerThanSupported("1.4")).toBe(true);
   });
 
   it("1.2 is 1.1 plus the rule of every workflow and the visibilidad field", () => {
